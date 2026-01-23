@@ -1,0 +1,7 @@
+{
+  "name": "Meadow IT",
+  "description": "A comprehensive IT e-commerce platform featuring a custom PC builder, accessories shop, and a robust admin dashboard for inventory, category, and brand management with AI-powered content generation.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
