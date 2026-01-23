@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/public/Home';
 import StoreLocator from './pages/public/StoreLocator';
+import Customised from './pages/public/Customised';
 import AdminLogin from './pages/admin/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import ProductManagement from './pages/admin/Products';
@@ -47,7 +48,6 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    // Safety Timeout: Ensure the app loads even if Supabase is slow or hanging
     const safetyTimeout = setTimeout(() => {
       if (loading) {
         console.warn("Auth check timed out, proceeding as guest.");
@@ -55,7 +55,6 @@ const App: React.FC = () => {
       }
     }, 5000);
 
-    // Initial session check
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
@@ -69,7 +68,6 @@ const App: React.FC = () => {
       clearTimeout(safetyTimeout);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       if (session?.user) {
@@ -118,8 +116,8 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/stores" element={<StoreLocator />} />
+        <Route path="/customised" element={<Customised />} />
         
-        {/* Admin Access Logic */}
         <Route 
           path="/admin/login" 
           element={isAdmin ? <Navigate to="/admin/dashboard" /> : <AdminLogin onLogin={() => {}} />} 
@@ -141,7 +139,6 @@ const App: React.FC = () => {
           <Route path="*" element={<Navigate to="dashboard" />} />
         </Route>
 
-        {/* Customer Access Logic */}
         <Route 
           path="/customer/*" 
           element={isCustomer ? <CustomerLayout onLogout={handleLogout} /> : <Navigate to="/" />}

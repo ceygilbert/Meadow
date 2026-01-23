@@ -19,7 +19,10 @@ import {
   Heart,
   Menu,
   AlertCircle,
-  MapPin
+  MapPin,
+  ArrowUpRight,
+  // Add ArrowLeft to imports
+  ArrowLeft
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Product, Profile, Brand } from '../../types';
@@ -27,6 +30,8 @@ import { Product, Profile, Brand } from '../../types';
 interface CartItem extends Product {
   quantity: number;
 }
+
+type MenuMode = 'all' | 'story' | 'contact' | 'products';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -37,7 +42,8 @@ const Home: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   
   // UI States
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isFullMenuOpen, setIsFullMenuOpen] = useState(false);
+  const [menuMode, setMenuMode] = useState<MenuMode>('all');
   
   // Auth & Profile States
   const [user, setUser] = useState<any>(null);
@@ -154,6 +160,7 @@ const Home: React.FC = () => {
       console.error("Data fetch error:", err);
       setError("Unable to connect to the terminal. Please check your connection.");
     } finally {
+      // Small artificial delay to show engineering flair
       setLoading(false);
     }
   };
@@ -234,6 +241,11 @@ const Home: React.FC = () => {
     }
   };
 
+  const openMenu = (mode: MenuMode) => {
+    setMenuMode(mode);
+    setIsFullMenuOpen(true);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-6">
@@ -257,25 +269,129 @@ const Home: React.FC = () => {
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden">
       
+      {/* Full-Screen Navigation Menu Overlay */}
+      <div className={`fixed inset-0 z-[500] bg-white transition-all duration-700 ease-[cubic-bezier(0.85,0,0.15,1)] ${isFullMenuOpen ? 'translate-y-0' : '-translate-y-full'}`}>
+        <div className="h-full flex flex-col">
+          {/* Menu Header */}
+          <div className="h-24 px-6 md:px-12 flex items-center justify-between shrink-0">
+             <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white">
+                  <Cpu size={18} />
+                </div>
+                <span className="text-lg font-black tracking-tighter uppercase">Meadow</span>
+             </div>
+             <button 
+                onClick={() => setIsFullMenuOpen(false)}
+                className="w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+             >
+                <X size={24} />
+             </button>
+          </div>
+
+          <div className="flex-1 flex flex-col md:flex-row px-6 md:px-24 py-12 gap-12 overflow-y-auto overflow-x-hidden">
+             <div className="flex-1">
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300 mb-12">Navigation Protocol</p>
+                <nav className="flex flex-col gap-12 md:gap-16">
+                   {/* Brand Story Parent */}
+                   {(menuMode === 'all' || menuMode === 'story') && (
+                     <div className="flex flex-col gap-6 group animate-in slide-in-from-left duration-500">
+                        <div className="flex items-center gap-6">
+                          <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Story</span>
+                        </div>
+                        <div className="flex flex-col items-start gap-3 pl-2 md:pl-4 border-l-2 border-slate-100">
+                           <a href="#" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
+                              Brand Story <ArrowUpRight size={16} className="opacity-0 group-hover:opacity-100" />
+                           </a>
+                           <a href="#" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
+                              Join Our Team <ArrowUpRight size={16} className="opacity-0 group-hover:opacity-100" />
+                           </a>
+                        </div>
+                     </div>
+                   )}
+
+                   {/* Products Parent */}
+                   {(menuMode === 'all' || menuMode === 'products') && (
+                     <a href="#" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6 animate-in slide-in-from-left duration-500 delay-100">
+                        <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900 transition-all group-hover:italic group-hover:translate-x-4">Products</span>
+                        <ArrowUpRight className="text-slate-200 group-hover:text-slate-900 transition-colors" size={32} />
+                     </a>
+                   )}
+
+                   {/* Contact Us Parent */}
+                   {(menuMode === 'all' || menuMode === 'contact') && (
+                     <div className="flex flex-col gap-6 group animate-in slide-in-from-left duration-500 delay-200">
+                        <div className="flex items-center gap-6">
+                          <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Contact</span>
+                        </div>
+                        <div className="flex flex-col items-start gap-3 pl-2 md:pl-4 border-l-2 border-slate-100">
+                           <a href="#" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
+                              Contact Us <ArrowUpRight size={16} className="opacity-0 group-hover:opacity-100" />
+                           </a>
+                           <Link to="/stores" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-blue-500 hover:text-blue-700 transition-colors flex items-center gap-2">
+                              Store Locator <ArrowUpRight size={16} />
+                           </Link>
+                        </div>
+                     </div>
+                   )}
+                   
+                   {menuMode !== 'all' && (
+                     <button 
+                        onClick={() => setMenuMode('all')}
+                        className="text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-slate-900 transition-colors flex items-center gap-2"
+                     >
+                        <ArrowLeft size={14} /> Back to Full Menu
+                     </button>
+                   )}
+                </nav>
+             </div>
+
+             <div className="hidden lg:flex w-[400px] flex-col justify-end pb-20 gap-8">
+                <div className="aspect-[4/5] bg-slate-50 rounded-[3rem] overflow-hidden border border-slate-100 p-8 flex flex-col justify-between group">
+                   <div className="flex justify-between items-start">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Featured Rig</span>
+                      <Cpu className="text-blue-600" />
+                   </div>
+                   <div className="space-y-4">
+                      <h4 className="text-2xl font-black uppercase tracking-tighter leading-none">Quantum <br /> Core X1</h4>
+                      <p className="text-xs text-slate-400 font-medium">Experience the next iteration of performance computing.</p>
+                      <button className="text-[10px] font-black uppercase tracking-widest text-blue-600 border-b-2 border-blue-600 pb-1">Configure &rarr;</button>
+                   </div>
+                </div>
+                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                   <span>MEADOW IT © {new Date().getFullYear()}</span>
+                   <span>JOHOR BAHRU, MY</span>
+                </div>
+             </div>
+          </div>
+        </div>
+      </div>
+
       {/* Editorial Floating Header */}
       <nav className="fixed top-4 md:top-6 left-0 right-0 z-[100] px-4 md:px-10 pointer-events-none">
         <div className="max-w-[1440px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2 pointer-events-auto">
-            <div className="w-8 h-8 md:w-9 md:h-9 bg-slate-900 rounded-lg flex items-center justify-center text-white shadow-lg">
+            <Link to="/" className="w-8 h-8 md:w-9 md:h-9 bg-slate-900 rounded-lg flex items-center justify-center text-white shadow-lg">
               <Cpu size={18} />
-            </div>
+            </Link>
             <span className="text-base md:text-lg font-black tracking-tighter uppercase leading-none">Meadow</span>
           </div>
 
-          <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-8 py-3 gap-6 md:gap-10 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90">
-            <a href="#" className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Brand Story</a>
-            <a href="#" className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Product</a>
-            <Link to="/stores" className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Store Locator</Link>
-            <a href="#" className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Contact Us</a>
+          <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-8 py-2.5 gap-6 md:gap-8 lg:gap-10 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90 group">
+            <button onClick={() => openMenu('story')} className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Story</button>
+            <button onClick={() => openMenu('products')} className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Products</button>
+            <Link to="/customised" className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Customised</Link>
+            <button onClick={() => openMenu('contact')} className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Contact</button>
+            <div className="w-px h-4 bg-slate-200 mx-2"></div>
+            <button 
+              onClick={() => openMenu('all')}
+              className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.25em] text-slate-900 group-hover:text-blue-600 transition-all"
+            >
+              Menu <Menu size={14} />
+            </button>
           </div>
 
           <div className="flex items-center gap-2 md:gap-4 pointer-events-auto">
-            <button onClick={() => setIsMobileMenuOpen(true)} className="md:hidden w-10 h-10 bg-white border border-slate-100 text-slate-900 rounded-full flex items-center justify-center shadow-lg">
+            <button onClick={() => openMenu('all')} className="md:hidden w-10 h-10 bg-white border border-slate-100 text-slate-900 rounded-full flex items-center justify-center shadow-lg">
               <Menu size={18} />
             </button>
             {!user ? (
@@ -292,25 +408,6 @@ const Home: React.FC = () => {
           </div>
         </div>
       </nav>
-
-      {/* Mobile Drawer */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[200] flex justify-end">
-           <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
-           <div className="relative w-full max-w-[280px] bg-white h-full shadow-2xl animate-in slide-in-from-right duration-500 p-8 flex flex-col">
-              <div className="flex justify-between items-center mb-16">
-                 <span className="text-lg font-black tracking-tighter uppercase">Menu</span>
-                 <button onClick={() => setIsMobileMenuOpen(false)} className="w-10 h-10 bg-slate-50 text-slate-900 rounded-full flex items-center justify-center"><X size={20} /></button>
-              </div>
-              <div className="flex flex-col gap-10">
-                 <a href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Brand Story</a>
-                 <a href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Product</a>
-                 <Link to="/stores" onClick={() => setIsMobileMenuOpen(false)} className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Store Locator</Link>
-                 <a href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Contact Us</a>
-              </div>
-           </div>
-        </div>
-      )}
 
       {/* Hero Section */}
       <header className="relative pt-24 md:pt-32 px-4 md:px-10 pb-10 md:pb-20">
@@ -522,7 +619,6 @@ const Home: React.FC = () => {
                <div className="aspect-square bg-blue-50 rounded-[1.5rem] md:rounded-[2.5rem] rounded-bl-[4rem] md:rounded-bl-[6rem] overflow-hidden shadow-xl p-3 md:p-4 relative flex items-center justify-center border border-white">
                   <div className="w-full h-full bg-slate-900 rounded-[1rem] md:rounded-[2rem] rounded-bl-[3.5rem] md:rounded-bl-[5.5rem] flex items-center justify-center overflow-hidden">
                      <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80" className="w-full h-full object-cover opacity-50" />
-                     {/* Fix: removed invalid md:size prop and replaced with Tailwind responsive classes */}
                      <Cpu strokeWidth={0.5} className="text-white absolute drop-shadow-2xl w-[60px] h-[60px] md:w-[80px] md:h-[80px]" />
                   </div>
                </div>
