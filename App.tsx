@@ -31,7 +31,12 @@ const App: React.FC = () => {
         .eq('id', userId)
         .single();
       
-      if (error) throw error;
+      if (error) {
+        // If profile doesn't exist, we might need to handle it gracefully
+        console.warn('Profile not found, user might be new.');
+        setUserProfile(null);
+        return null;
+      }
       setUserProfile(data);
       return data;
     } catch (err) {
@@ -48,6 +53,9 @@ const App: React.FC = () => {
       if (session?.user) {
         await fetchProfile(session.user.id);
       }
+      setLoading(false);
+    }).catch(err => {
+      console.error("Initial session check failed:", err);
       setLoading(false);
     });
 
@@ -78,8 +86,8 @@ const App: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
-        <div className="w-12 h-12 border-4 border-blue-600/10 border-t-blue-600 rounded-full animate-spin"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-4">
+        <div className="w-12 h-12 border-4 border-slate-900/10 border-t-slate-900 rounded-full animate-spin"></div>
         <p className="text-slate-400 font-black uppercase tracking-widest text-[10px]">Verifying Identity & Roles...</p>
       </div>
     );

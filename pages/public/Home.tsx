@@ -1,9 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   ShoppingCart, 
-  Zap, 
   Cpu, 
   Loader2, 
   X,
@@ -19,8 +18,7 @@ import {
   MousePointer2,
   Heart,
   Menu,
-  Eye,
-  EyeOff
+  AlertCircle
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Product, Profile, Brand } from '../../types';
@@ -35,6 +33,7 @@ const Home: React.FC = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   // UI States
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -79,20 +78,28 @@ const Home: React.FC = () => {
   }, [cart]);
 
   const checkUser = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    setUser(session?.user || null);
-    if (session?.user) {
-      fetchProfile(session.user.id);
-      setCustomerInfo({ 
-        name: session.user.user_metadata.full_name || '', 
-        email: session.user.email || '' 
-      });
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user || null);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+        setCustomerInfo({ 
+          name: session.user.user_metadata?.full_name || '', 
+          email: session.user.email || '' 
+        });
+      }
+    } catch (err) {
+      console.error("Auth check failed", err);
     }
   };
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
-    if (data) setProfile(data);
+    try {
+      const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
+      if (data) setProfile(data);
+    } catch (err) {
+      console.error("Profile fetch failed", err);
+    }
   };
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -126,11 +133,15 @@ const Home: React.FC = () => {
 
   const fetchData = async () => {
     setLoading(true);
+    setError(null);
     try {
       const [prodRes, brandRes] = await Promise.all([
         supabase.from('products').select('*').order('created_at', { ascending: false }),
         supabase.from('brands').select('*')
       ]);
+
+      if (prodRes.error) throw prodRes.error;
+      if (brandRes.error) throw brandRes.error;
 
       if (prodRes.data) {
         setTrendingProducts(prodRes.data);
@@ -139,7 +150,8 @@ const Home: React.FC = () => {
       }
       if (brandRes.data) setBrands(brandRes.data);
     } catch (err: any) {
-      console.error(err);
+      console.error("Data fetch error:", err);
+      setError("Unable to connect to the terminal. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -221,6 +233,26 @@ const Home: React.FC = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-6">
+        <Loader2 className="animate-spin text-slate-900" size={48} />
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Initializing Terminal...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white p-10 text-center">
+        <AlertCircle className="text-rose-500 mb-6" size={64} strokeWidth={1} />
+        <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-4">Connection Failed</h2>
+        <p className="text-slate-500 max-w-xs mb-10 font-medium">{error}</p>
+        <button onClick={() => window.location.reload()} className="px-10 py-4 bg-slate-900 text-white rounded-full font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl">Retry Connection</button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden">
       
@@ -279,7 +311,7 @@ const Home: React.FC = () => {
         </div>
       )}
 
-      {/* Hero Section - Enhanced with nice IT images */}
+      {/* Hero Section */}
       <header className="relative pt-24 md:pt-32 px-4 md:px-10 pb-10 md:pb-20">
         <div className="hidden lg:block absolute top-40 left-10 text-[11vw] font-black text-slate-50 tracking-tighter leading-none pointer-events-none select-none -z-10 uppercase">
           Precision Engineering
@@ -313,11 +345,9 @@ const Home: React.FC = () => {
             </div>
 
             <div className="relative flex items-center justify-center pt-10 lg:pt-0">
-              {/* Added high-quality IT imagery in the hero block */}
               <div className="relative w-full max-w-[300px] md:max-w-lg aspect-square bg-white rounded-[2.5rem] md:rounded-[4.5rem] shadow-2xl p-4 md:p-6 flex items-center justify-center group overflow-hidden border border-slate-50">
                  <div className="w-full h-full bg-slate-50 rounded-[2rem] md:rounded-[3.5rem] flex items-center justify-center relative overflow-hidden shadow-inner">
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-50 z-10"></div>
-                    {/* High-quality tech image replacement */}
                     <img 
                       src="https://images.unsplash.com/photo-1587202377405-836165b1040a?auto=format&fit=crop&q=80" 
                       className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
@@ -329,7 +359,6 @@ const Home: React.FC = () => {
                     </div>
                  </div>
               </div>
-              {/* Secondary floating IT element */}
               <div className="absolute -bottom-6 -left-6 md:-bottom-10 md:-left-10 w-24 h-24 md:w-40 md:h-40 bg-white rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl p-3 border border-slate-100 animate-bounce transition-all hidden md:flex items-center justify-center overflow-hidden">
                   <img 
                     src="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?auto=format&fit=crop&q=80" 
@@ -342,7 +371,7 @@ const Home: React.FC = () => {
         </div>
       </header>
 
-      {/* Feature Blocks Section - Restored */}
+      {/* Feature Blocks Section */}
       <section className="px-4 md:px-10 py-10 md:py-20 max-w-[1440px] mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 row-span-2 bg-[#F9FAFB] rounded-[2rem] md:rounded-[3.5rem] p-8 md:p-16 flex flex-col justify-between group overflow-hidden relative border border-slate-100">
@@ -385,10 +414,9 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* THE COLLECTION Section - Restored Header & Redesigned Header */}
+      {/* THE COLLECTION Section */}
       <section className="bg-[#FAF9FB] px-4 md:px-10 py-20 md:py-32 overflow-hidden border-t border-slate-50">
         <div className="max-w-[1440px] mx-auto">
-          {/* Restored Section Header */}
           <div className="flex items-center justify-between mb-16 md:mb-20">
              <div className="flex flex-col">
                 <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-2">The Collection</h2>
@@ -419,7 +447,6 @@ const Home: React.FC = () => {
               </div>
             ))}
 
-            {/* Circular View All Element */}
             <div className="hidden lg:flex flex-col items-center justify-center w-full h-full min-h-[300px] relative">
                <div className="absolute inset-0 animate-[spin_12s_linear_infinite]">
                  <svg viewBox="0 0 100 100" className="w-full h-full">
