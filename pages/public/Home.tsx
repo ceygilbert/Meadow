@@ -21,7 +21,6 @@ import {
   AlertCircle,
   MapPin,
   ArrowUpRight,
-  // Add ArrowLeft to imports
   ArrowLeft
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -160,7 +159,6 @@ const Home: React.FC = () => {
       console.error("Data fetch error:", err);
       setError("Unable to connect to the terminal. Please check your connection.");
     } finally {
-      // Small artificial delay to show engineering flair
       setLoading(false);
     }
   };
@@ -292,11 +290,12 @@ const Home: React.FC = () => {
              <div className="flex-1">
                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300 mb-12">Navigation Protocol</p>
                 <nav className="flex flex-col gap-12 md:gap-16">
-                   {/* Brand Story Parent */}
+                   
+                   {/* Story Mode */}
                    {(menuMode === 'all' || menuMode === 'story') && (
                      <div className="flex flex-col gap-6 group animate-in slide-in-from-left duration-500">
                         <div className="flex items-center gap-6">
-                          <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Story</span>
+                          <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Brand Story</span>
                         </div>
                         <div className="flex flex-col items-start gap-3 pl-2 md:pl-4 border-l-2 border-slate-100">
                            <a href="#" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
@@ -309,23 +308,23 @@ const Home: React.FC = () => {
                      </div>
                    )}
 
-                   {/* Products Parent */}
+                   {/* Products Mode */}
                    {(menuMode === 'all' || menuMode === 'products') && (
-                     <a href="#" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6 animate-in slide-in-from-left duration-500 delay-100">
+                     <a href="#" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6 animate-in slide-in-from-left duration-500">
                         <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900 transition-all group-hover:italic group-hover:translate-x-4">Products</span>
                         <ArrowUpRight className="text-slate-200 group-hover:text-slate-900 transition-colors" size={32} />
                      </a>
                    )}
 
-                   {/* Contact Us Parent */}
+                   {/* Contact Mode */}
                    {(menuMode === 'all' || menuMode === 'contact') && (
-                     <div className="flex flex-col gap-6 group animate-in slide-in-from-left duration-500 delay-200">
+                     <div className="flex flex-col gap-6 group animate-in slide-in-from-left duration-500">
                         <div className="flex items-center gap-6">
-                          <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Contact</span>
+                          <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Contact Us</span>
                         </div>
                         <div className="flex flex-col items-start gap-3 pl-2 md:pl-4 border-l-2 border-slate-100">
                            <a href="#" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
-                              Contact Us <ArrowUpRight size={16} className="opacity-0 group-hover:opacity-100" />
+                              Inquiry Form <ArrowUpRight size={16} className="opacity-0 group-hover:opacity-100" />
                            </a>
                            <Link to="/stores" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-blue-500 hover:text-blue-700 transition-colors flex items-center gap-2">
                               Store Locator <ArrowUpRight size={16} />
@@ -337,7 +336,7 @@ const Home: React.FC = () => {
                    {menuMode !== 'all' && (
                      <button 
                         onClick={() => setMenuMode('all')}
-                        className="text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-slate-900 transition-colors flex items-center gap-2"
+                        className="text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-slate-900 transition-colors flex items-center gap-2 mt-8"
                      >
                         <ArrowLeft size={14} /> Back to Full Menu
                      </button>

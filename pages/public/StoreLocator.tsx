@@ -143,37 +143,10 @@ const StoreLocator: React.FC = () => {
     if (data) setProfile(data);
   };
 
-  const updateQuantity = (id: string, delta: number) => {
-    setCart(prev => prev.map(item => {
-      if (item.id === id) {
-        const newQty = Math.max(1, Math.min(item.quantity + delta, item.stock));
-        return { ...item, quantity: newQty };
-      }
-      return item;
-    }));
+  const openMenu = (mode: MenuMode) => {
+    setMenuMode(mode);
+    setIsFullMenuOpen(true);
   };
-
-  const removeFromCart = (id: string) => {
-    setCart(prev => prev.filter(item => item.id !== id));
-  };
-
-  const calculateDiscountedPrice = (price: number, type: string, value: number) => {
-    if (type === 'percentage') return price * (1 - value / 100);
-    if (type === 'fixed') return Math.max(0, price - value);
-    return price;
-  };
-
-  const cartTotal = cart.reduce((acc, item) => {
-    const price = calculateDiscountedPrice(item.price, item.discount_type, item.discount_value);
-    return acc + (price * item.quantity);
-  }, 0);
-
-  const filteredStores = STORES.filter(store => {
-    const matchesSearch = store.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          store.address.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = selectedType === 'All Types' || store.type === selectedType;
-    return matchesSearch && matchesType;
-  });
 
   const handleUseLocation = () => {
     setIsLocating(true);
@@ -189,10 +162,13 @@ const StoreLocator: React.FC = () => {
     );
   };
 
-  const openMenu = (mode: MenuMode) => {
-    setMenuMode(mode);
-    setIsFullMenuOpen(true);
-  };
+  // Filter stores based on search term and selected type
+  const filteredStores = STORES.filter(store => {
+    const matchesSearch = store.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         store.address.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = selectedType === 'All Types' || store.type === selectedType;
+    return matchesSearch && matchesType;
+  });
 
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden font-sans selection:bg-blue-100 selection:text-blue-900">
@@ -220,11 +196,12 @@ const StoreLocator: React.FC = () => {
              <div className="flex-1">
                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300 mb-12">Navigation Protocol</p>
                 <nav className="flex flex-col gap-12 md:gap-16">
-                   {/* Brand Story Parent */}
+                   
+                   {/* Story Mode */}
                    {(menuMode === 'all' || menuMode === 'story') && (
                      <div className="flex flex-col gap-6 group animate-in slide-in-from-left duration-500">
                         <div className="flex items-center gap-6">
-                          <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Story</span>
+                          <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Brand Story</span>
                         </div>
                         <div className="flex flex-col items-start gap-3 pl-2 md:pl-4 border-l-2 border-slate-100">
                            <Link to="/" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
@@ -237,23 +214,23 @@ const StoreLocator: React.FC = () => {
                      </div>
                    )}
 
-                   {/* Products Parent */}
+                   {/* Products Mode */}
                    {(menuMode === 'all' || menuMode === 'products') && (
-                     <Link to="/" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6 animate-in slide-in-from-left duration-500 delay-100">
+                     <Link to="/" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6 animate-in slide-in-from-left duration-500">
                         <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900 transition-all group-hover:italic group-hover:translate-x-4">Products</span>
                         <ArrowUpRight className="text-slate-200 group-hover:text-slate-900 transition-colors" size={32} />
                      </Link>
                    )}
 
-                   {/* Contact Us Parent */}
+                   {/* Contact Mode */}
                    {(menuMode === 'all' || menuMode === 'contact') && (
-                     <div className="flex flex-col gap-6 group animate-in slide-in-from-left duration-500 delay-200">
+                     <div className="flex flex-col gap-6 group animate-in slide-in-from-left duration-500">
                         <div className="flex items-center gap-6">
-                          <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Contact</span>
+                          <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Contact Us</span>
                         </div>
                         <div className="flex flex-col items-start gap-3 pl-2 md:pl-4 border-l-2 border-slate-100">
                            <Link to="/" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
-                              Contact Us <ArrowUpRight size={16} className="opacity-0 group-hover:opacity-100" />
+                              Inquiry Form <ArrowUpRight size={16} className="opacity-0 group-hover:opacity-100" />
                            </Link>
                            <Link to="/stores" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-blue-500 hover:text-blue-700 transition-colors flex items-center gap-2">
                               Store Locator <ArrowUpRight size={16} />
@@ -265,7 +242,7 @@ const StoreLocator: React.FC = () => {
                    {menuMode !== 'all' && (
                      <button 
                         onClick={() => setMenuMode('all')}
-                        className="text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-slate-900 transition-colors flex items-center gap-2"
+                        className="text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-slate-900 transition-colors flex items-center gap-2 mt-8"
                      >
                         <ArrowLeft size={14} /> Back to Full Menu
                      </button>
