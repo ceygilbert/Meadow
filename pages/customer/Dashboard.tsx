@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   ShoppingBag, 
@@ -13,6 +12,7 @@ import {
   Star,
   Loader2
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Profile, Order } from '../../types';
 
@@ -188,6 +188,3 @@ const CustomerDashboard: React.FC = () => {
 };
 
 export default CustomerDashboard;
-
-// Add Link to React Router imports
-import { Link } from 'react-router-dom';

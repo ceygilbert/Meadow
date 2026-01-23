@@ -18,7 +18,8 @@ import {
   MousePointer2,
   Heart,
   Menu,
-  AlertCircle
+  AlertCircle,
+  MapPin
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Product, Profile, Brand } from '../../types';
@@ -269,7 +270,7 @@ const Home: React.FC = () => {
           <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-8 py-3 gap-6 md:gap-10 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90">
             <a href="#" className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Brand Story</a>
             <a href="#" className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Product</a>
-            <a href="#" className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Customised</a>
+            <Link to="/stores" className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Store Locator</Link>
             <a href="#" className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Contact Us</a>
           </div>
 
@@ -304,7 +305,7 @@ const Home: React.FC = () => {
               <div className="flex flex-col gap-10">
                  <a href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Brand Story</a>
                  <a href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Product</a>
-                 <a href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Customised</a>
+                 <Link to="/stores" onClick={() => setIsMobileMenuOpen(false)} className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Store Locator</Link>
                  <a href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Contact Us</a>
               </div>
            </div>
@@ -521,7 +522,8 @@ const Home: React.FC = () => {
                <div className="aspect-square bg-blue-50 rounded-[1.5rem] md:rounded-[2.5rem] rounded-bl-[4rem] md:rounded-bl-[6rem] overflow-hidden shadow-xl p-3 md:p-4 relative flex items-center justify-center border border-white">
                   <div className="w-full h-full bg-slate-900 rounded-[1rem] md:rounded-[2rem] rounded-bl-[3.5rem] md:rounded-bl-[5.5rem] flex items-center justify-center overflow-hidden">
                      <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80" className="w-full h-full object-cover opacity-50" />
-                     <Cpu size={60} md:size={80} strokeWidth={0.5} className="text-white absolute drop-shadow-2xl" />
+                     {/* Fix: removed invalid md:size prop and replaced with Tailwind responsive classes */}
+                     <Cpu strokeWidth={0.5} className="text-white absolute drop-shadow-2xl w-[60px] h-[60px] md:w-[80px] md:h-[80px]" />
                   </div>
                </div>
             </div>
@@ -677,7 +679,7 @@ const Home: React.FC = () => {
                 <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-300 mb-6">Navigation</h4>
                 <ul className="space-y-3">
                    <li><a href="#" className="text-[11px] font-bold text-slate-500 hover:text-slate-900 transition-colors">The Terminal</a></li>
-                   <li><a href="#" className="text-[11px] font-bold text-slate-500 hover:text-slate-900 transition-colors">Catalog Index</a></li>
+                   <li><Link to="/stores" className="text-[11px] font-bold text-slate-500 hover:text-slate-900 transition-colors">Store Locator</Link></li>
                 </ul>
              </div>
              <div className="text-center md:text-left">

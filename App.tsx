@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/public/Home';
+import StoreLocator from './pages/public/StoreLocator';
 import AdminLogin from './pages/admin/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import ProductManagement from './pages/admin/Products';
@@ -32,8 +33,7 @@ const App: React.FC = () => {
         .single();
       
       if (error) {
-        // If profile doesn't exist, we might need to handle it gracefully
-        console.warn('Profile not found, user might be new.');
+        console.warn('Profile record not found for user:', userId);
         setUserProfile(null);
         return null;
       }
@@ -47,6 +47,14 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
+    // Safety Timeout: Ensure the app loads even if Supabase is slow or hanging
+    const safetyTimeout = setTimeout(() => {
+      if (loading) {
+        console.warn("Auth check timed out, proceeding as guest.");
+        setLoading(false);
+      }
+    }, 5000);
+
     // Initial session check
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
@@ -54,9 +62,11 @@ const App: React.FC = () => {
         await fetchProfile(session.user.id);
       }
       setLoading(false);
+      clearTimeout(safetyTimeout);
     }).catch(err => {
       console.error("Initial session check failed:", err);
       setLoading(false);
+      clearTimeout(safetyTimeout);
     });
 
     // Listen for auth changes
@@ -68,9 +78,13 @@ const App: React.FC = () => {
         setUserProfile(null);
       }
       setLoading(false);
+      clearTimeout(safetyTimeout);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(safetyTimeout);
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -86,9 +100,12 @@ const App: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-4">
-        <div className="w-12 h-12 border-4 border-slate-900/10 border-t-slate-900 rounded-full animate-spin"></div>
-        <p className="text-slate-400 font-black uppercase tracking-widest text-[10px]">Verifying Identity & Roles...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-6">
+        <div className="w-16 h-16 border-4 border-slate-100 border-t-slate-900 rounded-full animate-spin"></div>
+        <div className="text-center">
+          <p className="text-slate-900 font-black uppercase tracking-[0.4em] text-[10px] mb-2">Meadow IT</p>
+          <p className="text-slate-400 font-bold uppercase tracking-widest text-[8px]">Verifying Identity & Roles...</p>
+        </div>
       </div>
     );
   }
@@ -100,6 +117,7 @@ const App: React.FC = () => {
     <HashRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/stores" element={<StoreLocator />} />
         
         {/* Admin Access Logic */}
         <Route 

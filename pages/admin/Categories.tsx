@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, Image as ImageIcon, X, Loader2, AlertCircle, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Plus, Search, Edit2, Trash2, Image as ImageIcon, X, Loader2, AlertCircle, AlertTriangle, Upload } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Category } from '../../types';
 
@@ -13,6 +13,9 @@ const CategoryManagement: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -37,6 +40,39 @@ const CategoryManagement: React.FC = () => {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file.');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `cat_${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('categories')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('categories')
+        .getPublicUrl(filePath);
+
+      setFormData(prev => ({ ...prev, image_url: publicUrl }));
+    } catch (err: any) {
+      alert('Error uploading image: ' + err.message);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -235,10 +271,42 @@ const CategoryManagement: React.FC = () => {
                   <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Category Name</label>
                   <input className="w-full px-5 py-4 bg-slate-100/50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-900" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                 </div>
+                
                 <div>
-                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Image URL</label>
-                  <input className="w-full px-5 py-4 bg-slate-100/50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-600" value={formData.image_url} onChange={e => setFormData({...formData, image_url: e.target.value})} />
+                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Cover Image (Optional)</label>
+                  <div className="flex items-center gap-6">
+                    <div className="w-24 h-24 rounded-2xl bg-slate-100 border-2 border-dashed border-slate-200 flex items-center justify-center relative overflow-hidden group">
+                      {formData.image_url ? (
+                        <img src={formData.image_url} className="w-full h-full object-cover" alt="Preview" />
+                      ) : (
+                        <ImageIcon className="text-slate-300" size={32} />
+                      )}
+                      {isUploading && (
+                        <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                          <Loader2 className="animate-spin text-blue-600" size={24} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        onChange={handleFileUpload} 
+                        className="hidden" 
+                        accept="image/*" 
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm"
+                      >
+                        <Upload size={14} /> {formData.image_url ? 'Replace Image' : 'Select Banner'}
+                      </button>
+                      <p className="text-[9px] text-slate-400 mt-2 font-bold uppercase tracking-tighter">Recommended: 16:9 Aspect Ratio</p>
+                    </div>
+                  </div>
                 </div>
+
                 <div>
                   <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Description</label>
                   <textarea rows={3} className="w-full px-5 py-4 bg-slate-100/50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-600" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}></textarea>
