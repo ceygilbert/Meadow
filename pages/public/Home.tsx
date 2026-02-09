@@ -21,7 +21,9 @@ import {
   AlertCircle,
   MapPin,
   ArrowUpRight,
-  ArrowLeft
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Product, Profile, Brand } from '../../types';
@@ -31,6 +33,12 @@ interface CartItem extends Product {
 }
 
 type MenuMode = 'all' | 'story' | 'contact' | 'products';
+
+const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/Red%20Full%20Logo.png";
+const BANNERS = [
+  "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/banner_1.png",
+  "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/banner_2.jpg"
+];
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -43,6 +51,7 @@ const Home: React.FC = () => {
   // UI States
   const [isFullMenuOpen, setIsFullMenuOpen] = useState(false);
   const [menuMode, setMenuMode] = useState<MenuMode>('all');
+  const [currentSlide, setCurrentSlide] = useState(0);
   
   // Auth & Profile States
   const [user, setUser] = useState<any>(null);
@@ -77,6 +86,14 @@ const Home: React.FC = () => {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  // Auto-slide effect for hero banner (7 seconds)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % BANNERS.length);
+    }, 7000);
+    return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
@@ -244,6 +261,9 @@ const Home: React.FC = () => {
     setIsFullMenuOpen(true);
   };
 
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % BANNERS.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + BANNERS.length) % BANNERS.length);
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-6">
@@ -271,18 +291,15 @@ const Home: React.FC = () => {
       <div className={`fixed inset-0 z-[500] bg-white transition-all duration-700 ease-[cubic-bezier(0.85,0,0.15,1)] ${isFullMenuOpen ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="h-full flex flex-col">
           {/* Menu Header */}
-          <div className="h-24 px-6 md:px-12 flex items-center justify-between shrink-0">
-             <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white">
-                  <Cpu size={18} />
-                </div>
-                <span className="text-lg font-black tracking-tighter uppercase">Meadow</span>
-             </div>
+          <div className="h-32 md:h-48 px-6 md:px-12 flex items-center justify-between shrink-0">
+             <Link to="/" onClick={() => setIsFullMenuOpen(false)} className="flex items-center group">
+                <img src={LOGO_URL} className="h-24 md:h-36 w-auto object-contain transition-transform group-hover:scale-105" alt="Meadow" />
+             </Link>
              <button 
                 onClick={() => setIsFullMenuOpen(false)}
-                className="w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                className="w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform"
              >
-                <X size={24} />
+                <X size={28} />
              </button>
           </div>
 
@@ -357,7 +374,7 @@ const Home: React.FC = () => {
                    </div>
                 </div>
                 <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                   <span>MEADOW IT © {new Date().getFullYear()}</span>
+                   <span>Meadow © {new Date().getFullYear()}</span>
                    <span>JOHOR BAHRU, MY</span>
                 </div>
              </div>
@@ -368,12 +385,9 @@ const Home: React.FC = () => {
       {/* Editorial Floating Header */}
       <nav className="fixed top-4 md:top-6 left-0 right-0 z-[100] px-4 md:px-10 pointer-events-none">
         <div className="max-w-[1440px] mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 pointer-events-auto">
-            <Link to="/" className="w-8 h-8 md:w-9 md:h-9 bg-slate-900 rounded-lg flex items-center justify-center text-white shadow-lg">
-              <Cpu size={18} />
-            </Link>
-            <span className="text-base md:text-lg font-black tracking-tighter uppercase leading-none">Meadow</span>
-          </div>
+          <Link to="/" className="flex items-center pointer-events-auto group">
+            <img src={LOGO_URL} className="h-20 md:h-32 w-auto object-contain transition-transform group-hover:scale-105" alt="Meadow" />
+          </Link>
 
           <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-8 py-2.5 gap-6 md:gap-8 lg:gap-10 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90 group">
             <button onClick={() => openMenu('story')} className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Story</button>
@@ -400,34 +414,47 @@ const Home: React.FC = () => {
                  <img src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`} className="w-full h-full object-cover" />
                </button>
             )}
-            <button onClick={() => setIsCartOpen(true)} className="w-10 h-10 md:w-11 md:h-11 bg-slate-900 text-white rounded-full flex items-center justify-center relative shadow-xl hover:scale-105 transition-all">
-              <ShoppingCart size={16} />
-              {cart.length > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-blue-500 text-white text-[8px] md:text-[9px] font-black flex items-center justify-center rounded-full border-2 border-white">{cart.length}</span>}
+            <button onClick={() => setIsCartOpen(true)} className="w-12 h-12 md:w-14 md:h-14 bg-slate-900 text-white rounded-full flex items-center justify-center relative shadow-xl hover:scale-105 transition-all">
+              <ShoppingCart size={20} />
+              {cart.length > 0 && <span className="absolute -top-1 -right-1 w-5 h-5 md:w-6 md:h-6 bg-blue-500 text-white text-[9px] md:text-[10px] font-black flex items-center justify-center rounded-full border-2 border-white">{cart.length}</span>}
             </button>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <header className="relative pt-24 md:pt-32 px-4 md:px-10 pb-10 md:pb-20">
-        <div className="hidden lg:block absolute top-40 left-10 text-[11vw] font-black text-slate-50 tracking-tighter leading-none pointer-events-none select-none -z-10 uppercase">
+      <header className="relative pt-48 md:pt-72 px-4 md:px-10 pb-10 md:pb-20">
+        <div className="hidden lg:block absolute top-64 left-10 text-[11vw] font-black text-slate-50 tracking-tighter leading-none pointer-events-none select-none -z-10 uppercase">
           Precision Engineering
         </div>
 
-        <div className="max-w-[1440px] mx-auto bg-[#F7F8FA] rounded-[2rem] md:rounded-[3.5rem] relative min-h-[500px] md:min-h-[750px] flex items-center overflow-hidden border border-slate-100">
-          <div className="absolute -top-40 -right-40 w-[400px] md:w-[800px] h-[400px] md:h-[800px] border border-white/50 rounded-full pointer-events-none"></div>
+        <div className="max-w-[1440px] mx-auto bg-[#F7F8FA] rounded-[2rem] md:rounded-[3.5rem] relative min-h-[500px] md:min-h-[750px] flex items-center overflow-hidden border border-slate-100 shadow-2xl shadow-slate-200/40">
+          
+          {/* Animated Background Slider */}
+          <div className="absolute inset-0 z-0">
+             {BANNERS.map((url, index) => (
+               <div 
+                 key={url}
+                 className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 scale-105' : 'opacity-0 scale-100'}`}
+                 style={{ 
+                   transition: 'opacity 1s ease-in-out, transform 8s linear' 
+                 }}
+               >
+                  <div className="absolute inset-0 bg-gradient-to-r from-white via-white/20 to-transparent z-10"></div>
+                  <img src={url} className="w-full h-full object-cover" alt={`Meadow Banner ${index + 1}`} />
+               </div>
+             ))}
+          </div>
           
           <div className="grid lg:grid-cols-2 w-full p-6 md:p-20 relative z-10">
             <div className="flex flex-col justify-center text-center lg:text-left">
-              <div className="flex items-center justify-center lg:justify-start gap-3 mb-6 md:mb-10">
-                <div className="px-3 py-1 bg-white rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest text-slate-400 border border-slate-200/60 shadow-sm">Meadow — Core Unit</div>
+              <div className="flex items-center justify-center lg:justify-start gap-3 mb-6 md:mb-10 animate-in fade-in slide-in-from-bottom duration-700">
+                <div className="px-3 py-1 bg-white/80 backdrop-blur-md rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest text-slate-400 border border-slate-200/60 shadow-sm">Meadow — Core Unit</div>
               </div>
-              <h1 className="text-5xl md:text-8xl font-black text-slate-900 tracking-tighter leading-[0.9] mb-8 md:mb-12">
-                More sensitive <br /> <span className="text-slate-300 italic font-medium">interaction.</span>
-              </h1>
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 md:gap-8">
-                <button className="w-full sm:w-auto h-14 md:h-16 px-6 md:px-10 bg-white text-slate-900 rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-4 hover:bg-slate-900 hover:text-white transition-all shadow-xl group">
-                  Know more 
+              
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 md:gap-8 animate-in fade-in slide-in-from-bottom duration-1000 delay-200">
+                <button className="w-full sm:w-auto h-14 md:h-16 px-6 md:px-10 bg-slate-900 text-white rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-4 hover:bg-black transition-all shadow-2xl group">
+                  Explore Now
                   <div className="w-8 h-8 md:w-9 md:h-9 bg-[#C5FF41] rounded-full flex items-center justify-center text-slate-900 group-hover:scale-110 transition-transform">
                     <ArrowRight size={18} />
                   </div>
@@ -436,34 +463,29 @@ const Home: React.FC = () => {
                   <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center text-slate-900 shadow-lg group-hover:bg-blue-600 group-hover:text-white transition-all">
                     <Play size={16} fill="currentColor" />
                   </div>
-                  <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-slate-900 transition-colors">Watch Film</span>
+                  <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-slate-900 transition-colors">Showcase Reel</span>
                 </button>
               </div>
             </div>
 
-            <div className="relative flex items-center justify-center pt-10 lg:pt-0">
-              <div className="relative w-full max-w-[300px] md:max-w-lg aspect-square bg-white rounded-[2.5rem] md:rounded-[4.5rem] shadow-2xl p-4 md:p-6 flex items-center justify-center group overflow-hidden border border-slate-50">
-                 <div className="w-full h-full bg-slate-50 rounded-[2rem] md:rounded-[3.5rem] flex items-center justify-center relative overflow-hidden shadow-inner">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-50 z-10"></div>
-                    <img 
-                      src="https://images.unsplash.com/photo-1587202377405-836165b1040a?auto=format&fit=crop&q=80" 
-                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
-                      alt="Hardware Engineering"
-                    />
-                    <div className="absolute bottom-6 right-6 z-20 flex gap-2">
-                       <div className="w-8 h-8 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-white cursor-pointer hover:scale-110 transition-all"><Plus size={14} className="text-slate-400" /></div>
-                       <div className="w-8 h-8 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-white cursor-pointer hover:scale-110 transition-all"><MousePointer2 size={14} className="text-slate-400" /></div>
-                    </div>
-                 </div>
-              </div>
-              <div className="absolute -bottom-6 -left-6 md:-bottom-10 md:-left-10 w-24 h-24 md:w-40 md:h-40 bg-white rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl p-3 border border-slate-100 animate-bounce transition-all hidden md:flex items-center justify-center overflow-hidden">
-                  <img 
-                    src="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?auto=format&fit=crop&q=80" 
-                    className="w-full h-full object-cover rounded-xl md:rounded-3xl" 
-                    alt="Core Component"
-                  />
-              </div>
+            <div className="hidden lg:flex items-center justify-end">
+               {/* Minimal Slider Controls */}
+               <div className="flex flex-col gap-4">
+                  <button onClick={prevSlide} className="w-12 h-12 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-white shadow-xl transition-all"><ChevronLeft size={24} /></button>
+                  <button onClick={nextSlide} className="w-12 h-12 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-white shadow-xl transition-all"><ChevronRight size={24} /></button>
+               </div>
             </div>
+          </div>
+
+          {/* Slider Indicators */}
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex gap-3">
+             {BANNERS.map((_, i) => (
+               <button 
+                key={i} 
+                onClick={() => setCurrentSlide(i)}
+                className={`h-1.5 transition-all duration-500 rounded-full ${i === currentSlide ? 'w-10 bg-slate-900' : 'w-2 bg-slate-300'}`}
+               />
+             ))}
           </div>
         </div>
       </header>
@@ -476,15 +498,15 @@ const Home: React.FC = () => {
              <div className="relative z-10">
                 <span className="inline-block px-5 py-2 bg-slate-900 text-white text-[9px] font-black uppercase tracking-[0.3em] rounded-full mb-12">Core Analytics</span>
                 <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter leading-[0.95] mb-8">
-                  The precision <br /> <span className="text-slate-300 italic font-medium">expression analysis.</span>
+                  Precision <br /> <span className="text-slate-300 italic font-medium">performance engine.</span>
                 </h2>
                 <p className="text-slate-400 text-sm max-w-sm font-medium leading-relaxed opacity-80">
-                  Our neural engine processes interaction data in real-time, delivering insight into performance metrics you never thought possible.
+                  Our silicon optimization processes deliver insights into hardware benchmarks you never thought possible.
                 </p>
              </div>
              <div className="mt-10 md:mt-20 flex items-end justify-between relative z-10">
                 <button className="h-14 px-8 bg-white border border-slate-100 text-slate-900 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-4 hover:bg-slate-900 hover:text-white transition-all shadow-sm">
-                  Try Now Meadow <div className="w-8 h-8 bg-[#C5FF41] rounded-full flex items-center justify-center text-slate-900 group-hover:rotate-45 transition-transform"><ArrowRight size={16} /></div>
+                  Try Meadow <div className="w-8 h-8 bg-[#C5FF41] rounded-full flex items-center justify-center text-slate-900 group-hover:rotate-45 transition-transform"><ArrowRight size={16} /></div>
                 </button>
              </div>
           </div>
@@ -493,10 +515,10 @@ const Home: React.FC = () => {
              <div className="absolute top-0 right-0 p-32 border border-black/5 rounded-full translate-x-1/2 -translate-y-1/2"></div>
              <div>
                 <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-none mb-6">
-                  Try this product <br /> in Augmented Reality.
+                  Experience builds <br /> in Augmented Reality.
                 </h3>
                 <p className="text-[10px] font-black text-slate-900/40 uppercase tracking-[0.2em] leading-relaxed max-w-[200px]">
-                  Download our companion app to see Meadow in your space.
+                  Visualize Meadow rigs in your personal workspace.
                 </p>
              </div>
              <div className="flex items-center justify-between mt-8 md:mt-12 relative z-10">
@@ -535,7 +557,7 @@ const Home: React.FC = () => {
                  </div>
                  <div className="mb-6">
                     <h3 className="text-base font-black text-slate-900 tracking-tight leading-tight mb-1 truncate">{p.name}</h3>
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Meadow IT</p>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Meadow Tech</p>
                  </div>
                  <div className="flex items-center justify-between mt-auto">
                     <span className="text-sm font-black text-slate-900">RM{p.price.toLocaleString()}</span>
@@ -593,7 +615,7 @@ const Home: React.FC = () => {
               </div>
               <div className="space-y-4">
                  <p className="text-slate-500 text-sm font-medium leading-relaxed opacity-90">
-                   Monthly updates on best-performing hardware deployments and extreme performance metrics.
+                   Monthly updates on performance deployments and technical metrics from our engineers.
                  </p>
                  <a href="#" className="inline-block text-[9px] font-black uppercase tracking-widest text-slate-900 border-b-2 border-slate-900 pb-1 hover:text-blue-600 hover:border-blue-600 transition-all">Go to Blog</a>
               </div>
@@ -604,15 +626,15 @@ const Home: React.FC = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   <div className="absolute bottom-6 md:bottom-16 left-6 md:left-16 text-white opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all">
                      <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] mb-2 md:mb-4">Deep Dive</p>
-                     <h3 className="text-2xl md:text-4xl font-black tracking-tighter uppercase leading-none">Silicon Architecture <br /> Next Gen.</h3>
+                     <h3 className="text-2xl md:text-4xl font-black tracking-tighter uppercase leading-none">Architectural <br /> Performance.</h3>
                   </div>
                </div>
             </div>
             <div className="flex flex-col h-full justify-between gap-8 order-3">
                <div className="space-y-4">
-                  <h4 className="text-base md:text-lg font-black text-slate-900 tracking-tight leading-tight uppercase">Meadow Core <br /> Intelligence Blog</h4>
+                  <h4 className="text-base md:text-lg font-black text-slate-900 tracking-tight leading-tight uppercase">Meadow Core <br /> Technical Blog</h4>
                   <p className="text-slate-500 text-xs font-medium leading-relaxed opacity-80">
-                    Insights on hardware calibration and custom cooling architectures.
+                    Deep dives into hardware calibration and custom liquid cooling systems.
                   </p>
                </div>
                <div className="aspect-square bg-blue-50 rounded-[1.5rem] md:rounded-[2.5rem] rounded-bl-[4rem] md:rounded-bl-[6rem] overflow-hidden shadow-xl p-3 md:p-4 relative flex items-center justify-center border border-white">
@@ -763,11 +785,12 @@ const Home: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 md:gap-24 mb-20 md:mb-40">
              <div className="lg:col-span-2 text-center md:text-left">
                 <div className="flex items-center justify-center md:justify-start gap-3 mb-8">
-                  <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white">M</div>
-                  <span className="text-xl font-black tracking-tighter uppercase">Meadow IT</span>
+                  <Link to="/" className="flex items-center group">
+                    <img src={LOGO_URL} className="h-16 md:h-32 w-auto object-contain transition-transform group-hover:scale-105" alt="Meadow" />
+                  </Link>
                 </div>
                 <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-[0.9] mb-8">
-                  Engineer your <br /> ultimate environment.
+                  Engineer your <br /> ultimate workspace.
                 </h2>
              </div>
              <div className="text-center md:text-left">
@@ -786,7 +809,7 @@ const Home: React.FC = () => {
              </div>
           </div>
           <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-10 border-t border-slate-200/50">
-             <p className="text-[8px] font-black uppercase tracking-[0.5em] text-slate-300 text-center">© {new Date().getFullYear()} Meadow Integrated Technologies</p>
+             <p className="text-[8px] font-black uppercase tracking-[0.5em] text-slate-300 text-center">© {new Date().getFullYear()} Meadow SDN BHD — ALL RIGHTS RESERVED</p>
              <p className="text-[8px] font-black uppercase tracking-[0.5em] text-slate-300 italic">Core Operational Status: Nominal</p>
           </div>
         </div>

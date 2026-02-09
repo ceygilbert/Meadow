@@ -4,6 +4,7 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/public/Home';
 import StoreLocator from './pages/public/StoreLocator';
 import Customised from './pages/public/Customised';
+import PCBuilder from './pages/public/PCBuilder';
 import AdminLogin from './pages/admin/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import ProductManagement from './pages/admin/Products';
@@ -17,6 +18,7 @@ import Customers from './pages/admin/Customers';
 import AdminLayout from './components/AdminLayout';
 import CustomerLayout from './components/CustomerLayout';
 import CustomerDashboard from './pages/customer/Dashboard';
+import FloatingWhatsApp from './components/FloatingWhatsApp';
 import { supabase } from './lib/supabase';
 import { Profile } from './types';
 
@@ -117,6 +119,7 @@ const App: React.FC = () => {
         <Route path="/" element={<Home />} />
         <Route path="/stores" element={<StoreLocator />} />
         <Route path="/customised" element={<Customised />} />
+        <Route path="/buildpc" element={<PCBuilder />} />
         
         <Route 
           path="/admin/login" 
@@ -149,6 +152,7 @@ const App: React.FC = () => {
 
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
+      <FloatingWhatsApp />
     </HashRouter>
   );
 };
