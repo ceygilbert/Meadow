@@ -5,6 +5,7 @@ import Home from './pages/public/Home';
 import StoreLocator from './pages/public/StoreLocator';
 import Customised from './pages/public/Customised';
 import PCBuilder from './pages/public/PCBuilder';
+import Checkout from './pages/public/Checkout';
 import AdminLogin from './pages/admin/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import ProductManagement from './pages/admin/Products';
@@ -89,7 +90,7 @@ const App: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      await supabase.signOut();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -120,6 +121,7 @@ const App: React.FC = () => {
         <Route path="/stores" element={<StoreLocator />} />
         <Route path="/customised" element={<Customised />} />
         <Route path="/buildpc" element={<PCBuilder />} />
+        <Route path="/checkout" element={<Checkout />} />
         
         <Route 
           path="/admin/login" 
