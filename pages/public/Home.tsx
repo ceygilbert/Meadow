@@ -591,7 +591,7 @@ const Home: React.FC = () => {
           {/* Block 1: Build Your Own (Links to Customised.tsx) */}
           <div className="aspect-[3/4] md:aspect-[4/5] rounded-[3rem] overflow-hidden relative group shadow-2xl">
              <img 
-               src="https://images.unsplash.com/photo-1587202377466-9a2542a987d1?auto=format&fit=crop&q=80" 
+               src="https://images.unsplash.com/photo-1591488320449-011701bb6704?auto=format&fit=crop&q=80" 
                className="absolute inset-0 w-full h-full object-cover transition-transform duration-[8s] group-hover:scale-110" 
                alt="Custom PC Interior" 
              />
@@ -797,7 +797,7 @@ const Home: React.FC = () => {
              playsInline 
              className="absolute inset-0 w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-1000"
            >
-             <source src="https://assets.mixkit.co/videos/preview/mixkit-circuit-board-details-close-up-4443-large.mp4" type="video/mp4" />
+             <source src="https://cdn.pixabay.com/video/2021/04/12/70878-537482813_large.mp4" type="video/mp4" />
              Your browser does not support the video tag.
            </video>
            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
