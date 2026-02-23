@@ -393,10 +393,10 @@ const Home: React.FC = () => {
 
                    {/* Products Mode */}
                    {(menuMode === 'all' || menuMode === 'products') && (
-                     <a href="#" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6 animate-in slide-in-from-left duration-500">
+                     <Link to="/categories" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6 animate-in slide-in-from-left duration-500">
                         <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900 transition-all group-hover:italic group-hover:translate-x-4">Products</span>
                         <ArrowUpRight className="text-slate-200 group-hover:text-slate-900 transition-colors" size={32} />
-                     </a>
+                     </Link>
                    )}
 
                    {/* Contact Mode */}
@@ -485,7 +485,7 @@ const Home: React.FC = () => {
 
           <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-10 py-3.5 gap-6 md:gap-10 lg:gap-12 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90 group">
             <button onClick={() => openMenu('story')} className="text-xs font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Story</button>
-            <button onClick={() => openMenu('products')} className="text-xs font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Products</button>
+            <Link to="/categories" className="text-xs font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Products</Link>
             <Link to="/customised" className="text-xs font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Customised</Link>
             <button onClick={() => openMenu('contact')} className="text-xs font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Contact</button>
             <div className="w-px h-5 bg-slate-200 mx-2"></div>

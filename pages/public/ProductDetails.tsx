@@ -180,8 +180,8 @@ const ProductDetails: React.FC = () => {
              <div className="flex-1">
                 <p className="text-xs font-black uppercase tracking-[0.4em] text-slate-300 mb-12">Navigation Protocol</p>
                 <nav className="flex flex-col gap-12 md:gap-16">
-                   <Link to="/" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6">
-                      <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Home</span>
+                   <Link to="/categories" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6">
+                      <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Products</span>
                       <ArrowUpRight className="text-slate-200 group-hover:text-slate-900 transition-colors" size={32} />
                    </Link>
                    <Link to="/customised" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6">
