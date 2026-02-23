@@ -6,6 +6,7 @@ import StoreLocator from './pages/public/StoreLocator';
 import Customised from './pages/public/Customised';
 import PCBuilder from './pages/public/PCBuilder';
 import Checkout from './pages/public/Checkout';
+import ProductDetails from './pages/public/ProductDetails';
 import AdminLogin from './pages/admin/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import ProductManagement from './pages/admin/Products';
@@ -118,6 +119,7 @@ const App: React.FC = () => {
     <HashRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/product/:slug" element={<ProductDetails />} />
         <Route path="/stores" element={<StoreLocator />} />
         <Route path="/customised" element={<Customised />} />
         <Route path="/buildpc" element={<PCBuilder />} />

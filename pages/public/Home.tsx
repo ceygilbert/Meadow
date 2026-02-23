@@ -584,7 +584,7 @@ const Home: React.FC = () => {
         </div>
       </header>
 
-      {/* Feature Blocks Section — Re-styled to match the Yoga layout */}
+      {/* Feature Blocks Section */}
       <section className="px-4 md:px-10 py-10 md:py-20 max-w-[1440px] mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           
@@ -710,9 +710,6 @@ const Home: React.FC = () => {
            .animate-ticker-infinite {
              animation: ticker-infinite 40s linear infinite;
            }
-           .stroke-text {
-             /* Handled via inline style for safety */
-           }
          `}</style>
       </section>
 
@@ -729,54 +726,21 @@ const Home: React.FC = () => {
              </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-10 justify-center items-center">
-            {featuredProducts.slice(0, 2).map((p) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-10">
+            {featuredProducts.map((p) => (
               <div key={p.id} className="w-full bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 relative flex flex-col group transition-all duration-500 hover:shadow-2xl">
                  <button className="absolute top-8 right-8 w-11 h-11 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10">
                     <Heart size={20} />
                  </button>
-                 <div className="aspect-[4/5] bg-slate-50 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden mb-8 relative">
-                    <img src={p.image_url} className="w-full h-full object-contain p-6 group-hover:scale-110 transition-transform duration-1000" />
-                 </div>
-                 <div className="mb-8">
-                    <h3 className="text-lg font-black text-slate-900 tracking-tight leading-tight mb-2 truncate">{p.name}</h3>
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Meadow Tech</p>
-                 </div>
-                 <div className="flex items-center justify-between mt-auto">
-                    <span className="text-base font-black text-slate-900">RM{p.price.toLocaleString()}</span>
-                    <button onClick={() => addToCart(p)} className="px-6 py-2.5 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-full hover:bg-blue-600 transition-all shadow-lg">Add to cart</button>
-                 </div>
-              </div>
-            ))}
-
-            <div className="hidden lg:flex flex-col items-center justify-center w-full h-full min-h-[350px] relative">
-               <div className="absolute inset-0 animate-[spin_12s_linear_infinite]">
-                 <svg viewBox="0 0 100 100" className="w-full h-full">
-                   <path id="collCirclePath" d="M 50, 50 m -40, 0 a 40,40 0 1,1 80,0 a 40,40 0 1,1 -80,0" fill="none" />
-                   <text className="text-[5px] font-black uppercase tracking-[0.25em] fill-slate-900/60">
-                     <textPath xlinkHref="#collCirclePath">
-                       View all products • View all products • View all products • 
-                     </textPath>
-                   </text>
-                 </svg>
-               </div>
-               <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl border border-slate-100 group cursor-pointer hover:bg-slate-900 hover:text-white transition-all z-10">
-                  <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
-               </div>
-            </div>
-
-            {featuredProducts.slice(2, 3).map((p) => (
-              <div key={p.id} className="w-full bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 relative flex flex-col group transition-all duration-500 hover:shadow-2xl">
-                 <button className="absolute top-8 right-8 w-11 h-11 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10">
-                    <Heart size={20} />
-                 </button>
-                 <div className="aspect-[4/5] bg-slate-50 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden mb-8 relative">
-                    <img src={p.image_url} className="w-full h-full object-contain p-6 group-hover:scale-110 transition-transform duration-1000" />
-                 </div>
-                 <div className="mb-8">
-                    <h3 className="text-lg font-black text-slate-900 tracking-tight leading-tight mb-2 truncate">{p.name}</h3>
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Premium Build</p>
-                 </div>
+                 <Link to={`/product/${p.slug}`} className="flex-1 flex flex-col">
+                    <div className="aspect-[4/5] bg-slate-50 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden mb-8 relative flex items-center justify-center">
+                        <img src={p.image_url} className="w-full h-full object-contain p-6 group-hover:scale-110 transition-transform duration-1000" />
+                    </div>
+                    <div className="mb-8">
+                        <h3 className="text-lg font-black text-slate-900 tracking-tight leading-tight mb-2 truncate">{p.name}</h3>
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Meadow Tech</p>
+                    </div>
+                 </Link>
                  <div className="flex items-center justify-between mt-auto">
                     <span className="text-base font-black text-slate-900">RM{p.price.toLocaleString()}</span>
                     <button onClick={() => addToCart(p)} className="px-6 py-2.5 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-full hover:bg-blue-600 transition-all shadow-lg">Add to cart</button>
@@ -815,19 +779,10 @@ const Home: React.FC = () => {
              </div>
            </div>
 
-           {/* Central Play Aesthetic Button */}
            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
               <button className="w-20 h-20 md:w-32 md:h-32 bg-white/10 backdrop-blur-3xl border border-white/20 rounded-full flex items-center justify-center text-white transition-all hover:scale-110 hover:bg-white hover:text-slate-900 opacity-0 group-hover:opacity-100 shadow-2xl">
                 <Play size={40} fill="currentColor" className="ml-2 transition-transform group-active:scale-90" />
               </button>
-           </div>
-
-           {/* Technical Specs Overlay (Corner) */}
-           <div className="absolute top-10 right-10 hidden md:block">
-              <div className="px-6 py-4 bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl flex flex-col gap-1">
-                 <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Rendering Engine</span>
-                 <span className="text-xs font-bold text-white uppercase">Forge Mode V2.5</span>
-              </div>
            </div>
         </div>
       </section>
@@ -931,7 +886,7 @@ const Home: React.FC = () => {
                          </div>
                          <div className="flex-1 py-3">
                            <div className="flex justify-between items-start gap-4 mb-5">
-                             <h4 className="font-black text-slate-900 text-base uppercase tracking-tight leading-none">{item.name}</h4>
+                             <h4 className="font-black text-slate-900 text-base uppercase tracking-tight leading-none truncate max-w-[150px]">{item.name}</h4>
                              <button onClick={() => removeFromCart(item.id)} className="text-slate-200 hover:text-rose-500 transition-colors"><Trash2 size={18} /></button>
                            </div>
                            <div className="flex items-center justify-between mt-auto">
@@ -961,81 +916,9 @@ const Home: React.FC = () => {
         </div>
       )}
 
-      {/* Checkout Modal */}
-      {isCheckoutOpen && (
-        <div className="fixed inset-0 z-[250] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-2xl" onClick={() => setIsCheckoutOpen(false)}></div>
-          <div className="relative w-full max-w-xl bg-white rounded-[3rem] md:rounded-[4rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-500 p-10 md:p-20">
-             <div className="flex justify-between items-center mb-14">
-                <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase">Finalize Transaction</h3>
-                <button onClick={() => setIsCheckoutOpen(false)} className="text-slate-300 hover:text-slate-900 transition-colors"><X size={30} /></button>
-             </div>
-             <form onSubmit={handleCheckout} className="space-y-10">
-                <div className="grid grid-cols-1 gap-6">
-                   <div className="bg-[#F9FAFB] p-8 rounded-[2rem] border border-transparent focus-within:border-slate-100 transition-all">
-                      <label className="block text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-3">Recipient Legal Name</label>
-                      <input required className="w-full bg-transparent outline-none font-bold text-slate-900 text-base" placeholder="John Doe" value={customerInfo.name} onChange={e => setCustomerInfo({...customerInfo, name: e.target.value})} />
-                   </div>
-                   <div className="bg-[#F9FAFB] p-8 rounded-[2rem] border border-transparent focus-within:border-slate-100 transition-all">
-                      <label className="block text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-3">Communication Mail</label>
-                      <input required type="email" className="w-full bg-transparent outline-none font-bold text-slate-900 text-base" placeholder="john@example.com" value={customerInfo.email} onChange={e => setCustomerInfo({...customerInfo, email: e.target.value})} />
-                   </div>
-                </div>
-                <div className="p-10 bg-[#F9FAFB] rounded-[2.5rem] border border-slate-50 flex items-center justify-between">
-                   <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Aggregate Total</span>
-                   <span className="text-3xl font-black text-slate-900 tracking-tighter">RM{cartTotal.toLocaleString()}</span>
-                </div>
-                <button disabled={checkoutLoading} className="w-full py-7 bg-slate-900 text-white font-black rounded-[2.5rem] hover:bg-black transition-all shadow-2xl uppercase tracking-[0.3em] text-xs flex items-center justify-center gap-5">
-                  {checkoutLoading ? <Loader2 size={24} className="animate-spin" /> : 'Confirm Order Authorization'}
-                </button>
-             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Success Modal */}
-      {orderSuccess && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-3xl" onClick={() => setOrderSuccess(null)}></div>
-          <div className="relative w-full max-w-md bg-white rounded-[3rem] md:rounded-[5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-700 p-14 md:p-24 text-center">
-             <div className="w-28 h-28 md:w-32 md:h-32 bg-[#C5FF41] text-slate-900 rounded-full flex items-center justify-center mx-auto mb-14 shadow-2xl shadow-lime-400/20">
-               <CheckCircle size={80} strokeWidth={1} />
-             </div>
-             <h3 className="text-3xl md:text-4xl font-black text-slate-900 mb-8 tracking-tighter uppercase leading-none">Transmission <br /> Successful.</h3>
-             <button onClick={() => setOrderSuccess(null)} className="w-full py-7 bg-slate-900 text-white font-black rounded-3xl hover:bg-black transition-all shadow-2xl uppercase tracking-[0.3em] text-xs">Return to Node</button>
-          </div>
-        </div>
-      )}
-
       {/* Editorial Footer */}
       <footer className="bg-[#F9FAFB] px-4 md:px-10 pt-24 pb-12 border-t border-slate-100">
         <div className="max-w-[1440px] mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 md:gap-24 mb-24 md:mb-48">
-             <div className="lg:col-span-2 text-center md:text-left">
-                <div className="flex items-center justify-center md:justify-start gap-4 mb-10">
-                  <Link to="/" className="flex items-center group">
-                    <img src={LOGO_URL} className="h-18 md:h-36 w-auto object-contain transition-transform group-hover:scale-105" alt="Meadow" />
-                  </Link>
-                </div>
-                <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter uppercase leading-[0.9] mb-10">
-                  Engineer your <br /> ultimate workspace.
-                </h2>
-             </div>
-             <div className="text-center md:text-left">
-                <h4 className="text-xs font-black uppercase tracking-[0.4em] text-slate-300 mb-8">Navigation</h4>
-                <ul className="space-y-4">
-                   <li><a href="#" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors">The Terminal</a></li>
-                   <li><Link to="/stores" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors">Store Locator</Link></li>
-                </ul>
-             </div>
-             <div className="text-center md:text-left">
-                <h4 className="text-xs font-black uppercase tracking-[0.4em] text-slate-300 mb-8">Resources</h4>
-                <ul className="space-y-4">
-                   <li><a href="#" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors">Asset Protocol</a></li>
-                   <li><a href="#" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors">Technical Support</a></li>
-                </ul>
-             </div>
-          </div>
           <div className="flex flex-col md:flex-row justify-between items-center gap-8 pt-12 border-t border-slate-200/50">
              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300 text-center">© {new Date().getFullYear()} Meadow SDN BHD — ALL RIGHTS RESERVED</p>
              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300 italic">Core Operational Status: Nominal</p>
