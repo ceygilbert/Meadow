@@ -79,6 +79,15 @@ const Categories: React.FC = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -185,10 +194,10 @@ const Categories: React.FC = () => {
       </div>
 
       {/* Header */}
-      <nav className="fixed top-4 md:top-6 left-0 right-0 z-[100] px-4 md:px-10 pointer-events-none">
+      <nav className={`fixed left-0 right-0 z-[100] px-4 md:px-10 pointer-events-none transition-all duration-500 ${scrolled ? 'top-0 py-4 bg-white/80 backdrop-blur-2xl border-b border-slate-100 shadow-lg' : 'top-4 md:top-6'}`}>
         <div className="max-w-[1440px] mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center pointer-events-auto group">
-            <img src={LOGO_URL} className="h-20 md:h-32 w-auto object-contain transition-transform group-hover:scale-105" alt="Meadow" />
+            <img src={LOGO_URL} className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${scrolled ? 'h-16 md:h-24' : 'h-28 md:h-44'}`} alt="Meadow" />
           </Link>
           <div className="flex items-center gap-3 md:gap-6 pointer-events-auto">
             <button onClick={() => openMenu('all')} className="w-14 h-14 md:w-16 md:h-16 bg-white border border-slate-100 text-slate-900 rounded-full flex items-center justify-center shadow-lg">

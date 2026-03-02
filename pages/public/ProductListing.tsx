@@ -42,7 +42,7 @@ const ProductListing: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Filters & Sorting
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [selectedBrandId, setSelectedBrandId] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'price-asc' | 'price-desc' | 'name-asc' | 'newest'>('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -52,12 +52,25 @@ const ProductListing: React.FC = () => {
   const [isFullMenuOpen, setIsFullMenuOpen] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     fetchInitialData();
     const savedCart = localStorage.getItem('meadow_cart');
     if (savedCart) setCart(JSON.parse(savedCart));
-  }, []);
+    
+    // Update search query if it changes in URL
+    const searchFromUrl = searchParams.get('search');
+    if (searchFromUrl) setSearchQuery(searchFromUrl);
+  }, [searchParams]);
 
   useEffect(() => {
     fetchProducts();
@@ -160,19 +173,19 @@ const ProductListing: React.FC = () => {
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden">
       
       {/* Header */}
-      <nav className="fixed top-0 left-0 right-0 z-[100] px-4 md:px-10 py-6 bg-white/80 backdrop-blur-xl border-b border-slate-50">
+      <nav className={`fixed left-0 right-0 z-[100] px-4 md:px-10 pointer-events-none transition-all duration-500 ${scrolled ? 'top-0 py-4 bg-white/80 backdrop-blur-2xl border-b border-slate-100 shadow-lg' : 'top-4 md:top-6'}`}>
         <div className="max-w-[1440px] mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center group">
-            <img src={LOGO_URL} className="h-12 md:h-16 w-auto object-contain transition-transform group-hover:scale-105" alt="Meadow" />
+          <Link to="/" className="flex items-center pointer-events-auto group">
+            <img src={LOGO_URL} className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${scrolled ? 'h-16 md:h-24' : 'h-28 md:h-44'}`} alt="Meadow" />
           </Link>
           
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-8 pointer-events-auto">
             <Link to="/categories" className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Categories</Link>
             <Link to="/customised" className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Bespoke</Link>
             <Link to="/stores" className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Stores</Link>
           </div>
 
-          <div className="flex items-center gap-3 md:gap-6">
+          <div className="flex items-center gap-3 md:gap-6 pointer-events-auto">
             <button onClick={() => setIsCartOpen(true)} className="w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center relative shadow-xl hover:scale-105 transition-all">
               <ShoppingCart size={18} />
               {cart.length > 0 && <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-[9px] font-black flex items-center justify-center rounded-full border-2 border-white">{cart.length}</span>}

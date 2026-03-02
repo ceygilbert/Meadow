@@ -128,6 +128,25 @@ const Home: React.FC = () => {
   // Form States
   const [customerInfo, setCustomerInfo] = useState({ name: '', email: '' });
 
+  const [headerSearch, setHeaderSearch] = useState('');
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleHeaderSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (headerSearch.trim()) {
+      navigate(`/products?search=${encodeURIComponent(headerSearch.trim())}`);
+      setIsFullMenuOpen(false);
+    }
+  };
+
   useEffect(() => {
     fetchData();
     checkUser();
@@ -477,23 +496,32 @@ const Home: React.FC = () => {
       </div>
 
       {/* Editorial Floating Header */}
-      <nav className="fixed top-4 md:top-6 left-0 right-0 z-[100] px-4 md:px-10 pointer-events-none">
+      <nav className={`fixed left-0 right-0 z-[100] px-4 md:px-10 pointer-events-none transition-all duration-500 ${scrolled ? 'top-0 py-4 bg-white/80 backdrop-blur-2xl border-b border-slate-100 shadow-lg' : 'top-4 md:top-6'}`}>
         <div className="max-w-[1440px] mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center pointer-events-auto group">
-            <img src={LOGO_URL} className="h-20 md:h-32 w-auto object-contain transition-transform group-hover:scale-105" alt="Meadow" />
+            <img src={LOGO_URL} className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${scrolled ? 'h-16 md:h-24' : 'h-28 md:h-44'}`} alt="Meadow" />
           </Link>
 
-          <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-10 py-3.5 gap-6 md:gap-10 lg:gap-12 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90 group">
-            <button onClick={() => openMenu('story')} className="text-xs font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Story</button>
+          <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-8 py-2.5 gap-6 md:gap-8 lg:gap-10 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90 group">
+            <form onSubmit={handleHeaderSearch} className="relative flex items-center">
+              <Search size={14} className="absolute left-4 text-slate-400" />
+              <input 
+                type="text" 
+                placeholder="Search products..." 
+                value={headerSearch}
+                onChange={(e) => setHeaderSearch(e.target.value)}
+                className="bg-slate-100/50 border-none rounded-full py-2 pl-10 pr-4 text-[11px] font-bold w-64 focus:w-80 transition-all outline-none focus:bg-white focus:ring-1 focus:ring-slate-200"
+              />
+            </form>
             <Link to="/categories" className="text-xs font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Products</Link>
             <Link to="/customised" className="text-xs font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Customised</Link>
-            <button onClick={() => openMenu('contact')} className="text-xs font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Contact</button>
+            <Link to="/categories" className="text-xs font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Brand</Link>
             <div className="w-px h-5 bg-slate-200 mx-2"></div>
             <button 
               onClick={() => openMenu('all')}
               className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.25em] text-slate-900 group-hover:text-blue-600 transition-all"
             >
-              Menu <Menu size={16} />
+              <Menu size={16} />
             </button>
           </div>
 
@@ -517,8 +545,8 @@ const Home: React.FC = () => {
       </nav>
 
       {/* Hero Section */}
-      <header className="relative pt-48 md:pt-72 px-4 md:px-10 pb-10 md:pb-20">
-        <div className="hidden lg:block absolute top-64 left-10 text-[11vw] font-black text-slate-50 tracking-tighter leading-none pointer-events-none select-none -z-10 uppercase">
+      <header className="relative pt-32 md:pt-48 px-4 md:px-10 pb-10 md:pb-20">
+        <div className="hidden lg:block absolute top-48 left-10 text-[11vw] font-black text-slate-50 tracking-tighter leading-none pointer-events-none select-none -z-10 uppercase">
           Precision Engineering
         </div>
 
@@ -561,14 +589,6 @@ const Home: React.FC = () => {
                 </button>
               </div>
             </div>
-
-            <div className="hidden lg:flex items-center justify-end">
-               {/* Minimal Slider Controls */}
-               <div className="flex flex-col gap-4">
-                  <button onClick={prevSlide} className="w-14 h-14 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-white shadow-xl transition-all"><ChevronLeft size={28} /></button>
-                  <button onClick={nextSlide} className="w-14 h-14 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-white shadow-xl transition-all"><ChevronRight size={28} /></button>
-               </div>
-            </div>
           </div>
 
           {/* Slider Indicators */}
@@ -581,6 +601,22 @@ const Home: React.FC = () => {
                />
              ))}
           </div>
+        </div>
+
+        {/* Slider Controls - Repositioned to screen edges */}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-30 px-4 md:px-10 flex justify-between pointer-events-none">
+          <button 
+            onClick={prevSlide} 
+            className="w-12 h-12 md:w-16 md:h-16 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-white shadow-xl transition-all pointer-events-auto"
+          >
+            <ChevronLeft size={28} />
+          </button>
+          <button 
+            onClick={nextSlide} 
+            className="w-12 h-12 md:w-16 md:h-16 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-white shadow-xl transition-all pointer-events-auto"
+          >
+            <ChevronRight size={28} />
+          </button>
         </div>
       </header>
 
@@ -919,6 +955,38 @@ const Home: React.FC = () => {
       {/* Editorial Footer */}
       <footer className="bg-[#F9FAFB] px-4 md:px-10 pt-24 pb-12 border-t border-slate-100">
         <div className="max-w-[1440px] mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
+            <div className="col-span-1 md:col-span-1">
+              <img src={LOGO_URL} className="h-16 w-auto mb-8 grayscale opacity-50" alt="Meadow" />
+              <p className="text-xs text-slate-400 font-medium leading-relaxed max-w-xs">
+                Premium hardware distribution and bespoke computational engineering. Built for the elite.
+              </p>
+            </div>
+            <div>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Company</h4>
+              <ul className="space-y-4">
+                <li><button onClick={() => openMenu('story')} className="text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Our Story</button></li>
+                <li><button onClick={() => openMenu('contact')} className="text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Contact Us</button></li>
+                <li><Link to="/stores" className="text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Store Locator</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Legal</h4>
+              <ul className="space-y-4">
+                <li><a href="#" className="text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Terms & Conditions</a></li>
+                <li><a href="#" className="text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Privacy Policy</a></li>
+                <li><a href="#" className="text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Refund Policy</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Newsletter</h4>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6">Join the Registry for updates.</p>
+              <form className="flex gap-2">
+                <input type="email" placeholder="Email" className="flex-1 bg-white border border-slate-100 rounded-xl px-4 py-3 text-xs outline-none focus:border-slate-900 transition-colors" />
+                <button className="bg-slate-900 text-white p-3 rounded-xl hover:bg-black transition-colors"><ArrowRight size={16} /></button>
+              </form>
+            </div>
+          </div>
           <div className="flex flex-col md:flex-row justify-between items-center gap-8 pt-12 border-t border-slate-200/50">
              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300 text-center">© {new Date().getFullYear()} Meadow SDN BHD — ALL RIGHTS RESERVED</p>
              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300 italic">Core Operational Status: Nominal</p>
