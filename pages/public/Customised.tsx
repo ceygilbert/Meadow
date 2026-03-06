@@ -103,12 +103,14 @@ const Customised: React.FC = () => {
           </Link>
         </div>
 
-        <div className="hidden lg:flex items-center gap-16">
+        <div className="hidden lg:flex items-center gap-12">
             {['Methodology', 'Registry', 'Financing'].map((item) => (
-               <button key={item} className="text-[11px] font-black uppercase tracking-[0.4em] text-white/60 hover:text-rose-500 transition-all">
+               <button key={item} className="text-sm font-black uppercase tracking-[0.4em] text-white/60 hover:text-rose-500 transition-all">
                   {item}
                </button>
             ))}
+            <div className="w-px h-6 bg-white/10 mx-4"></div>
+            <Link to="/categories" className="text-sm font-black uppercase tracking-[0.4em] text-white/60 hover:text-rose-500 transition-all">Products</Link>
         </div>
 
         <div className="flex items-center gap-10">

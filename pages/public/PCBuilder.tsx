@@ -360,12 +360,12 @@ const PCBuilder: React.FC = () => {
           </Link>
         </div>
 
-        <div className="hidden xl:flex items-center bg-white/10 border border-white/20 rounded-full p-1.5 gap-2">
+        <div className="hidden xl:flex items-center bg-white/10 border border-white/20 rounded-full p-2 gap-2">
           {['PC Build', 'Accessories', 'Notebook'].map((tab) => (
             <button 
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-[0.3em] transition-all ${
+              className={`px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all ${
                 activeTab === tab ? 'bg-white text-black shadow-2xl' : 'text-white/60 hover:text-white hover:bg-white/10'
               }`}
             >

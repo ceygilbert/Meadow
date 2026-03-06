@@ -527,32 +527,32 @@ const Home: React.FC = () => {
             <img src={LOGO_URL} className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${scrolled ? 'h-16 md:h-24' : 'h-28 md:h-44'}`} alt="Meadow" />
           </Link>
 
-          <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-8 py-2.5 gap-6 md:gap-8 lg:gap-10 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90 group">
+          <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-8 py-3 gap-6 md:gap-8 lg:gap-10 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90 group">
             <form onSubmit={handleHeaderSearch} className="relative flex items-center">
-              <Search size={14} className="absolute left-4 text-slate-400" />
+              <Search size={18} className="absolute left-5 text-slate-400" />
               <input 
                 type="text" 
                 placeholder="Search products..." 
                 value={headerSearch}
                 onChange={(e) => setHeaderSearch(e.target.value)}
-                className="bg-slate-100/50 border-none rounded-full py-2 pl-10 pr-4 text-[11px] font-bold w-64 focus:w-80 transition-all outline-none focus:bg-white focus:ring-1 focus:ring-slate-200"
+                className="bg-slate-100/50 border-none rounded-full py-4 pl-14 pr-8 text-sm font-bold w-80 focus:w-[450px] transition-all outline-none focus:bg-white focus:ring-1 focus:ring-slate-200"
               />
             </form>
-            <Link to="/categories" className="text-xs font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Products</Link>
-            <Link to="/categories" className="text-xs font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Brand</Link>
+            <Link to="/categories" className="text-sm font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Products</Link>
+            <Link to="/categories" className="text-sm font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Brand</Link>
             <Link 
               to="/customised" 
-              className="px-5 py-2.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-slate-900/20 hover:shadow-rose-600/30 flex items-center gap-2"
+              className="px-8 py-4 bg-slate-900 text-white text-xs font-black uppercase tracking-[0.3em] rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-slate-900/20 hover:shadow-rose-600/30 flex items-center gap-2"
             >
-              <Zap size={14} className="text-rose-400" />
+              <Zap size={18} className="text-rose-400" />
               Build Your Own PC
             </Link>
-            <div className="w-px h-5 bg-slate-200 mx-2"></div>
+            <div className="w-px h-6 bg-slate-200 mx-2"></div>
             <button 
               onClick={() => openMenu('all')}
-              className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.25em] text-slate-900 group-hover:text-blue-600 transition-all"
+              className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.25em] text-slate-900 group-hover:text-blue-600 transition-all"
             >
-              <Menu size={16} />
+              <Menu size={18} />
             </button>
           </div>
 

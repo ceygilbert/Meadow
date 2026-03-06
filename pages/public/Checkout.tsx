@@ -146,7 +146,7 @@ const Checkout: React.FC = () => {
             <img src={LOGO_URL} className="h-10 md:h-14 w-auto opacity-80" alt="Meadow" />
           </Link>
           <div className="hidden lg:block w-px h-8 bg-white/10"></div>
-          <p className="hidden lg:block text-[11px] font-black uppercase tracking-[0.4em] text-white/30">Protocol Execution: Phase_Final</p>
+          <p className="hidden lg:block text-xs font-black uppercase tracking-[0.4em] text-white/40">Protocol Execution: Phase_Final</p>
         </div>
         <div className="flex items-center gap-6">
            <div className="flex items-center gap-2 text-rose-500">

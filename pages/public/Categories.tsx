@@ -76,6 +76,7 @@ const Categories: React.FC = () => {
   // Shared UI States
   const [isFullMenuOpen, setIsFullMenuOpen] = useState(false);
   const [menuMode, setMenuMode] = useState<MenuMode>('all');
+  const [headerSearch, setHeaderSearch] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -145,6 +146,13 @@ const Categories: React.FC = () => {
     setIsFullMenuOpen(true);
   };
 
+  const handleHeaderSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (headerSearch.trim()) {
+      navigate(`/products?search=${encodeURIComponent(headerSearch.trim())}`);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-6">
@@ -200,13 +208,33 @@ const Categories: React.FC = () => {
           <Link to="/" className="flex items-center pointer-events-auto group">
             <img src={LOGO_URL} className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${scrolled ? 'h-16 md:h-24' : 'h-28 md:h-44'}`} alt="Meadow" />
           </Link>
-          <div className="flex items-center gap-3 md:gap-6 pointer-events-auto">
-            <button onClick={() => openMenu('all')} className="w-14 h-14 md:w-16 md:h-16 bg-white border border-slate-100 text-slate-900 rounded-full flex items-center justify-center shadow-lg">
-              <Menu size={20} />
-            </button>
-            <button onClick={() => setIsCartOpen(true)} className="w-14 h-14 md:w-16 md:h-16 bg-slate-900 text-white rounded-full flex items-center justify-center relative shadow-xl hover:scale-105 transition-all">
-              <ShoppingCart size={22} />
-              {cart.length > 0 && <span className="absolute -top-1 -right-1 w-6 h-6 md:w-7 md:h-7 bg-blue-500 text-white text-[10px] md:text-xs font-black flex items-center justify-center rounded-full border-2 border-white">{cart.length}</span>}
+          
+          <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-8 py-3 gap-6 md:gap-8 lg:gap-10 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90 group">
+            <form onSubmit={handleHeaderSearch} className="relative flex items-center">
+              <Search size={18} className="absolute left-5 text-slate-400" />
+              <input 
+                type="text" 
+                placeholder="Search products..." 
+                value={headerSearch}
+                onChange={(e) => setHeaderSearch(e.target.value)}
+                className="bg-slate-100/50 border-none rounded-full py-4 pl-14 pr-8 text-sm font-bold w-80 focus:w-[450px] transition-all outline-none focus:bg-white focus:ring-1 focus:ring-slate-200"
+              />
+            </form>
+            <Link to="/categories" className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Products</Link>
+            <Link to="/categories" className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Brand</Link>
+            <Link 
+              to="/customised" 
+              className="px-8 py-4 bg-slate-900 text-white text-xs font-black uppercase tracking-[0.3em] rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-slate-900/20 hover:shadow-rose-600/30 flex items-center gap-2"
+            >
+              <Zap size={18} className="text-rose-400" />
+              Build Your Own PC
+            </Link>
+            <div className="w-px h-6 bg-slate-200 mx-2"></div>
+            <button 
+              onClick={() => openMenu('all')}
+              className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.25em] text-slate-900 group-hover:text-blue-600 transition-all"
+            >
+              <Menu size={18} />
             </button>
           </div>
         </div>
