@@ -52,7 +52,6 @@ interface BuildItem {
 
 const PCBuilder: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('PC Build');
   const [scrolled, setScrolled] = useState(false);
   const [hoveredZone, setHoveredZone] = useState<string | null>(null);
   const [activePopup, setActivePopup] = useState<string | null>(null);
@@ -361,17 +360,10 @@ const PCBuilder: React.FC = () => {
         </div>
 
         <div className="hidden xl:flex items-center bg-white/10 border border-white/20 rounded-full p-2 gap-2">
-          {['PC Build', 'Accessories', 'Notebook'].map((tab) => (
-            <button 
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all ${
-                activeTab === tab ? 'bg-white text-black shadow-2xl' : 'text-white/60 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
+          <Link to="/buildpc" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all bg-white text-black shadow-2xl">Custom Build PC</Link>
+          <Link to="/products?category=desktop" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Pre-Built PC</Link>
+          <Link to="/customer/dashboard" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Track Your Order</Link>
+          <Link to="/stores" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Contact Us</Link>
         </div>
 
         <div className="flex items-center gap-10">

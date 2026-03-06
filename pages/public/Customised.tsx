@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { 
   Cpu, 
   ShieldCheck, 
@@ -96,21 +96,14 @@ const Customised: React.FC = () => {
         <div className="flex items-center gap-12">
           <Link to="/" className="group flex items-center gap-10">
              <img src={LOGO_URL} className={`w-auto transition-all duration-500 group-hover:opacity-80 ${scrolled ? 'h-12 md:h-20' : 'h-24 md:h-36'}`} alt="Meadow" />
-             <div className="hidden lg:flex flex-col border-l border-white/20 pl-10">
-                <span className="text-[13px] font-black tracking-[0.5em] text-white/70 uppercase">Bespoke Division</span>
-                <span className="text-[11px] font-bold tracking-[0.3em] text-rose-500 uppercase mt-1">Registry Active</span>
-             </div>
           </Link>
         </div>
 
-        <div className="hidden lg:flex items-center gap-12">
-            {['Methodology', 'Registry', 'Financing'].map((item) => (
-               <button key={item} className="text-sm font-black uppercase tracking-[0.4em] text-white/60 hover:text-rose-500 transition-all">
-                  {item}
-               </button>
-            ))}
-            <div className="w-px h-6 bg-white/10 mx-4"></div>
-            <Link to="/categories" className="text-sm font-black uppercase tracking-[0.4em] text-white/60 hover:text-rose-500 transition-all">Products</Link>
+        <div className="hidden lg:flex items-center bg-white/10 border border-white/20 rounded-full p-2 gap-2">
+            <Link to="/buildpc" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Custom Build PC</Link>
+            <Link to="/products?category=desktop" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Pre-Built PC</Link>
+            <Link to="/customer/dashboard" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Track Your Order</Link>
+            <Link to="/stores" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Contact Us</Link>
         </div>
 
         <div className="flex items-center gap-10">

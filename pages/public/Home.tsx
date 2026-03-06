@@ -782,7 +782,7 @@ const Home: React.FC = () => {
           {[
             { name: 'PC Component', img: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80', slug: 'pc-component' },
             { name: 'Laptop', img: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80', slug: 'laptop' },
-            { name: 'Peripheral', img: 'https://images.unsplash.com/photo-1612198188271-0670e495b0ae?auto=format&fit=crop&q=80', slug: 'peripheral' },
+            { name: 'Peripheral', img: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&q=80', slug: 'peripheral' },
             { name: 'Monitor', img: 'https://images.unsplash.com/photo-1551645120-d70bfe84c826?auto=format&fit=crop&q=80', slug: 'monitor' }
           ].map((cat) => (
             <Link 
