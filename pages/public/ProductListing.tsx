@@ -15,7 +15,8 @@ import {
   SlidersHorizontal,
   LayoutGrid,
   List,
-  Star
+  Star,
+  Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
@@ -180,9 +181,15 @@ const ProductListing: React.FC = () => {
           </Link>
           
           <div className="hidden md:flex items-center gap-8 pointer-events-auto">
-            <Link to="/categories" className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Categories</Link>
-            <Link to="/customised" className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Bespoke</Link>
-            <Link to="/stores" className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Stores</Link>
+            <Link to="/categories" className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Products</Link>
+            <Link to="/categories" className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Brand</Link>
+            <Link 
+              to="/customised" 
+              className="px-4 py-2 bg-slate-900 text-white text-[9px] font-black uppercase tracking-[0.25em] rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-slate-900/20 hover:shadow-rose-600/30 flex items-center gap-2"
+            >
+              <Zap size={12} className="text-rose-400" />
+              Build Your Own PC
+            </Link>
           </div>
 
           <div className="flex items-center gap-3 md:gap-6 pointer-events-auto">

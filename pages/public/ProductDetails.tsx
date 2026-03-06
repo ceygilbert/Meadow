@@ -185,8 +185,8 @@ const ProductDetails: React.FC = () => {
                       <ArrowUpRight className="text-slate-200 group-hover:text-slate-900 transition-colors" size={32} />
                    </Link>
                    <Link to="/customised" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6">
-                      <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Bespoke</span>
-                      <ArrowUpRight className="text-slate-200 group-hover:text-slate-900 transition-colors" size={32} />
+                      <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-rose-600 group-hover:italic transition-all">Build Your Own PC</span>
+                      <Zap className="text-rose-500 animate-pulse" size={32} />
                    </Link>
                    <Link to="/stores" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6">
                       <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Stores</span>

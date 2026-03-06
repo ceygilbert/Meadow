@@ -20,7 +20,8 @@ import {
   Plus,
   Heart,
   ArrowUpRight,
-  ChevronRight
+  ChevronRight,
+  Zap
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
@@ -278,10 +279,15 @@ const StoreLocator: React.FC = () => {
           </div>
 
           <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-8 py-2.5 gap-6 md:gap-8 lg:gap-10 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90 group">
-            <button onClick={() => openMenu('story')} className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Story</button>
-            <button onClick={() => openMenu('products')} className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Products</button>
-            <Link to="/customised" className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Customised</Link>
-            <button onClick={() => openMenu('contact')} className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Contact</button>
+            <Link to="/categories" className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Products</Link>
+            <Link to="/categories" className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Brand</Link>
+            <Link 
+              to="/customised" 
+              className="px-4 py-2 bg-slate-900 text-white text-[9px] font-black uppercase tracking-[0.25em] rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-slate-900/20 hover:shadow-rose-600/30 flex items-center gap-2"
+            >
+              <Zap size={12} className="text-rose-400" />
+              Build Your Own PC
+            </Link>
             <div className="w-px h-4 bg-slate-200 mx-2"></div>
             <button 
               onClick={() => openMenu('all')}

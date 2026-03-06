@@ -47,46 +47,70 @@ const BANNERS = [
 
 const BRANCHES = [
   {
-    id: 'hq',
-    name: 'MEADOW IT DISTRIBUTION (HQ)',
+    id: '1',
+    name: 'MEADOW IT DISTRIBUTION SDN BHD (HQ)',
+    type: 'Service Center',
+    address: 'No 5, 7 & 9, Jalan Keembong 22, Johor Jaya, 81100 Johor Bahru, Johor.',
+    lat: 1.5410,
+    lng: 103.7997,
+    phone: '+60 7-355 5555',
     city: 'Johor Jaya',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80',
-    type: 'Service Center'
+    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80'
   },
   {
-    id: 'tu',
-    name: 'MEADOW COMPUTER TAMAN U',
+    id: '2',
+    name: 'MEADOW COMPUTER SDN BHD TAMAN U',
+    type: 'IT Store',
+    address: 'No 8, Jalan Kebudayaan 1, Taman Universiti, 81300 Skudai, Johor.',
+    lat: 1.5435,
+    lng: 103.6267,
+    phone: '+60 7-521 1111',
     city: 'Skudai',
-    image: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&q=80',
-    type: 'IT Store'
+    image: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&q=80'
   },
   {
-    id: 'pp',
-    name: 'MEADOW COMPUTER PLAZA PELANGI',
+    id: '3',
+    name: 'MEADOW COMPUTER SDN BHD PLAZA PELANGI',
+    type: 'Mega Store',
+    address: 'Lot.3.26, 26A, 27, Level 3, Plaza Pelangi, 80400 Johor Bahru, Johor.',
+    lat: 1.4827,
+    lng: 103.7635,
+    phone: '+60 7-333 3333',
     city: 'Johor Bahru',
-    image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80',
-    type: 'Mega Store'
+    image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80'
   },
   {
-    id: 'as',
-    name: 'ASUS CONCEPT STORE MEADOW',
+    id: '4',
+    name: 'ASUS CONCEPT STORE MEADOW COMPUTER',
+    type: 'IT Store',
+    address: 'Lot.3.16, Level 3, Plaza Pelangi, 80400 Johor Bahru, Johor.',
+    lat: 1.4827,
+    lng: 103.7635,
+    phone: '+60 7-333 4444',
     city: 'Johor Bahru',
-    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80',
-    type: 'Concept Store'
+    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80'
   },
   {
-    id: 'hp',
-    name: 'HP WORLD MEADOW TOPPEN',
+    id: '5',
+    name: 'HP WORLD MEADOW COMPUTER TOPPEN',
+    type: 'IT Store',
+    address: 'Level 2, Lot L2.22, Toppen Shopping Centre, 33A, Jln Harmonium, Taman Desa Tebrau, 81100 Johor Bahru, Johor Darul Ta’zim.',
+    lat: 1.5484,
+    lng: 103.7963,
+    phone: '+60 7-364 8888',
     city: 'Johor Bahru',
-    image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80',
-    type: 'IT Store'
+    image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80'
   },
   {
-    id: 'hw',
-    name: 'HUAWEI EXPERIENCE STORE',
+    id: '6',
+    name: 'HUAWEI AUTHORIZED EXPERIENCE STORE',
+    type: 'IT Store',
+    address: 'K1.01B, Level 1, Plaza Pelangi, 80400 Johor Bahru, Johor.',
+    lat: 1.4827,
+    lng: 103.7635,
+    phone: '+60 7-333 5555',
     city: 'Johor Bahru',
-    image: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&q=80',
-    type: 'Experience Store'
+    image: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&q=80'
   }
 ];
 
@@ -130,6 +154,7 @@ const Home: React.FC = () => {
 
   const [headerSearch, setHeaderSearch] = useState('');
   const [scrolled, setScrolled] = useState(false);
+  const [activeStoreIndex, setActiveStoreIndex] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -514,8 +539,14 @@ const Home: React.FC = () => {
               />
             </form>
             <Link to="/categories" className="text-xs font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Products</Link>
-            <Link to="/customised" className="text-xs font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Customised</Link>
             <Link to="/categories" className="text-xs font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Brand</Link>
+            <Link 
+              to="/customised" 
+              className="px-5 py-2.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-slate-900/20 hover:shadow-rose-600/30 flex items-center gap-2"
+            >
+              <Zap size={14} className="text-rose-400" />
+              Build Your Own PC
+            </Link>
             <div className="w-px h-5 bg-slate-200 mx-2"></div>
             <button 
               onClick={() => openMenu('all')}
@@ -570,24 +601,7 @@ const Home: React.FC = () => {
           
           <div className="grid lg:grid-cols-2 w-full p-6 md:p-20 relative z-10">
             <div className="flex flex-col justify-center text-center lg:text-left">
-              <div className="flex items-center justify-center lg:justify-start gap-3 mb-6 md:mb-10 animate-in fade-in slide-in-from-bottom duration-700">
-                <div className="px-4 py-1.5 bg-white/80 backdrop-blur-md rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 border border-slate-200/60 shadow-sm">Meadow — Core Unit</div>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 md:gap-8 animate-in fade-in slide-in-from-bottom duration-1000 delay-200">
-                <button className="w-full sm:w-auto h-16 md:h-18 px-10 md:px-12 bg-slate-900 text-white rounded-full font-black text-xs md:text-sm uppercase tracking-widest flex items-center justify-center gap-5 hover:bg-black transition-all shadow-2xl group">
-                  Explore Now
-                  <div className="w-9 h-9 md:w-10 md:h-10 bg-[#C5FF41] rounded-full flex items-center justify-center text-slate-900 group-hover:scale-110 transition-transform">
-                    <ArrowRight size={20} />
-                  </div>
-                </button>
-                <button className="flex items-center gap-4 group">
-                  <div className="w-12 h-12 md:w-14 md:h-14 bg-white rounded-full flex items-center justify-center text-slate-900 shadow-lg group-hover:bg-blue-600 group-hover:text-white transition-all">
-                    <Play size={18} fill="currentColor" />
-                  </div>
-                  <span className="text-xs md:text-sm font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-slate-900 transition-colors">Showcase Reel</span>
-                </button>
-              </div>
+              {/* Content removed per user request */}
             </div>
           </div>
 
@@ -749,6 +763,51 @@ const Home: React.FC = () => {
          `}</style>
       </section>
 
+      {/* CATEGORIES Section */}
+      <section className="px-4 md:px-10 py-20 md:py-32 max-w-[1440px] mx-auto">
+        <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
+          <div className="flex flex-col">
+            <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-4">Categories</h2>
+            <p className="text-xs text-slate-400 font-black uppercase tracking-[0.4em]">Browse by Hardware Class</p>
+          </div>
+          <Link to="/products" className="group flex items-center gap-4 text-xs font-black uppercase tracking-widest text-slate-900 hover:text-blue-600 transition-colors">
+            View All Products
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all">
+              <ArrowUpRight size={16} />
+            </div>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          {[
+            { name: 'PC Component', img: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80', slug: 'pc-component' },
+            { name: 'Laptop', img: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80', slug: 'laptop' },
+            { name: 'Peripheral', img: 'https://images.unsplash.com/photo-1612198188271-0670e495b0ae?auto=format&fit=crop&q=80', slug: 'peripheral' },
+            { name: 'Monitor', img: 'https://images.unsplash.com/photo-1551645120-d70bfe84c826?auto=format&fit=crop&q=80', slug: 'monitor' }
+          ].map((cat) => (
+            <Link 
+              key={cat.name}
+              to={`/products?category=${cat.slug}`}
+              className="group relative aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-xl border border-slate-100 flex flex-col justify-end p-8"
+            >
+              <img 
+                src={cat.img} 
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                alt={cat.name} 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
+              
+              <div className="relative z-10">
+                <h3 className="text-2xl font-black text-white uppercase tracking-tighter leading-none mb-2 group-hover:translate-x-2 transition-transform duration-500">{cat.name}</h3>
+                <div className="flex items-center gap-2 text-[10px] font-black text-white/60 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
+                  Explore <ArrowRight size={12} />
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* THE COLLECTION Section */}
       <section className="bg-[#FAF9FB] px-4 md:px-10 py-20 md:py-32 overflow-hidden border-t border-slate-50">
         <div className="max-w-[1440px] mx-auto">
@@ -787,81 +846,99 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* CINEMATIC SHOWCASE Section */}
+      {/* BUILD YOUR OWN PC Section */}
       <section className="px-4 md:px-10 py-10 md:py-20 max-w-[1440px] mx-auto">
         <div className="relative aspect-video md:aspect-[21/9] rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-2xl group border border-slate-100">
-           <video 
-             autoPlay 
-             muted 
-             loop 
-             playsInline 
-             className="absolute inset-0 w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-1000"
-           >
-             <source src="https://cdn.pixabay.com/video/2021/04/12/70878-537482813_large.mp4" type="video/mp4" />
-             Your browser does not support the video tag.
-           </video>
-           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+           <img 
+             src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80" 
+             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+             alt="Build Your Own PC"
+             referrerPolicy="no-referrer"
+           />
+           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
            
-           <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-20">
+           <div className="absolute inset-0 flex flex-col justify-center p-8 md:p-20">
              <div className="max-w-2xl animate-in fade-in slide-in-from-bottom duration-1000">
                <div className="flex items-center gap-3 mb-6">
-                 <div className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></div>
-                 <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-blue-500">System Calibration Series</span>
+                 <Zap size={20} className="text-[#C5FF41]" fill="currentColor" />
+                 <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-[#C5FF41]">Bespoke Performance</span>
                </div>
-               <h2 className="text-4xl md:text-7xl font-black text-white tracking-tighter uppercase leading-[0.9] mb-8">Internal <br /> Architecture.</h2>
-               <p className="text-sm md:text-lg text-white/50 font-medium max-w-md leading-relaxed">
-                 Witness the meticulous integration of our high-performance deployments. Every component is verified for electrical harmony and thermal efficiency.
+               <h2 className="text-4xl md:text-7xl font-black text-white tracking-tighter uppercase leading-[0.9] mb-8">Build Your <br /> Own PC.</h2>
+               <p className="text-sm md:text-lg text-white/70 font-medium max-w-md leading-relaxed mb-10">
+                 Unleash your creativity and power. Customise every component to match your specific needs, from gaming beasts to professional workstations.
                </p>
+               <Link 
+                 to="/customised" 
+                 className="inline-flex items-center gap-4 px-10 py-4 bg-[#C5FF41] text-slate-900 rounded-full font-black text-sm uppercase tracking-widest hover:bg-white transition-all shadow-xl group/btn w-fit"
+               >
+                 Start Building
+                 <ArrowRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
+               </Link>
              </div>
-           </div>
-
-           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-              <button className="w-20 h-20 md:w-32 md:h-32 bg-white/10 backdrop-blur-3xl border border-white/20 rounded-full flex items-center justify-center text-white transition-all hover:scale-110 hover:bg-white hover:text-slate-900 opacity-0 group-hover:opacity-100 shadow-2xl">
-                <Play size={40} fill="currentColor" className="ml-2 transition-transform group-active:scale-90" />
-              </button>
            </div>
         </div>
       </section>
 
-      {/* OUR BLOG Section */}
-      <section className="bg-[#FAF9FB] px-4 md:px-10 py-20 md:py-32 overflow-hidden border-t border-slate-50">
+      {/* VISIT OUR STORE Section */}
+      <section className="bg-white px-4 md:px-10 py-20 md:py-32 overflow-hidden border-t border-slate-50">
         <div className="max-w-[1440px] mx-auto">
-          <h2 className="text-4xl md:text-7xl font-black text-slate-900 tracking-tighter uppercase mb-12 md:mb-24 text-center md:text-left">Our Blog</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-16 items-start">
-            <div className="flex flex-col gap-10 order-2 lg:order-1">
-              <div className="aspect-square bg-white rounded-[2rem] overflow-hidden shadow-xl border border-slate-100 p-4 transition-transform hover:-translate-y-1 duration-500">
-                 <img src="https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&q=80" className="w-full h-full object-cover rounded-[1.5rem]" />
+          <h2 className="text-3xl md:text-5xl font-black text-[#1e40af] tracking-tighter uppercase mb-12">Visit Our Store.</h2>
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Left Card */}
+            <div className="lg:w-1/3 bg-[#f3f4f6] rounded-2xl p-8 flex flex-col justify-between min-h-[400px] shadow-sm">
+              <div className="space-y-10">
+                <h3 className="text-2xl md:text-3xl font-black leading-tight">
+                  <span className="text-[#ef4444]">VIEW ALL</span> <br />
+                  <span className="text-[#1e40af]">{BRANCHES[activeStoreIndex].name}</span> <br />
+                  <span className="text-[#ef4444]">LOCATION.</span>
+                </h3>
+                <Link 
+                  to="/stores" 
+                  className="inline-block px-8 py-3 bg-white border-2 border-black rounded-xl text-sm font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
+                >
+                  Store Locator
+                </Link>
               </div>
-              <div className="space-y-5">
-                 <p className="text-slate-500 text-base font-medium leading-relaxed opacity-90">
-                   Monthly updates on performance deployments and technical metrics from our engineers.
-                 </p>
-                 <a href="#" className="inline-block text-xs font-black uppercase tracking-widest text-slate-900 border-b-2 border-slate-900 pb-1.5 hover:text-blue-600 hover:border-blue-600 transition-all">Go to Blog</a>
+              
+              <div className="pt-8 border-t border-black/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-black/40 mb-2 flex items-center gap-1">
+                      Video Displaying <ArrowRight size={10} />
+                    </span>
+                    <span className="text-[11px] font-black uppercase tracking-tight text-slate-900">
+                      {BRANCHES[activeStoreIndex].name}, {BRANCHES[activeStoreIndex].city}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => setActiveStoreIndex((prev) => (prev + 1) % BRANCHES.length)}
+                    className="w-12 h-12 rounded-full bg-white border border-black/10 flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-md group"
+                    title="Next Store"
+                  >
+                    <ChevronRight size={24} className="group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="lg:col-span-2 order-1 lg:order-2">
-               <div className="aspect-[4/5] bg-white rounded-[2rem] md:rounded-[3rem] rounded-br-[5rem] md:rounded-br-[12rem] overflow-hidden shadow-2xl relative border border-slate-100 group">
-                  <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <div className="absolute bottom-10 md:bottom-20 left-10 md:left-20 text-white opacity-0 group-hover:opacity-100 translate-y-6 group-hover:translate-y-0 transition-all">
-                     <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] mb-4 md:mb-6">Deep Dive</p>
-                     <h3 className="text-3xl md:text-5xl font-black tracking-tighter uppercase leading-none">Architectural <br /> Performance.</h3>
-                  </div>
-               </div>
-            </div>
-            <div className="flex flex-col h-full justify-between gap-10 order-3">
-               <div className="space-y-5">
-                  <h4 className="text-lg md:text-xl font-black text-slate-900 tracking-tight leading-tight uppercase">Meadow Core <br /> Technical Blog</h4>
-                  <p className="text-slate-500 text-sm font-medium leading-relaxed opacity-80">
-                    Deep dives into hardware calibration and custom liquid cooling systems.
-                  </p>
-               </div>
-               <div className="aspect-square bg-blue-50 rounded-[2rem] md:rounded-[3rem] rounded-bl-[5rem] md:rounded-bl-[8rem] overflow-hidden shadow-xl p-4 md:p-6 relative flex items-center justify-center border border-white">
-                  <div className="w-full h-full bg-slate-900 rounded-[1.5rem] md:rounded-[2.5rem] rounded-bl-[4.5rem] md:rounded-bl-[7rem] flex items-center justify-center overflow-hidden">
-                     <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80" className="w-full h-full object-cover opacity-50" />
-                     <Cpu strokeWidth={0.5} className="text-white absolute drop-shadow-2xl w-[70px] h-[70px] md:w-[100px] md:h-[100px]" />
-                  </div>
-               </div>
+
+            {/* Right Card (Map) */}
+            <div className="lg:flex-1 aspect-video md:aspect-auto md:h-[500px] rounded-2xl overflow-hidden shadow-2xl border border-slate-100 relative">
+              <iframe 
+                width="100%" 
+                height="100%" 
+                frameBorder="0" 
+                style={{ border: 0 }}
+                src={`https://www.google.com/maps?q=${encodeURIComponent(BRANCHES[activeStoreIndex].address)}&output=embed`}
+                allowFullScreen
+                title="Store Location"
+                className="grayscale-[0.2] hover:grayscale-0 transition-all duration-700"
+              ></iframe>
+              <div className="absolute top-6 right-6 flex flex-col gap-3">
+                <div className="bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-xl border border-white/20 flex flex-col items-center gap-1">
+                   <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
+                   <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Live Map</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
