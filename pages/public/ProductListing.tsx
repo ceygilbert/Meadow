@@ -207,7 +207,7 @@ const ProductListing: React.FC = () => {
       <main className="pt-32 md:pt-40 pb-20 px-4 md:px-10 max-w-[1440px] mx-auto">
         {/* Breadcrumbs & Title */}
         <div className="mb-12">
-          <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 mb-6">
+          <div className="flex items-center gap-3 text-xs md:text-sm font-black uppercase tracking-[0.3em] text-slate-300 mb-6">
             <Link to="/categories" className="hover:text-slate-900 transition-colors">All Categories</Link>
             <ChevronDown className="-rotate-90" size={12} />
             <span className="text-slate-900">{currentCategory?.name}</span>
@@ -218,7 +218,7 @@ const ProductListing: React.FC = () => {
               </>
             )}
           </div>
-          <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter uppercase leading-none">
+          <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter uppercase leading-none">
             {currentSubCategory?.name || currentCategory?.name || 'All Products'}
           </h1>
         </div>
