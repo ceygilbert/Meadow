@@ -570,8 +570,8 @@ const Home: React.FC = () => {
       </nav>
 
       {/* Hero Section */}
-      <header className="relative pt-24 md:pt-36 px-4 md:px-10 pb-6 md:pb-12">
-        <div className="hidden lg:block absolute top-36 left-10 text-[11vw] font-black text-slate-50 tracking-tighter leading-none pointer-events-none select-none -z-10 uppercase">
+      <header className="relative pt-4 md:pt-6 px-4 md:px-10 pb-4 md:pb-8">
+        <div className="hidden lg:block absolute top-20 left-10 text-[11vw] font-black text-slate-50 tracking-tighter leading-none pointer-events-none select-none -z-10 uppercase">
           Precision Engineering
         </div>
 
@@ -600,7 +600,7 @@ const Home: React.FC = () => {
           </div>
 
           {/* Slider Indicators */}
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex gap-3">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-3">
              {BANNERS.map((_, i) => (
                <button 
                 key={i} 
@@ -724,7 +724,7 @@ const Home: React.FC = () => {
       </section> */}
 
       {/* Specialized Infinite Ticker Section */}
-      <section className="py-20 md:py-32 bg-white overflow-hidden relative">
+      <section className="py-10 md:py-16 bg-white overflow-hidden relative">
          <div className="absolute top-0 inset-x-0 h-px bg-slate-100"></div>
          <div className="absolute bottom-0 inset-x-0 h-px bg-slate-100"></div>
          
