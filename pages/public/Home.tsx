@@ -28,7 +28,9 @@ import {
   Layers,
   Navigation,
   Video,
-  Circle
+  Circle,
+  Facebook,
+  Instagram
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Product, Profile, Brand } from '../../types';
@@ -438,7 +440,7 @@ const Home: React.FC = () => {
                    {/* Products Mode */}
                    {(menuMode === 'all' || menuMode === 'products') && (
                      <Link to="/categories" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6 animate-in slide-in-from-left duration-500">
-                        <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900 transition-all group-hover:italic group-hover:translate-x-4">Products</span>
+                        <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900 transition-all group-hover:italic group-hover:translate-x-4">Category</span>
                         <ArrowUpRight className="text-slate-200 group-hover:text-slate-900 transition-colors" size={32} />
                      </Link>
                    )}
@@ -521,10 +523,10 @@ const Home: React.FC = () => {
       </div>
 
       {/* Editorial Floating Header */}
-      <nav className={`fixed left-0 right-0 z-[100] px-4 md:px-10 pointer-events-none transition-all duration-500 ${scrolled ? 'top-0 py-4 bg-white/80 backdrop-blur-2xl border-b border-slate-100 shadow-lg' : 'top-4 md:top-6'}`}>
+      <nav className={`fixed left-0 right-0 z-[100] px-4 md:px-10 pointer-events-none transition-all duration-500 ${scrolled ? 'top-0 py-4 bg-white/80 backdrop-blur-2xl border-b border-slate-100 shadow-lg' : 'top-0'}`}>
         <div className="max-w-[1440px] mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center pointer-events-auto group">
-            <img src={LOGO_URL} className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${scrolled ? 'h-16 md:h-24' : 'h-28 md:h-44'}`} alt="Meadow" />
+            <img src={LOGO_URL} className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${scrolled ? 'h-14 md:h-20' : 'h-24 md:h-36'}`} alt="Meadow" />
           </Link>
 
           <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-8 py-3 gap-6 md:gap-8 lg:gap-10 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90 group">
@@ -535,10 +537,10 @@ const Home: React.FC = () => {
                 placeholder="Search products..." 
                 value={headerSearch}
                 onChange={(e) => setHeaderSearch(e.target.value)}
-                className="bg-slate-100/50 border-none rounded-full py-4 pl-14 pr-8 text-sm font-bold w-80 focus:w-[450px] transition-all outline-none focus:bg-white focus:ring-1 focus:ring-slate-200"
+                className="bg-slate-100/50 border-none rounded-full py-3 pl-14 pr-8 text-sm font-bold w-48 focus:w-64 transition-all outline-none focus:bg-white focus:ring-1 focus:ring-slate-200"
               />
             </form>
-            <Link to="/categories" className="text-sm font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Products</Link>
+            <Link to="/categories" className="text-sm font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Category</Link>
             <Link to="/categories" className="text-sm font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Brand</Link>
             <Link 
               to="/customised" 
@@ -547,21 +549,13 @@ const Home: React.FC = () => {
               <Zap size={18} className="text-rose-400" />
               Build Your Own PC
             </Link>
-            <div className="w-px h-6 bg-slate-200 mx-2"></div>
-            <button 
-              onClick={() => openMenu('all')}
-              className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.25em] text-slate-900 group-hover:text-blue-600 transition-all"
-            >
-              <Menu size={18} />
-            </button>
           </div>
 
           <div className="flex items-center gap-3 md:gap-6 pointer-events-auto">
-            <button onClick={() => openMenu('all')} className="md:hidden w-12 h-12 bg-white border border-slate-100 text-slate-900 rounded-full flex items-center justify-center shadow-lg">
-              <Menu size={20} />
-            </button>
             {!user ? (
-               <button onClick={() => setIsAuthModalOpen(true)} className="px-6 md:px-8 py-2.5 md:py-3.5 bg-slate-100 text-slate-500 text-[11px] md:text-xs font-black uppercase tracking-[0.2em] rounded-full hover:bg-slate-900 hover:text-white transition-all">Sign In</button>
+               <button onClick={() => setIsAuthModalOpen(true)} className="w-12 h-12 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-sm">
+                 <UserIcon size={20} />
+               </button>
             ) : (
                <button onClick={() => navigate(profile?.role === 'admin' ? '/admin/dashboard' : '/customer/dashboard')} className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-slate-200 overflow-hidden shadow-sm">
                  <img src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`} className="w-full h-full object-cover" />
@@ -576,12 +570,12 @@ const Home: React.FC = () => {
       </nav>
 
       {/* Hero Section */}
-      <header className="relative pt-32 md:pt-48 px-4 md:px-10 pb-10 md:pb-20">
-        <div className="hidden lg:block absolute top-48 left-10 text-[11vw] font-black text-slate-50 tracking-tighter leading-none pointer-events-none select-none -z-10 uppercase">
+      <header className="relative pt-24 md:pt-36 px-4 md:px-10 pb-6 md:pb-12">
+        <div className="hidden lg:block absolute top-36 left-10 text-[11vw] font-black text-slate-50 tracking-tighter leading-none pointer-events-none select-none -z-10 uppercase">
           Precision Engineering
         </div>
 
-        <div className="max-w-[1440px] mx-auto bg-[#F7F8FA] rounded-[2rem] md:rounded-[3.5rem] relative min-h-[500px] md:min-h-[750px] flex items-center overflow-hidden border border-slate-100 shadow-2xl shadow-slate-200/40">
+        <div className="max-w-[1440px] mx-auto bg-[#F7F8FA] rounded-[2rem] md:rounded-[3.5rem] relative min-h-[400px] md:min-h-[550px] flex items-center overflow-hidden border border-slate-100 shadow-2xl shadow-slate-200/40">
           
           {/* Animated Background Slider */}
           <div className="absolute inset-0 z-0">
@@ -634,11 +628,10 @@ const Home: React.FC = () => {
         </div>
       </header>
 
-      {/* Feature Blocks Section */}
-      <section className="px-4 md:px-10 py-10 md:py-20 max-w-[1440px] mx-auto">
+      {/* Feature Blocks Section - Hidden per user request */}
+      {/* <section className="px-4 md:px-10 py-10 md:py-20 max-w-[1440px] mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           
-          {/* Block 1: Build Your Own (Links to Customised.tsx) */}
           <div className="aspect-[3/4] md:aspect-[4/5] rounded-[3rem] overflow-hidden relative group shadow-2xl">
              <img 
                src="https://images.unsplash.com/photo-1591488320449-011701bb6704?auto=format&fit=crop&q=80" 
@@ -647,7 +640,6 @@ const Home: React.FC = () => {
              />
              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
              
-             {/* Top Corner UI */}
              <div className="absolute top-8 left-8">
                <div className="px-4 py-2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
                  <Video size={14} className="fill-white" /> View Showcase
@@ -659,7 +651,6 @@ const Home: React.FC = () => {
                </Link>
              </div>
 
-             {/* Bottom UI */}
              <div className="absolute bottom-10 left-10 right-10 flex flex-col gap-8">
                 <h3 className="text-4xl md:text-5xl font-black text-white leading-tight tracking-tighter uppercase">Bespoke <br /> Performance</h3>
                 <div className="flex justify-end">
@@ -673,7 +664,6 @@ const Home: React.FC = () => {
              </div>
           </div>
 
-          {/* Block 2: Workstation Station */}
           <div className="aspect-[3/4] md:aspect-[4/5] rounded-[3rem] overflow-hidden relative group shadow-2xl">
              <img 
                src="https://images.unsplash.com/photo-1626218174358-7769486c4b79?auto=format&fit=crop&q=80" 
@@ -703,7 +693,6 @@ const Home: React.FC = () => {
              </div>
           </div>
 
-          {/* Block 3: Gaming Rigs */}
           <div className="aspect-[3/4] md:aspect-[4/5] rounded-[3rem] overflow-hidden relative group shadow-2xl">
              <img 
                src="https://images.unsplash.com/photo-1547082299-de196ea013d6?auto=format&fit=crop&q=80" 
@@ -732,7 +721,7 @@ const Home: React.FC = () => {
              </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Specialized Infinite Ticker Section */}
       <section className="py-20 md:py-32 bg-white overflow-hidden relative">
@@ -882,15 +871,13 @@ const Home: React.FC = () => {
       {/* VISIT OUR STORE Section */}
       <section className="bg-white px-4 md:px-10 py-20 md:py-32 overflow-hidden border-t border-slate-50">
         <div className="max-w-[1440px] mx-auto">
-          <h2 className="text-3xl md:text-5xl font-black text-[#1e40af] tracking-tighter uppercase mb-12">Visit Our Store.</h2>
+          <h2 className="text-3xl md:text-5xl font-black text-[#ef4444] tracking-tighter uppercase mb-12">Visit Our Store.</h2>
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Left Card */}
             <div className="lg:w-1/3 bg-[#f3f4f6] rounded-2xl p-8 flex flex-col justify-between min-h-[400px] shadow-sm">
               <div className="space-y-10">
-                <h3 className="text-2xl md:text-3xl font-black leading-tight">
-                  <span className="text-[#ef4444]">VIEW ALL</span> <br />
-                  <span className="text-[#1e40af]">{BRANCHES[activeStoreIndex].name}</span> <br />
-                  <span className="text-[#ef4444]">LOCATION.</span>
+                <h3 className="text-2xl md:text-3xl font-black leading-tight text-black uppercase">
+                  View all Meadow IT Location.
                 </h3>
                 <Link 
                   to="/stores" 
@@ -899,46 +886,18 @@ const Home: React.FC = () => {
                   Store Locator
                 </Link>
               </div>
-              
-              <div className="pt-8 border-t border-black/10">
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-black/40 mb-2 flex items-center gap-1">
-                      Video Displaying <ArrowRight size={10} />
-                    </span>
-                    <span className="text-[11px] font-black uppercase tracking-tight text-slate-900">
-                      {BRANCHES[activeStoreIndex].name}, {BRANCHES[activeStoreIndex].city}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setActiveStoreIndex((prev) => (prev + 1) % BRANCHES.length)}
-                    className="w-12 h-12 rounded-full bg-white border border-black/10 flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-md group"
-                    title="Next Store"
-                  >
-                    <ChevronRight size={24} className="group-hover:translate-x-0.5 transition-transform" />
-                  </button>
-                </div>
-              </div>
             </div>
 
-            {/* Right Card (Map) */}
+            {/* Right Card (Video) */}
             <div className="lg:flex-1 aspect-video md:aspect-auto md:h-[500px] rounded-2xl overflow-hidden shadow-2xl border border-slate-100 relative">
-              <iframe 
-                width="100%" 
-                height="100%" 
-                frameBorder="0" 
-                style={{ border: 0 }}
-                src={`https://www.google.com/maps?q=${encodeURIComponent(BRANCHES[activeStoreIndex].address)}&output=embed`}
-                allowFullScreen
-                title="Store Location"
-                className="grayscale-[0.2] hover:grayscale-0 transition-all duration-700"
-              ></iframe>
-              <div className="absolute top-6 right-6 flex flex-col gap-3">
-                <div className="bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-xl border border-white/20 flex flex-col items-center gap-1">
-                   <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
-                   <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Live Map</span>
-                </div>
-              </div>
+              <video 
+                src="https://illuminatelabs.space/assets/locator_vd.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>
@@ -1058,10 +1017,26 @@ const Home: React.FC = () => {
             <div>
               <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Newsletter</h4>
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6">Join the Registry for updates.</p>
-              <form className="flex gap-2">
+              <form className="flex gap-2 mb-8">
                 <input type="email" placeholder="Email" className="flex-1 bg-white border border-slate-100 rounded-xl px-4 py-3 text-xs outline-none focus:border-slate-900 transition-colors" />
                 <button className="bg-slate-900 text-white p-3 rounded-xl hover:bg-black transition-colors"><ArrowRight size={16} /></button>
               </form>
+              <div className="flex items-center gap-4">
+                <a href="#" className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm">
+                  <Facebook size={18} />
+                </a>
+                <a href="#" className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm">
+                  <Instagram size={18} />
+                </a>
+                <a href="#" className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.13-1.47V18.77a6.738 6.738 0 0 1-6.76 6.76 6.738 6.738 0 0 1-6.76-6.76 6.738 6.738 0 0 1 6.76-6.76c.42-.02.84.03 1.25.12v4.03a2.71 2.71 0 0 0-1.25-.12 2.728 2.728 0 0 0-2.72 2.73 2.728 2.728 0 0 0 2.72 2.73 2.728 2.728 0 0 0 2.73-2.73V.02z"/>
+                  </svg>
+                </a>
+                <a href="#" className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm">
+                  <img src="https://illuminatelabs.space/assets/xhs_logo.png" className="w-5 h-5 object-contain" referrerPolicy="no-referrer" alt="Xiaohongshu" />
+                </a>
+              </div>
             </div>
           </div>
           <div className="flex flex-col md:flex-row justify-between items-center gap-8 pt-12 border-t border-slate-200/50">

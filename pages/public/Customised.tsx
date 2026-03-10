@@ -16,7 +16,9 @@ import {
   Quote, 
   Star, 
   ShoppingCart,
-  ArrowRight
+  ArrowRight,
+  Facebook,
+  Instagram
 } from 'lucide-react';
 
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/White%20Full%20Logo.png";
@@ -114,43 +116,43 @@ const Customised: React.FC = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-64 md:pt-80 pb-32 px-8 md:px-20 max-w-[1440px] mx-auto z-10">
+      <section className="relative pt-40 md:pt-48 pb-16 px-8 md:px-20 max-w-[1440px] mx-auto z-10">
         <div className="flex flex-col items-center text-center">
-           <div className="flex items-center gap-4 mb-14 animate-in fade-in slide-in-from-top duration-1000">
+           <div className="flex items-center gap-4 mb-10 animate-in fade-in slide-in-from-top duration-1000">
               <span className="text-[13px] font-black uppercase tracking-[0.6em] text-rose-500">Thoughtfully Crafted</span>
            </div>
            
-           <h1 className="font-black text-7xl md:text-[11rem] uppercase tracking-tighter leading-[0.85] text-white mb-20 animate-in fade-in slide-in-from-bottom duration-1000">
+           <h1 className="font-black text-6xl md:text-[9rem] uppercase tracking-tighter leading-[0.85] text-white mb-12 animate-in fade-in slide-in-from-bottom duration-1000">
               Silicon <br />
               <span className="text-white/50">Sculpture</span>
            </h1>
            
-           <div className="max-w-3xl space-y-14 animate-in fade-in slide-in-from-bottom duration-1000 delay-300">
-              <p className="text-xl md:text-3xl text-slate-300 font-light leading-relaxed">
+           <div className="max-w-3xl space-y-10 animate-in fade-in slide-in-from-bottom duration-1000 delay-300">
+              <p className="text-lg md:text-2xl text-slate-300 font-light leading-relaxed">
                 Fast • Beautiful • Thoughtfully Crafted. <br />
                 Architecting performance for the elite workspace.
               </p>
               
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
-                 <Link to="/buildpc" className="h-20 px-16 bg-white text-black rounded-full font-black text-[11px] uppercase tracking-[0.4em] hover:bg-rose-600 hover:text-white transition-all duration-700 shadow-2xl flex items-center gap-6 group">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                 <Link to="/buildpc" className="h-16 px-12 bg-white text-black rounded-full font-black text-[10px] uppercase tracking-[0.4em] hover:bg-rose-600 hover:text-white transition-all duration-700 shadow-2xl flex items-center gap-4 group">
                     Initialize Build
-                    <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                  </Link>
-                 <button className="h-20 px-14 bg-white/10 border border-white/20 text-white rounded-full font-black text-[11px] uppercase tracking-[0.4em] hover:bg-white/20 transition-all">
+                 <button className="h-16 px-10 bg-white/10 border border-white/20 text-white rounded-full font-black text-[10px] uppercase tracking-[0.4em] hover:bg-white/20 transition-all">
                     The Archive
                  </button>
               </div>
            </div>
         </div>
 
-        <div className="mt-48 w-full h-px bg-gradient-to-r from-transparent via-rose-600/40 to-transparent"></div>
+        <div className="mt-24 w-full h-px bg-gradient-to-r from-transparent via-rose-600/40 to-transparent"></div>
       </section>
 
       {/* Product Categories Grid */}
       <section className="relative z-10 px-8 md:px-20 max-w-[1600px] mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           {/* Custom Build PC */}
-          <div className="relative aspect-square group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5">
+          <div className="relative aspect-video group overflow-hidden rounded-[2.5rem] shadow-2xl border border-white/5">
             <img 
               src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1200&auto=format&fit=crop" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
@@ -158,21 +160,21 @@ const Customised: React.FC = () => {
               referrerPolicy="no-referrer"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/80"></div>
-            <div className="relative h-full flex flex-col items-center justify-center p-12 md:p-16 text-center space-y-8">
-              <div className="space-y-4">
-                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white">Custom build PC</h2>
-                <p className="text-slate-300 text-[10px] md:text-xs font-medium uppercase tracking-[0.3em] leading-relaxed max-w-xs mx-auto">
+            <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-10 text-center space-y-6">
+              <div className="space-y-3">
+                <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-white">Custom build PC</h2>
+                <p className="text-slate-300 text-[9px] md:text-[10px] font-medium uppercase tracking-[0.3em] leading-relaxed max-w-xs mx-auto">
                   Gaming, Work, Media — fully tailored, high-performance, and stylish.
                 </p>
               </div>
-              <Link to="/buildpc" className="px-10 py-4 bg-rose-600 text-white rounded-full font-black text-[10px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
+              <Link to="/buildpc" className="px-8 py-3.5 bg-rose-600 text-white rounded-full font-black text-[9px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
                 Build Now
               </Link>
             </div>
           </div>
 
           {/* Pre-Built PC */}
-          <div className="relative aspect-square group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5">
+          <div className="relative aspect-video group overflow-hidden rounded-[2.5rem] shadow-2xl border border-white/5">
             <img 
               src="https://images.unsplash.com/photo-1593640408182-31c70c8268f5?q=80&w=1200&auto=format&fit=crop" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
@@ -180,21 +182,21 @@ const Customised: React.FC = () => {
               referrerPolicy="no-referrer"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/80"></div>
-            <div className="relative h-full flex flex-col items-center justify-center p-12 md:p-16 text-center space-y-8">
-              <div className="space-y-4">
-                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white">Pre-Built PC</h2>
-                <p className="text-slate-300 text-[10px] md:text-xs font-medium uppercase tracking-[0.3em] leading-relaxed max-w-xs mx-auto">
+            <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-10 text-center space-y-6">
+              <div className="space-y-3">
+                <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-white">Pre-Built PC</h2>
+                <p className="text-slate-300 text-[9px] md:text-[10px] font-medium uppercase tracking-[0.3em] leading-relaxed max-w-xs mx-auto">
                   Built around your budget and tailored to your journey.
                 </p>
               </div>
-              <Link to="/products?category=desktop" className="px-10 py-4 bg-rose-600 text-white rounded-full font-black text-[10px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
+              <Link to="/products?category=desktop" className="px-8 py-3.5 bg-rose-600 text-white rounded-full font-black text-[9px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
                 View Now
               </Link>
             </div>
           </div>
 
           {/* Workstation PC */}
-          <div className="relative aspect-square group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5">
+          <div className="relative aspect-video group overflow-hidden rounded-[2.5rem] shadow-2xl border border-white/5">
             <img 
               src="https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1200&auto=format&fit=crop" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
@@ -202,21 +204,21 @@ const Customised: React.FC = () => {
               referrerPolicy="no-referrer"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/80"></div>
-            <div className="relative h-full flex flex-col items-center justify-center p-12 md:p-16 text-center space-y-8">
-              <div className="space-y-4">
-                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white">Workstation PC</h2>
-                <p className="text-slate-300 text-[10px] md:text-xs font-medium uppercase tracking-[0.3em] leading-relaxed max-w-xs mx-auto">
+            <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-10 text-center space-y-6">
+              <div className="space-y-3">
+                <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-white">Workstation PC</h2>
+                <p className="text-slate-300 text-[9px] md:text-[10px] font-medium uppercase tracking-[0.3em] leading-relaxed max-w-xs mx-auto">
                   Built for work — from paperwork to high-end rendering.
                 </p>
               </div>
-              <Link to="/products?category=workstation" className="px-10 py-4 bg-rose-600 text-white rounded-full font-black text-[10px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
+              <Link to="/products?category=workstation" className="px-8 py-3.5 bg-rose-600 text-white rounded-full font-black text-[9px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
                 View Now
               </Link>
             </div>
           </div>
 
           {/* Laptop */}
-          <div className="relative aspect-square group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5">
+          <div className="relative aspect-video group overflow-hidden rounded-[2.5rem] shadow-2xl border border-white/5">
             <img 
               src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1200&auto=format&fit=crop" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
@@ -224,14 +226,14 @@ const Customised: React.FC = () => {
               referrerPolicy="no-referrer"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/80"></div>
-            <div className="relative h-full flex flex-col items-center justify-center p-12 md:p-16 text-center space-y-8">
-              <div className="space-y-4">
-                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white">Laptop</h2>
-                <p className="text-slate-300 text-[10px] md:text-xs font-medium uppercase tracking-[0.3em] leading-relaxed max-w-xs mx-auto">
+            <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-10 text-center space-y-6">
+              <div className="space-y-3">
+                <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-white">Laptop</h2>
+                <p className="text-slate-300 text-[9px] md:text-[10px] font-medium uppercase tracking-[0.3em] leading-relaxed max-w-xs mx-auto">
                   Compact design. Powerful results.
                 </p>
               </div>
-              <Link to="/products?category=laptop" className="px-10 py-4 bg-rose-600 text-white rounded-full font-black text-[10px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
+              <Link to="/products?category=laptop" className="px-8 py-3.5 bg-rose-600 text-white rounded-full font-black text-[9px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
                 View Now
               </Link>
             </div>
@@ -403,6 +405,22 @@ const Customised: React.FC = () => {
             </div>
             
             <div className="pt-24 border-t border-white/10 w-full">
+               <div className="flex items-center justify-center gap-8 mb-16">
+                 <a href="#" className="w-14 h-14 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:border-white transition-all shadow-2xl group">
+                   <Facebook size={24} className="group-hover:scale-110 transition-transform" />
+                 </a>
+                 <a href="#" className="w-14 h-14 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:border-white transition-all shadow-2xl group">
+                   <Instagram size={24} className="group-hover:scale-110 transition-transform" />
+                 </a>
+                 <a href="#" className="w-14 h-14 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:border-white transition-all shadow-2xl group">
+                   <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24" className="group-hover:scale-110 transition-transform">
+                     <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.13-1.47V18.77a6.738 6.738 0 0 1-6.76 6.76 6.738 6.738 0 0 1-6.76-6.76 6.738 6.738 0 0 1 6.76-6.76c.42-.02.84.03 1.25.12v4.03a2.71 2.71 0 0 0-1.25-.12 2.728 2.728 0 0 0-2.72 2.73 2.728 2.728 0 0 0 2.72 2.73 2.728 2.728 0 0 0 2.73-2.73V.02z"/>
+                   </svg>
+                 </a>
+                 <a href="#" className="w-14 h-14 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:border-white transition-all shadow-2xl group">
+                   <img src="https://illuminatelabs.space/assets/xhs_logo.png" className="w-7 h-7 object-contain brightness-0 invert opacity-40 group-hover:opacity-100 transition-all" referrerPolicy="no-referrer" alt="Xiaohongshu" />
+                 </a>
+               </div>
                <p className="font-black text-xs text-white/30 uppercase tracking-[0.4em]">
                   — © Space Age Studio & Meadow IT | Confidential & Proprietary —
                </p>

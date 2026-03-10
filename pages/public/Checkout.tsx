@@ -29,7 +29,9 @@ import {
   Wifi,
   Disc,
   MousePointer2,
-  TicketPercent
+  TicketPercent,
+  Facebook,
+  Instagram
 } from 'lucide-react';
 
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/White%20Full%20Logo.png";
@@ -437,6 +439,22 @@ const Checkout: React.FC = () => {
             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">
                © {new Date().getFullYear()} Meadow IT • Secure Transmission Node JB_4
             </p>
+            <div className="flex items-center gap-6">
+              <a href="#" className="w-10 h-10 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:border-white transition-all shadow-sm">
+                <Facebook size={18} />
+              </a>
+              <a href="#" className="w-10 h-10 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:border-white transition-all shadow-sm">
+                <Instagram size={18} />
+              </a>
+              <a href="#" className="w-10 h-10 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:border-white transition-all shadow-sm">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.13-1.47V18.77a6.738 6.738 0 0 1-6.76 6.76 6.738 6.738 0 0 1-6.76-6.76 6.738 6.738 0 0 1 6.76-6.76c.42-.02.84.03 1.25.12v4.03a2.71 2.71 0 0 0-1.25-.12 2.728 2.728 0 0 0-2.72 2.73 2.728 2.728 0 0 0 2.72 2.73 2.728 2.728 0 0 0 2.73-2.73V.02z"/>
+                </svg>
+              </a>
+              <a href="#" className="w-10 h-10 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:border-white transition-all shadow-sm group">
+                <img src="https://illuminatelabs.space/assets/xhs_logo.png" className="w-5 h-5 object-contain brightness-0 invert opacity-40 group-hover:opacity-100 transition-all" referrerPolicy="no-referrer" alt="Xiaohongshu" />
+              </a>
+            </div>
             <div className="flex items-center gap-8">
                {['Compliance', 'Data Security', 'Registry Terms'].map(item => (
                  <a key={item} href="#" className="text-[9px] font-black uppercase tracking-widest text-white/20 hover:text-rose-500 transition-colors">{item}</a>

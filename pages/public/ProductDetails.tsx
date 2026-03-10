@@ -21,7 +21,10 @@ import {
   X,
   // Fix: Added missing ArrowUpRight import used in the navigation menu
   ArrowUpRight,
-  Search
+  Search,
+  User as UserIcon,
+  Facebook,
+  Instagram
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Product, Brand, Category, Profile } from '../../types';
@@ -217,10 +220,10 @@ const ProductDetails: React.FC = () => {
       </div>
 
       {/* Header */}
-      <nav className={`fixed left-0 right-0 z-[100] px-4 md:px-10 pointer-events-none transition-all duration-500 ${scrolled ? 'top-0 py-4 bg-white/80 backdrop-blur-2xl border-b border-slate-100 shadow-lg' : 'top-4 md:top-6'}`}>
+      <nav className={`fixed left-0 right-0 z-[100] px-4 md:px-10 pointer-events-none transition-all duration-500 ${scrolled ? 'top-0 py-4 bg-white/80 backdrop-blur-2xl border-b border-slate-100 shadow-lg' : 'top-0'}`}>
         <div className="max-w-[1440px] mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center pointer-events-auto group">
-            <img src={LOGO_URL} className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${scrolled ? 'h-16 md:h-24' : 'h-28 md:h-44'}`} alt="Meadow" />
+            <img src={LOGO_URL} className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${scrolled ? 'h-14 md:h-20' : 'h-24 md:h-36'}`} alt="Meadow" />
           </Link>
           
           <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-8 py-3 gap-6 md:gap-8 lg:gap-10 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90 group">
@@ -231,10 +234,10 @@ const ProductDetails: React.FC = () => {
                 placeholder="Search products..." 
                 value={headerSearch}
                 onChange={(e) => setHeaderSearch(e.target.value)}
-                className="bg-slate-100/50 border-none rounded-full py-4 pl-14 pr-8 text-sm font-bold w-80 focus:w-[450px] transition-all outline-none focus:bg-white focus:ring-1 focus:ring-slate-200"
+                className="bg-slate-100/50 border-none rounded-full py-3 pl-14 pr-8 text-sm font-bold w-48 focus:w-64 transition-all outline-none focus:bg-white focus:ring-1 focus:ring-slate-200"
               />
             </form>
-            <Link to="/categories" className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Products</Link>
+            <Link to="/categories" className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Category</Link>
             <Link to="/categories" className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Brand</Link>
             <Link 
               to="/customised" 
@@ -243,19 +246,28 @@ const ProductDetails: React.FC = () => {
               <Zap size={18} className="text-rose-400" />
               Build Your Own PC
             </Link>
-            <div className="w-px h-6 bg-slate-200 mx-2"></div>
-            <button 
-              onClick={() => openMenu('all')}
-              className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.25em] text-slate-900 group-hover:text-blue-600 transition-all"
-            >
-              <Menu size={18} />
+          </div>
+
+          <div className="flex items-center gap-3 md:gap-6 pointer-events-auto">
+            {!user ? (
+               <button onClick={() => navigate('/')} className="w-12 h-12 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-sm">
+                 <UserIcon size={20} />
+               </button>
+            ) : (
+               <button onClick={() => navigate(profile?.role === 'admin' ? '/admin/dashboard' : '/customer/dashboard')} className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-slate-200 overflow-hidden shadow-sm">
+                 <img src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`} className="w-full h-full object-cover" />
+               </button>
+            )}
+            <button onClick={() => setIsCartOpen(true)} className="w-14 h-14 md:w-16 md:h-16 bg-slate-900 text-white rounded-full flex items-center justify-center relative shadow-xl hover:scale-105 transition-all">
+              <ShoppingCart size={22} />
+              {cart.length > 0 && <span className="absolute -top-1 -right-1 w-6 h-6 md:w-7 md:h-7 bg-blue-500 text-white text-[10px] md:text-xs font-black flex items-center justify-center rounded-full border-2 border-white">{cart.length}</span>}
             </button>
           </div>
         </div>
       </nav>
 
       {/* Product Content */}
-      <main className="pt-32 md:pt-48 pb-20 px-4 md:px-10 max-w-[1440px] mx-auto">
+      <main className="pt-24 md:pt-36 pb-20 px-4 md:px-10 max-w-[1440px] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-20 items-start">
           
           {/* Visual Showcase (Left - 7 Columns) */}
@@ -481,6 +493,24 @@ const ProductDetails: React.FC = () => {
       <footer className="bg-[#F9FAFB] px-4 md:px-10 py-24 border-t border-slate-100">
         <div className="max-w-[1440px] mx-auto text-center">
            <img src={LOGO_URL} className="h-16 md:h-24 w-auto object-contain mx-auto opacity-30 mb-12" alt="Meadow" />
+           
+           <div className="flex items-center justify-center gap-6 mb-12">
+             <a href="#" className="w-12 h-12 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm">
+               <Facebook size={20} />
+             </a>
+             <a href="#" className="w-12 h-12 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm">
+               <Instagram size={20} />
+             </a>
+             <a href="#" className="w-12 h-12 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm">
+               <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                 <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.13-1.47V18.77a6.738 6.738 0 0 1-6.76 6.76 6.738 6.738 0 0 1-6.76-6.76 6.738 6.738 0 0 1 6.76-6.76c.42-.02.84.03 1.25.12v4.03a2.71 2.71 0 0 0-1.25-.12 2.728 2.728 0 0 0-2.72 2.73 2.728 2.728 0 0 0 2.72 2.73 2.728 2.728 0 0 0 2.73-2.73V.02z"/>
+               </svg>
+             </a>
+             <a href="#" className="w-12 h-12 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm">
+               <img src="https://illuminatelabs.space/assets/xhs_logo.png" className="w-6 h-6 object-contain" referrerPolicy="no-referrer" alt="Xiaohongshu" />
+             </a>
+           </div>
+
            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300">© {new Date().getFullYear()} Meadow SDN BHD — ALL RIGHTS RESERVED</p>
         </div>
       </footer>
