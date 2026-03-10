@@ -526,7 +526,7 @@ const Home: React.FC = () => {
       <nav className={`fixed left-0 right-0 z-[100] px-4 md:px-10 pointer-events-none transition-all duration-500 ${scrolled ? 'top-0 py-4 bg-white/80 backdrop-blur-2xl border-b border-slate-100 shadow-lg' : 'top-0'}`}>
         <div className="max-w-[1440px] mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center pointer-events-auto group">
-            <img src={LOGO_URL} className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${scrolled ? 'h-14 md:h-20' : 'h-24 md:h-36'}`} alt="Meadow" />
+            <img src={LOGO_URL} className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 h-24 md:h-36`} alt="Meadow" />
           </Link>
 
           <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-8 py-3 gap-6 md:gap-8 lg:gap-10 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90 group">
