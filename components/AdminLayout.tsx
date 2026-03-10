@@ -105,7 +105,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout }) => {
                   )}
                   
                   <Icon size={22} className={isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-900'} />
-                  {isSidebarOpen && <span className={`font-semibold text-sm ${isActive ? 'text-blue-600' : ''}`}>{item.name}</span>}
+                  {isSidebarOpen && <span className={`font-nav text-sm ${isActive ? 'text-blue-600' : ''}`}>{item.name}</span>}
                 </Link>
               );
             })}
@@ -122,7 +122,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout }) => {
                 <item.icon size={22} className="text-slate-400 group-hover:text-slate-900" />
                 {isSidebarOpen && (
                   <>
-                    <span className="font-semibold text-sm flex-1 text-left">{item.name}</span>
+                    <span className="font-nav text-sm flex-1 text-left">{item.name}</span>
                     {item.badge && (
                       <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                         {item.badge}
@@ -165,7 +165,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout }) => {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-20 bg-white/80 backdrop-blur-md rounded-3xl mb-4 flex items-center justify-between px-8 border border-white shadow-sm">
           <div>
-            <h1 className="text-xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl font-nav text-slate-900 tracking-tight">
               {primaryMenuItems.find(i => i.path === location.pathname)?.name || 'Management'}
             </h1>
             <p className="text-xs text-slate-400 font-medium">Internal System Control</p>
@@ -174,7 +174,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout }) => {
           <div className="flex items-center gap-6">
             <Link 
               to="/" 
-              className="px-4 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-200 transition-all flex items-center gap-2"
+              className="px-4 py-2 bg-slate-100 text-slate-600 text-xs font-nav rounded-xl hover:bg-slate-200 transition-all flex items-center gap-2"
             >
               <Monitor size={14} />
               Live Store

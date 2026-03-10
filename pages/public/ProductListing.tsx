@@ -232,11 +232,11 @@ const ProductListing: React.FC = () => {
                 className="bg-slate-100/50 border-none rounded-full py-3 pl-14 pr-8 text-sm font-bold w-48 focus:w-64 transition-all outline-none focus:bg-white focus:ring-1 focus:ring-slate-200"
               />
             </form>
-            <Link to="/categories" className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-all">Category</Link>
-            <Link to="/categories" className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-all">Brand</Link>
+            <Link to="/categories" className="text-sm font-nav uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-all">Category</Link>
+            <Link to="/categories" className="text-sm font-nav uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-all">Brand</Link>
             <Link 
               to="/customised" 
-              className="px-8 py-4 bg-slate-900 text-white text-xs font-black uppercase tracking-[0.3em] rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-slate-900/20 hover:shadow-rose-600/30 flex items-center gap-2"
+              className="px-8 py-4 bg-slate-900 text-white text-xs font-nav uppercase tracking-[0.3em] rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-slate-900/20 hover:shadow-rose-600/30 flex items-center gap-2"
             >
               <Zap size={18} className="text-rose-400" />
               Build Your Own PC

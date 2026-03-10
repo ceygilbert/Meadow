@@ -540,11 +540,11 @@ const Home: React.FC = () => {
                 className="bg-slate-100/50 border-none rounded-full py-3 pl-14 pr-8 text-sm font-bold w-48 focus:w-64 transition-all outline-none focus:bg-white focus:ring-1 focus:ring-slate-200"
               />
             </form>
-            <Link to="/categories" className="text-sm font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Category</Link>
-            <Link to="/categories" className="text-sm font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Brand</Link>
+            <Link to="/categories" className="text-sm font-nav uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Category</Link>
+            <Link to="/categories" className="text-sm font-nav uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Brand</Link>
             <Link 
               to="/customised" 
-              className="px-8 py-4 bg-slate-900 text-white text-xs font-black uppercase tracking-[0.3em] rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-slate-900/20 hover:shadow-rose-600/30 flex items-center gap-2"
+              className="px-8 py-4 bg-slate-900 text-white text-xs font-nav uppercase tracking-[0.3em] rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-slate-900/20 hover:shadow-rose-600/30 flex items-center gap-2"
             >
               <Zap size={18} className="text-rose-400" />
               Build Your Own PC
@@ -570,7 +570,7 @@ const Home: React.FC = () => {
       </nav>
 
       {/* Hero Section */}
-      <header className="relative pt-4 md:pt-6 px-4 md:px-10 pb-4 md:pb-8">
+      <header className="relative pt-4 md:pt-6 px-4 md:px-10 pb-0">
         <div className="hidden lg:block absolute top-20 left-10 text-[11vw] font-black text-slate-50 tracking-tighter leading-none pointer-events-none select-none -z-10 uppercase">
           Precision Engineering
         </div>
@@ -628,132 +628,8 @@ const Home: React.FC = () => {
         </div>
       </header>
 
-      {/* Feature Blocks Section - Hidden per user request */}
-      {/* <section className="px-4 md:px-10 py-10 md:py-20 max-w-[1440px] mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          
-          <div className="aspect-[3/4] md:aspect-[4/5] rounded-[3rem] overflow-hidden relative group shadow-2xl">
-             <img 
-               src="https://images.unsplash.com/photo-1591488320449-011701bb6704?auto=format&fit=crop&q=80" 
-               className="absolute inset-0 w-full h-full object-cover transition-transform duration-[8s] group-hover:scale-110" 
-               alt="Custom PC Interior" 
-             />
-             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-             
-             <div className="absolute top-8 left-8">
-               <div className="px-4 py-2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                 <Video size={14} className="fill-white" /> View Showcase
-               </div>
-             </div>
-             <div className="absolute top-8 right-8">
-               <Link to="/customised" className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-slate-900 shadow-xl hover:scale-110 transition-all">
-                  <ArrowUpRight size={24} />
-               </Link>
-             </div>
-
-             <div className="absolute bottom-10 left-10 right-10 flex flex-col gap-8">
-                <h3 className="text-4xl md:text-5xl font-black text-white leading-tight tracking-tighter uppercase">Bespoke <br /> Performance</h3>
-                <div className="flex justify-end">
-                   <Link 
-                     to="/customised" 
-                     className="px-10 py-4 bg-white text-slate-900 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-2xl"
-                   >
-                     Build Your Own
-                   </Link>
-                </div>
-             </div>
-          </div>
-
-          <div className="aspect-[3/4] md:aspect-[4/5] rounded-[3rem] overflow-hidden relative group shadow-2xl">
-             <img 
-               src="https://images.unsplash.com/photo-1626218174358-7769486c4b79?auto=format&fit=crop&q=80" 
-               className="absolute inset-0 w-full h-full object-cover transition-transform duration-[8s] group-hover:scale-110" 
-               alt="PC Workstation" 
-             />
-             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-             
-             <div className="absolute top-8 left-8">
-               <div className="px-4 py-2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                 <Video size={14} className="fill-white" /> View Build
-               </div>
-             </div>
-             <div className="absolute top-8 right-8">
-               <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-slate-900 shadow-xl hover:scale-110 transition-all">
-                  <ArrowUpRight size={24} />
-               </div>
-             </div>
-
-             <div className="absolute bottom-10 left-10 right-10 flex flex-col gap-8">
-                <h3 className="text-4xl md:text-5xl font-black text-white leading-tight tracking-tighter uppercase">Elite <br /> Workflow</h3>
-                <div className="flex justify-end">
-                   <button className="px-10 py-4 bg-white text-slate-900 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-2xl">
-                     Get Started
-                   </button>
-                </div>
-             </div>
-          </div>
-
-          <div className="aspect-[3/4] md:aspect-[4/5] rounded-[3rem] overflow-hidden relative group shadow-2xl">
-             <img 
-               src="https://images.unsplash.com/photo-1547082299-de196ea013d6?auto=format&fit=crop&q=80" 
-               className="absolute inset-0 w-full h-full object-cover transition-transform duration-[8s] group-hover:scale-110" 
-               alt="Gaming Rig" 
-             />
-             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-             
-             <div className="absolute top-8 left-8">
-               <div className="px-4 py-2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                 <Plus size={14} className="text-white" /> Upgrade Now
-               </div>
-             </div>
-             <div className="absolute top-8 right-8">
-               <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-slate-900 shadow-xl hover:scale-110 transition-all">
-                  <ArrowUpRight size={24} />
-               </div>
-             </div>
-
-             <div className="absolute bottom-10 left-10 right-10 flex flex-col gap-8">
-                <h3 className="text-4xl md:text-5xl font-black text-white leading-tight tracking-tighter uppercase">Supreme <br /> Stability</h3>
-                <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md rounded-full px-6 py-2 border border-white/20">
-                   <input type="email" placeholder="Your email" className="bg-transparent text-white text-xs outline-none placeholder:text-white/40 flex-1" />
-                   <button className="bg-white text-slate-900 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all">Go</button>
-                </div>
-             </div>
-          </div>
-        </div>
-      </section> */}
-
-      {/* Specialized Infinite Ticker Section */}
-      <section className="py-10 md:py-16 bg-white overflow-hidden relative">
-         <div className="absolute top-0 inset-x-0 h-px bg-slate-100"></div>
-         <div className="absolute bottom-0 inset-x-0 h-px bg-slate-100"></div>
-         
-         <div className="relative flex whitespace-nowrap overflow-hidden">
-            <div className="flex items-center gap-12 animate-ticker-infinite">
-               {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, idx) => (
-                 <div key={idx} className="flex items-center gap-12">
-                   <span className={`text-6xl md:text-[8rem] font-black uppercase tracking-tighter leading-none ${idx % 2 === 0 ? 'text-slate-900' : 'text-transparent stroke-text'}`} style={{ WebkitTextStroke: '2px #0f172a' }}>
-                     {item}
-                   </span>
-                   <Circle className="text-blue-600 shrink-0" size={24} fill="currentColor" />
-                 </div>
-               ))}
-            </div>
-         </div>
-
-         <style>{`
-           @keyframes ticker-infinite {
-             0% { transform: translateX(0); }
-             100% { transform: translateX(-50%); }
-           }
-           .animate-ticker-infinite {
-             animation: ticker-infinite 40s linear infinite;
-           }
-         `}</style>
-      </section>
-
       {/* CATEGORIES Section */}
-      <section className="px-4 md:px-10 py-20 md:py-32 max-w-[1440px] mx-auto">
+      <section className="px-4 md:px-10 pt-8 md:pt-12 pb-20 md:pb-32 max-w-[1440px] mx-auto">
         <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
           <div className="flex flex-col">
             <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-4">Categories</h2>
@@ -797,6 +673,39 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* BUILD YOUR OWN PC Section */}
+      <section className="px-4 md:px-10 py-10 md:py-20 max-w-[1440px] mx-auto">
+        <div className="relative aspect-video md:aspect-[21/9] rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-2xl group border border-slate-100">
+           <img 
+             src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80" 
+             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+             alt="Build Your Own PC"
+             referrerPolicy="no-referrer"
+           />
+           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
+           
+           <div className="absolute inset-0 flex flex-col justify-center p-8 md:p-20">
+             <div className="max-w-2xl animate-in fade-in slide-in-from-bottom duration-1000">
+               <div className="flex items-center gap-3 mb-6">
+                 <Zap size={20} className="text-[#ef4444]" fill="currentColor" />
+                 <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-[#ef4444]">Bespoke Performance</span>
+               </div>
+               <h2 className="text-4xl md:text-7xl font-black text-white tracking-tighter uppercase leading-[0.9] mb-8">Build Your <br /> Own PC.</h2>
+               <p className="text-sm md:text-lg text-white/70 font-medium max-w-md leading-relaxed mb-10">
+                 Unleash your creativity and power. Customise every component to match your specific needs, from gaming beasts to professional workstations.
+               </p>
+               <Link 
+                 to="/customised" 
+                 className="inline-flex items-center gap-4 px-10 py-4 bg-[#ef4444] text-white rounded-full font-black text-sm uppercase tracking-widest hover:bg-white hover:text-slate-900 transition-all shadow-xl group/btn w-fit"
+               >
+                 Start Building
+                 <ArrowRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
+               </Link>
+             </div>
+           </div>
+        </div>
+      </section>
+
       {/* THE COLLECTION Section */}
       <section className="bg-[#FAF9FB] px-4 md:px-10 py-20 md:py-32 overflow-hidden border-t border-slate-50">
         <div className="max-w-[1440px] mx-auto">
@@ -835,37 +744,33 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* BUILD YOUR OWN PC Section */}
-      <section className="px-4 md:px-10 py-10 md:py-20 max-w-[1440px] mx-auto">
-        <div className="relative aspect-video md:aspect-[21/9] rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-2xl group border border-slate-100">
-           <img 
-             src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80" 
-             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-             alt="Build Your Own PC"
-             referrerPolicy="no-referrer"
-           />
-           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
-           
-           <div className="absolute inset-0 flex flex-col justify-center p-8 md:p-20">
-             <div className="max-w-2xl animate-in fade-in slide-in-from-bottom duration-1000">
-               <div className="flex items-center gap-3 mb-6">
-                 <Zap size={20} className="text-[#C5FF41]" fill="currentColor" />
-                 <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-[#C5FF41]">Bespoke Performance</span>
-               </div>
-               <h2 className="text-4xl md:text-7xl font-black text-white tracking-tighter uppercase leading-[0.9] mb-8">Build Your <br /> Own PC.</h2>
-               <p className="text-sm md:text-lg text-white/70 font-medium max-w-md leading-relaxed mb-10">
-                 Unleash your creativity and power. Customise every component to match your specific needs, from gaming beasts to professional workstations.
-               </p>
-               <Link 
-                 to="/customised" 
-                 className="inline-flex items-center gap-4 px-10 py-4 bg-[#C5FF41] text-slate-900 rounded-full font-black text-sm uppercase tracking-widest hover:bg-white transition-all shadow-xl group/btn w-fit"
-               >
-                 Start Building
-                 <ArrowRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
-               </Link>
-             </div>
-           </div>
-        </div>
+      {/* Specialized Infinite Ticker Section */}
+      <section className="py-10 md:py-16 bg-white overflow-hidden relative">
+         <div className="absolute top-0 inset-x-0 h-px bg-slate-100"></div>
+         <div className="absolute bottom-0 inset-x-0 h-px bg-slate-100"></div>
+         
+         <div className="relative flex whitespace-nowrap overflow-hidden">
+            <div className="flex items-center gap-12 animate-ticker-infinite">
+               {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, idx) => (
+                 <div key={idx} className="flex items-center gap-12">
+                   <span className={`text-6xl md:text-[8rem] font-black uppercase tracking-tighter leading-none ${idx % 2 === 0 ? 'text-slate-900' : 'text-transparent stroke-text'}`} style={{ WebkitTextStroke: '2px #0f172a' }}>
+                     {item}
+                   </span>
+                   <Circle className="text-blue-600 shrink-0" size={24} fill="currentColor" />
+                 </div>
+               ))}
+            </div>
+         </div>
+
+         <style>{`
+           @keyframes ticker-infinite {
+             0% { transform: translateX(0); }
+             100% { transform: translateX(-50%); }
+           }
+           .animate-ticker-infinite {
+             animation: ticker-infinite 40s linear infinite;
+           }
+         `}</style>
       </section>
 
       {/* VISIT OUR STORE Section */}
@@ -1001,17 +906,17 @@ const Home: React.FC = () => {
             <div>
               <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Company</h4>
               <ul className="space-y-4">
-                <li><button onClick={() => openMenu('story')} className="text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Our Story</button></li>
-                <li><button onClick={() => openMenu('contact')} className="text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Contact Us</button></li>
-                <li><Link to="/stores" className="text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Store Locator</Link></li>
+                <li><button onClick={() => openMenu('story')} className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Our Story</button></li>
+                <li><button onClick={() => openMenu('contact')} className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Contact Us</button></li>
+                <li><Link to="/stores" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Store Locator</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Legal</h4>
               <ul className="space-y-4">
-                <li><a href="#" className="text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Terms & Conditions</a></li>
-                <li><a href="#" className="text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Privacy Policy</a></li>
-                <li><a href="#" className="text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Refund Policy</a></li>
+                <li><a href="#" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Terms & Conditions</a></li>
+                <li><a href="#" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Privacy Policy</a></li>
+                <li><a href="#" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Refund Policy</a></li>
               </ul>
             </div>
             <div>

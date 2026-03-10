@@ -188,15 +188,15 @@ const Categories: React.FC = () => {
                 <p className="text-xs font-black uppercase tracking-[0.4em] text-slate-300 mb-12">Navigation Protocol</p>
                 <nav className="flex flex-col gap-12 md:gap-16">
                    <Link to="/" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6">
-                      <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Home</span>
+                      <span className="text-4xl md:text-7xl font-nav uppercase tracking-tighter text-slate-900">Home</span>
                       <ArrowUpRight className="text-slate-200 group-hover:text-slate-900 transition-colors" size={32} />
                    </Link>
                    <Link to="/customised" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6">
-                      <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-rose-600 group-hover:italic transition-all">Build Your Own PC</span>
+                      <span className="text-4xl md:text-7xl font-nav uppercase tracking-tighter text-rose-600 group-hover:italic transition-all">Build Your Own PC</span>
                       <Zap className="text-rose-500 animate-pulse" size={32} />
                    </Link>
                    <Link to="/stores" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6">
-                      <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Stores</span>
+                      <span className="text-4xl md:text-7xl font-nav uppercase tracking-tighter text-slate-900">Stores</span>
                       <ArrowUpRight className="text-slate-200 group-hover:text-slate-900 transition-colors" size={32} />
                    </Link>
                 </nav>
@@ -223,11 +223,11 @@ const Categories: React.FC = () => {
                 className="bg-slate-100/50 border-none rounded-full py-3 pl-14 pr-8 text-sm font-bold w-48 focus:w-64 transition-all outline-none focus:bg-white focus:ring-1 focus:ring-slate-200"
               />
             </form>
-            <Link to="/categories" className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Category</Link>
-            <Link to="/categories" className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Brand</Link>
+            <Link to="/categories" className="text-sm font-nav uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Category</Link>
+            <Link to="/categories" className="text-sm font-nav uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Brand</Link>
             <Link 
               to="/customised" 
-              className="px-8 py-4 bg-slate-900 text-white text-xs font-black uppercase tracking-[0.3em] rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-slate-900/20 hover:shadow-rose-600/30 flex items-center gap-2"
+              className="px-8 py-4 bg-slate-900 text-white text-xs font-nav uppercase tracking-[0.3em] rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-slate-900/20 hover:shadow-rose-600/30 flex items-center gap-2"
             >
               <Zap size={18} className="text-rose-400" />
               Build Your Own PC

@@ -78,7 +78,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ onLogout }) => {
                 }`}
               >
                 <Icon size={20} className={isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-900'} />
-                {isSidebarOpen && <span className={`font-bold text-xs uppercase tracking-widest ${isActive ? 'text-blue-600' : ''}`}>{item.name}</span>}
+                {isSidebarOpen && <span className={`font-nav text-xs uppercase tracking-widest ${isActive ? 'text-blue-600' : ''}`}>{item.name}</span>}
               </Link>
             );
           })}
@@ -110,13 +110,13 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ onLogout }) => {
           <div className="flex items-center gap-4 text-slate-300">
              <LayoutDashboard size={18} />
              <div className="w-px h-4 bg-slate-200" />
-             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+             <span className="text-[10px] font-nav uppercase tracking-widest text-slate-400">
                 Meadow Customer Experience Platform
              </span>
           </div>
           
           <div className="flex items-center gap-4">
-             <Link to="/" className="px-5 py-2 bg-white text-slate-900 text-[10px] font-black rounded-xl border border-slate-100 hover:bg-slate-50 transition-all uppercase tracking-widest flex items-center gap-2 shadow-sm">
+             <Link to="/" className="px-5 py-2 bg-white text-slate-900 text-[10px] font-nav rounded-xl border border-slate-100 hover:bg-slate-50 transition-all uppercase tracking-widest flex items-center gap-2 shadow-sm">
                 <Monitor size={14} /> Browse Shop
              </Link>
              <button className="p-2.5 text-slate-400 hover:text-blue-600 rounded-xl transition-all relative">
