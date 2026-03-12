@@ -18,47 +18,29 @@ import {
   ShoppingCart,
   ArrowRight,
   Facebook,
-  Instagram
+  Instagram,
+  RefreshCw,
+  Wrench,
+  Award,
+  FileText,
+  ClipboardCheck,
+  Cable,
+  Headphones,
+  Settings,
+  Download,
+  BadgeCheck
 } from 'lucide-react';
 
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/White%20Full%20Logo.png";
 
 const Customised: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
-  const [activeStep, setActiveStep] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const serviceBlueprint = [
-    {
-      title: "Strategic Consultation",
-      desc: "Our master engineers analyze your specific computational needs, from multi-threaded workflows to low-latency gaming profiles.",
-      icon: <MessageCircle size={36} strokeWidth={1} />,
-      metric: "PHASE 01"
-    },
-    {
-      title: "Precision Integration",
-      desc: "Every component is verified for electrical harmony. Cables are routed with surgical precision to maximize thermal efficiency.",
-      icon: <Microchip size={36} strokeWidth={1} />,
-      metric: "PHASE 02"
-    },
-    {
-      title: "Thermal Validation",
-      desc: "72-hour stress testing under extreme thermal loads ensures your rig remains stable under the most demanding tasks.",
-      icon: <Thermometer size={36} strokeWidth={1} />,
-      metric: "PHASE 03"
-    },
-    {
-      title: "Concierge Deployment",
-      desc: "Hand-delivered within Johor Bahru and Skudai regions. Our team performs on-site optimization for your workspace.",
-      icon: <Truck size={36} strokeWidth={1} />,
-      metric: "PHASE 04"
-    }
-  ];
 
   const testimonials = [
     {
@@ -104,7 +86,7 @@ const Customised: React.FC = () => {
         <div className="hidden lg:flex items-center bg-white/10 border border-white/20 rounded-full p-2 gap-2">
             <Link to="/buildpc" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Custom Build PC</Link>
             <Link to="/products?category=desktop" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Pre-Built PC</Link>
-            <Link to="/customer/dashboard" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Track Your Order</Link>
+            <Link to="/track-order" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Track Your Order</Link>
             <Link to="/stores" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Contact Us</Link>
         </div>
 
@@ -241,84 +223,87 @@ const Customised: React.FC = () => {
         </div>
       </section>
 
-      {/* The Methodology */}
-      <section className="px-8 md:px-20 py-40 max-w-[1600px] mx-auto z-10">
-        <div className="flex flex-col items-center mb-40 text-center">
-           <h2 className="font-black text-6xl md:text-9xl uppercase tracking-tighter text-white mb-8">The Methodology</h2>
-           <p className="text-[12px] font-black uppercase tracking-[0.5em] text-rose-500">Spatial Engineering Protocol</p>
+      {/* Our Portfolio Section */}
+      <section className="px-8 md:px-20 py-24 max-w-[1600px] mx-auto relative z-10">
+        <div className="text-center mb-20">
+          <h2 className="font-black text-5xl md:text-7xl lg:text-[8rem] uppercase tracking-tighter text-white leading-[0.9] mb-16">Our Portfolio</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
+            {[
+              { label: "Years Experience", value: "10+" },
+              { label: "PCs Built", value: "5,000+" },
+              { label: "5 Star Reviews", value: "1,000+" },
+              { label: "Branches", value: "7+" }
+            ].map((stat, i) => (
+              <div key={i} className="space-y-2">
+                <p className="text-3xl md:text-5xl font-black text-white">{stat.value}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/60">{stat.label}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-1">
-           {serviceBlueprint.map((step, i) => (
-             <div 
-              key={i} 
-              onMouseEnter={() => setActiveStep(i)}
-              className={`p-14 border transition-all duration-1000 flex flex-col justify-between group h-[600px] relative overflow-hidden ${
-                activeStep === i 
-                  ? 'bg-white/[0.06] border-white/30' 
-                  : 'bg-transparent border-white/10 opacity-60 hover:opacity-100'
-              }`}
-             >
-                {activeStep === i && (
-                  <div className="absolute top-0 left-0 w-full h-[3px] bg-rose-600 shadow-[0_0_20px_rgba(225,29,72,0.9)]"></div>
-                )}
-                
-                <div className="space-y-14">
-                   <div className={`transition-all duration-1000 ${activeStep === i ? 'text-rose-600 scale-110' : 'text-white/40'}`}>
-                      {step.icon}
-                   </div>
-                   <div className="space-y-8">
-                      <h4 className="font-black text-4xl uppercase tracking-tighter text-white transition-all">{step.title}</h4>
-                      <p className="text-base text-slate-300 font-medium leading-loose group-hover:text-white transition-colors">{step.desc}</p>
-                   </div>
-                </div>
-                
-                <div className="pt-10 border-t border-white/10 flex items-end justify-between">
-                   <div className="flex flex-col">
-                      <span className="text-[11px] font-black text-rose-500 tracking-[0.3em] uppercase mb-2">{step.metric}</span>
-                      <span className="text-[12px] font-bold text-white/50 uppercase tracking-widest">Protocol Sync</span>
-                   </div>
-                   <div className={`w-12 h-12 rounded-full border border-white/20 flex items-center justify-center transition-all ${activeStep === i ? 'bg-white text-black' : 'text-white/40'}`}>
-                      <ChevronRight size={22} />
-                   </div>
-                </div>
-             </div>
-           ))}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[400px] md:h-[500px]">
+          <div className="relative group overflow-hidden rounded-[2rem] border border-white/10">
+            <img 
+              src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=800&auto=format&fit=crop" 
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
+              alt="Portfolio 1"
+              referrerPolicy="no-referrer"
+            />
+          </div>
+          <div className="relative group overflow-hidden rounded-[2rem] border border-white/10">
+            <img 
+              src="https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=800&auto=format&fit=crop" 
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
+              alt="Portfolio 2"
+              referrerPolicy="no-referrer"
+            />
+          </div>
+          <div className="relative group overflow-hidden rounded-[2rem] border border-white/10">
+            <img 
+              src="https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=800&auto=format&fit=crop" 
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
+              alt="Portfolio 3"
+              referrerPolicy="no-referrer"
+            />
+          </div>
         </div>
       </section>
 
-      {/* The Registry */}
-      <section className="px-8 md:px-20 py-40 relative z-10">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+      {/* We Care for You Section */}
+      <section className="px-8 md:px-20 py-32 max-w-[1600px] mx-auto relative z-10">
+        <div className="text-center mb-24">
+          <span className="text-[12px] font-black uppercase tracking-[0.6em] text-rose-500 mb-6 block">Our Commitment</span>
+          <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase mb-8">We Care for You.</h2>
+          <p className="text-slate-400 max-w-2xl mx-auto text-lg font-light leading-relaxed">
+            Securing a lifetime of professional after-sale services, ready on-call to ensure your computational performance remains absolute.
+          </p>
+        </div>
         
-        <div className="max-w-[1440px] mx-auto">
-          <div className="flex flex-col md:flex-row items-end justify-between mb-40 gap-16">
-             <div className="space-y-6">
-                <span className="text-[12px] font-black uppercase tracking-[0.6em] text-rose-500">Client Feedback</span>
-                <h2 className="font-black text-7xl md:text-[8rem] uppercase tracking-tighter text-white leading-none">The Registry.</h2>
-             </div>
-             <p className="text-slate-300 text-lg max-w-sm font-medium leading-relaxed italic border-l border-rose-600/50 pl-10">
-                "We feel what you imagine." — Creating the absolute standard for professional computational hardware.
-             </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-1px bg-white/10 p-px">
-             {testimonials.map((t, i) => (
-               <div key={i} className="bg-[#0a0b0c] p-20 relative group hover:bg-[#111213] transition-all duration-700">
-                  <Quote className="text-white/10 absolute top-14 right-14" size={72} strokeWidth={1} />
-                  <div className="flex gap-1.5 mb-14 opacity-70 group-hover:opacity-100 transition-opacity">
-                     {[...Array(t.rating)].map((_, i) => <Star key={i} size={14} className="text-rose-500 fill-rose-500" />)}
-                  </div>
-                  <p className="font-bold text-2xl text-slate-200 uppercase tracking-tight mb-20 leading-relaxed group-hover:text-white transition-colors">
-                    "{t.text}"
-                  </p>
-                  <div className="flex flex-col gap-3">
-                    <p className="text-base font-bold text-white tracking-tight">{t.name}</p>
-                    <p className="text-[12px] font-black text-rose-500 uppercase tracking-[0.3em]">{t.role}</p>
-                  </div>
-               </div>
-             ))}
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-8 gap-y-16">
+          {[
+            { icon: <ShieldCheck size={32} />, label: "Lifetime Free Labor" },
+            { icon: <RefreshCw size={32} />, label: "90 Days 1-to-1 Exchange" },
+            { icon: <Wrench size={32} />, label: "Free On-Site Support" },
+            { icon: <Award size={32} />, label: "Full Warranty Coverage" },
+            { icon: <Truck size={32} />, label: "Free Warranty Pick-up" },
+            { icon: <ClipboardCheck size={32} />, label: "Professional Stress Test" },
+            { icon: <Cable size={32} />, label: "Elite Cable Management" },
+            { icon: <Headphones size={32} />, label: "Lifetime Tech Support" },
+            { icon: <Settings size={32} />, label: "Free OS Installation" },
+            { icon: <Truck size={32} />, label: "Nationwide Delivery" },
+            { icon: <Download size={32} />, label: "Latest Driver Updates" },
+            { icon: <BadgeCheck size={32} />, label: "Genuine Components" }
+          ].map((item, i) => (
+            <div key={i} className="flex flex-col items-center text-center space-y-6 group">
+              <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-rose-500 group-hover:bg-rose-600 group-hover:text-white transition-all duration-500 shadow-xl">
+                {item.icon}
+              </div>
+              <div className="text-[10px] font-black text-white uppercase tracking-widest leading-tight max-w-[120px]">
+                {item.label}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 

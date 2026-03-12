@@ -125,6 +125,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [promoProducts, setPromoProducts] = useState<Product[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -281,7 +282,9 @@ const Home: React.FC = () => {
       if (prodRes.data) {
         setTrendingProducts(prodRes.data);
         const featured = prodRes.data.filter(p => p.is_featured === true);
-        setFeaturedProducts(featured.length > 0 ? featured : prodRes.data.slice(0, 3));
+        setFeaturedProducts(featured.length > 0 ? featured : prodRes.data.slice(0, 12));
+        const promo = prodRes.data.filter(p => p.is_Promo === true);
+        setPromoProducts(promo);
       }
       if (brandRes.data) setBrands(brandRes.data);
     } catch (err: any) {
@@ -553,8 +556,8 @@ const Home: React.FC = () => {
 
           <div className="flex items-center gap-3 md:gap-6 pointer-events-auto">
             {!user ? (
-               <button onClick={() => setIsAuthModalOpen(true)} className="w-12 h-12 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-sm">
-                 <UserIcon size={20} />
+               <button onClick={() => setIsAuthModalOpen(true)} className="w-14 h-14 md:w-16 md:h-16 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-xl hover:scale-105">
+                 <UserIcon size={22} />
                </button>
             ) : (
                <button onClick={() => navigate(profile?.role === 'admin' ? '/admin/dashboard' : '/customer/dashboard')} className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-slate-200 overflow-hidden shadow-sm">
@@ -629,10 +632,10 @@ const Home: React.FC = () => {
       </header>
 
       {/* CATEGORIES Section */}
-      <section className="px-4 md:px-10 pt-8 md:pt-12 pb-20 md:pb-32 max-w-[1440px] mx-auto">
-        <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
+      <section className="px-4 md:px-10 pt-16 md:pt-24 pb-20 md:pb-32 max-w-[1440px] mx-auto">
+        <div className="flex flex-col md:flex-row items-end justify-between mb-8 gap-6">
           <div className="flex flex-col">
-            <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-4">Categories</h2>
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-3">Categories</h2>
             <p className="text-xs text-slate-400 font-black uppercase tracking-[0.4em]">Browse by Hardware Class</p>
           </div>
           <Link to="/products" className="group flex items-center gap-4 text-xs font-black uppercase tracking-widest text-slate-900 hover:text-blue-600 transition-colors">
@@ -648,7 +651,11 @@ const Home: React.FC = () => {
             { name: 'PC Component', img: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80', slug: 'pc-component' },
             { name: 'Laptop', img: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80', slug: 'laptop' },
             { name: 'Peripheral', img: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&q=80', slug: 'peripheral' },
-            { name: 'Monitor', img: 'https://images.unsplash.com/photo-1551645120-d70bfe84c826?auto=format&fit=crop&q=80', slug: 'monitor' }
+            { name: 'Monitor', img: 'https://images.unsplash.com/photo-1551645120-d70bfe84c826?auto=format&fit=crop&q=80', slug: 'monitor' },
+            { name: 'Desktop', img: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?auto=format&fit=crop&q=80', slug: 'desktop' },
+            { name: 'Home & Office', img: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&q=80', slug: 'home-office' },
+            { name: 'Networking', img: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&q=80', slug: 'networking' },
+            { name: 'Smart Home', img: 'https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/smart_house.jpg?auto=format&fit=crop&q=80', slug: 'smart-home' }
           ].map((cat) => (
             <Link 
               key={cat.name}
@@ -659,6 +666,7 @@ const Home: React.FC = () => {
                 src={cat.img} 
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
                 alt={cat.name} 
+                referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
               
@@ -674,7 +682,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* BUILD YOUR OWN PC Section */}
-      <section className="px-4 md:px-10 py-10 md:py-20 max-w-[1440px] mx-auto">
+      <section className="px-4 md:px-10 py-0 max-w-[1440px] mx-auto">
         <div className="relative aspect-video md:aspect-[21/9] rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-2xl group border border-slate-100">
            <img 
              src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80" 
@@ -688,7 +696,7 @@ const Home: React.FC = () => {
              <div className="max-w-2xl animate-in fade-in slide-in-from-bottom duration-1000">
                <div className="flex items-center gap-3 mb-6">
                  <Zap size={20} className="text-[#ef4444]" fill="currentColor" />
-                 <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-[#ef4444]">Bespoke Performance</span>
+                 <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-[#e11d48]">Bespoke Performance</span>
                </div>
                <h2 className="text-4xl md:text-7xl font-black text-white tracking-tighter uppercase leading-[0.9] mb-8">Build Your <br /> Own PC.</h2>
                <p className="text-sm md:text-lg text-white/70 font-medium max-w-md leading-relaxed mb-10">
@@ -696,7 +704,7 @@ const Home: React.FC = () => {
                </p>
                <Link 
                  to="/customised" 
-                 className="inline-flex items-center gap-4 px-10 py-4 bg-[#ef4444] text-white rounded-full font-black text-sm uppercase tracking-widest hover:bg-white hover:text-slate-900 transition-all shadow-xl group/btn w-fit"
+                 className="inline-flex items-center gap-4 px-10 py-4 bg-[#e11d48] text-white rounded-full font-black text-sm uppercase tracking-widest hover:bg-white hover:text-slate-900 transition-all shadow-xl group/btn w-fit"
                >
                  Start Building
                  <ArrowRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
@@ -707,38 +715,91 @@ const Home: React.FC = () => {
       </section>
 
       {/* THE COLLECTION Section */}
-      <section className="bg-[#FAF9FB] px-4 md:px-10 py-20 md:py-32 overflow-hidden border-t border-slate-50">
+      <section className="bg-[#FAF9FB] px-4 md:px-10 pt-16 md:pt-24 pb-20 md:pb-32 overflow-hidden border-t border-slate-50">
         <div className="max-w-[1440px] mx-auto">
-          <div className="flex items-center justify-between mb-16 md:mb-20">
+          <div className="flex items-center justify-between mb-8">
              <div className="flex flex-col">
                 <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-3">The Collection</h2>
-                <p className="text-xs text-slate-300 font-black uppercase tracking-[0.3em]">Featured — {featuredProducts.length} Items Indexed</p>
+                <p className="text-sm text-slate-500 font-medium">Essentials that pair perfectly with your favourite devices.</p>
              </div>
              <div className="hidden md:flex gap-4">
                 <button className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all"><Search size={22} /></button>
              </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-10">
+          <div className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10">
+            {/* Description Block */}
+            <div className="w-[550px] h-[400px] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 flex flex-col justify-between shadow-sm border border-slate-100 snap-start flex-shrink-0 bg-[url('https://www.businesstoday.com.my/wp-content/uploads/2021/11/M6.jpg?auto=format&fit=crop&q=80')] bg-cover bg-center">
+               <div className="space-y-2">
+                 <h3 className="text-2xl font-black text-white tracking-tighter uppercase">Here and wow.</h3>
+                 <p className="text-xs text-white/70 font-medium">The accessories you love. In a fresh mix of colours.</p>
+               </div>
+            </div>
+
+            {/* Product Cards */}
             {featuredProducts.map((p) => (
-              <div key={p.id} className="w-full bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 relative flex flex-col group transition-all duration-500 hover:shadow-2xl">
-                 <button className="absolute top-8 right-8 w-11 h-11 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10">
-                    <Heart size={20} />
+              <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+                 <button 
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
+                 >
+                    <Heart size={14} />
                  </button>
-                 <Link to={`/product/${p.slug}`} className="flex-1 flex flex-col">
-                    <div className="aspect-[4/5] bg-slate-50 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden mb-8 relative flex items-center justify-center">
-                        <img src={p.image_url} className="w-full h-full object-contain p-6 group-hover:scale-110 transition-transform duration-1000" />
-                    </div>
-                    <div className="mb-8">
-                        <h3 className="text-lg font-black text-slate-900 tracking-tight leading-tight mb-2 truncate">{p.name}</h3>
-                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Meadow Tech</p>
-                    </div>
-                 </Link>
-                 <div className="flex items-center justify-between mt-auto">
-                    <span className="text-base font-black text-slate-900">RM{p.price.toLocaleString()}</span>
-                    <button onClick={() => addToCart(p)} className="px-6 py-2.5 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-full hover:bg-blue-600 transition-all shadow-lg">Add to cart</button>
+                 <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-3 relative flex items-center justify-center">
+                     <img src={p.image_url} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                  </div>
-              </div>
+                 <div className="mb-1">
+                     <h3 className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 truncate">{p.name}</h3>
+                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Meadow Tech</p>
+                 </div>
+                 <div>
+                     <span className="text-xs font-black text-slate-900">RM{p.price.toLocaleString()}</span>
+                 </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Banner Section */}
+      <section className="w-full h-24 bg-slate-900 flex items-center justify-center">
+        <p className="text-white font-black uppercase tracking-widest text-sm">
+          Free Shipping on all orders over RM500
+        </p>
+      </section>
+
+      {/* Promo Products Section */}
+      <section className="py-10 md:py-16 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-3">Promotions</h2>
+          <div className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10">
+            {/* Description Block */}
+            <div className="w-[550px] h-[400px] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 flex flex-col justify-between shadow-sm border border-slate-100 snap-start flex-shrink-0 bg-[url('https://ea.vox-cdn.com/production/theverge-circuit-breaker/images/final_cb_0086-45553ade.jpg')] bg-cover bg-center">
+               <div className="space-y-2">
+                 <h3 className="text-2xl font-black text-white tracking-tighter uppercase">Promotional Deals.</h3>
+                 <p className="text-xs text-white/70 font-medium">Limited time offers on selected items.</p>
+               </div>
+            </div>
+
+            {promoProducts.map((p) => (
+              <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+                 <button 
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
+                 >
+                    <Heart size={14} />
+                 </button>
+                 <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-3 relative flex items-center justify-center">
+                     <img src={p.image_url} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
+                 </div>
+                 <div className="mb-1">
+                     <h3 className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 truncate">{p.name}</h3>
+                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Meadow Tech</p>
+                 </div>
+                 <div>
+                     <span className="text-xs font-black text-slate-900">RM{p.price.toLocaleString()}</span>
+                 </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -779,18 +840,18 @@ const Home: React.FC = () => {
           <h2 className="text-3xl md:text-5xl font-black text-[#ef4444] tracking-tighter uppercase mb-12">Visit Our Store.</h2>
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Left Card */}
-            <div className="lg:w-1/3 bg-[#f3f4f6] rounded-2xl p-8 flex flex-col justify-between min-h-[400px] shadow-sm">
-              <div className="space-y-10">
+            <div className="lg:w-1/3 bg-[#f3f4f6] rounded-2xl p-8 flex flex-col justify-between min-h-[400px] shadow-sm text-center">
+              <div className="flex-1 flex flex-col justify-center">
                 <h3 className="text-2xl md:text-3xl font-black leading-tight text-black uppercase">
                   View all Meadow IT Location.
                 </h3>
-                <Link 
-                  to="/stores" 
-                  className="inline-block px-8 py-3 bg-white border-2 border-black rounded-xl text-sm font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
-                >
-                  Store Locator
-                </Link>
               </div>
+              <Link 
+                to="/stores" 
+                className="block w-full px-8 py-4 bg-white border-2 border-black rounded-xl text-sm font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm text-center"
+              >
+                Store Locator
+              </Link>
             </div>
 
             {/* Right Card (Video) */}

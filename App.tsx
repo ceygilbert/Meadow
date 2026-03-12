@@ -4,6 +4,7 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/public/Home';
 import StoreLocator from './pages/public/StoreLocator';
 import Customised from './pages/public/Customised';
+import TrackOrder from './pages/public/TrackOrder';
 import PCBuilder from './pages/public/PCBuilder';
 import Checkout from './pages/public/Checkout';
 import ProductDetails from './pages/public/ProductDetails';
@@ -126,6 +127,7 @@ const App: React.FC = () => {
         <Route path="/product/:slug" element={<ProductDetails />} />
         <Route path="/stores" element={<StoreLocator />} />
         <Route path="/customised" element={<Customised />} />
+        <Route path="/track-order" element={<TrackOrder />} />
         <Route path="/buildpc" element={<PCBuilder />} />
         <Route path="/checkout" element={<Checkout />} />
         

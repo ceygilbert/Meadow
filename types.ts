@@ -49,6 +49,7 @@ export interface Product {
   is_custom_build: boolean;
   is_customised: boolean;
   is_featured: boolean;
+  is_Promo: boolean;
   created_at?: string;
 }
 
