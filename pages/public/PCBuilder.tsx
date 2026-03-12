@@ -205,51 +205,21 @@ const PCBuilder: React.FC = () => {
 
   const schematicZones = [
     {
-      group: "Foundation Layer",
-      items: [
-        { id: 'promotion', label: 'Campaign / Promotion', icon: <TicketPercent size={24} />, multi: false },
-        { id: 'case', label: 'Architectural Case', icon: <Monitor size={24} />, multi: false },
-      ]
-    },
-    {
-      group: "Logic Core",
+      group: "Core Components",
       items: [
         { id: 'cpu', label: 'CPU Processor', icon: <Microchip size={24} />, multi: false },
-        { id: 'cpu cooler', label: 'Thermal Solution', icon: <Waves size={24} />, multi: false },
+        { id: 'motherboard', label: 'Motherboard', icon: <Layers size={24} />, multi: false },
+        { id: 'gpu', label: 'Graphic Card (GPU)', icon: <Gamepad2 size={24} />, multi: false },
+        { id: 'ram', label: 'RAM', icon: <Box size={24} />, multi: false, hasQty: true },
       ]
     },
     {
-      group: "Interface & Energy",
+      group: "Secondary Components",
       items: [
-        { id: 'motherboard', label: 'Logic Board', icon: <Layers size={24} />, multi: false },
-        { id: 'psu', label: 'Power Module', icon: <Zap size={24} />, multi: false },
-      ]
-    },
-    {
-      group: "Data & Runtime",
-      items: [
-        { id: 'ram', label: 'Memory Bank', icon: <Box size={24} />, multi: false, hasQty: true },
-        { id: 'storage', label: 'Persistence Layer', icon: <HardDrive size={24} />, multi: true },
-      ]
-    },
-    {
-      group: "Visual & Exhaust",
-      items: [
-        { id: 'gpu', label: 'Graphics Array', icon: <Gamepad2 size={24} />, multi: false },
-        { id: 'fans', label: 'ARGB Flow', icon: <Fan size={24} />, multi: false },
-      ]
-    },
-    {
-      group: "External Link & UI",
-      items: [
-        { id: 'networking', label: 'Network Adapter', icon: <Wifi size={24} />, multi: false },
-        { id: 'os', label: 'Operating System', icon: <Disc size={24} />, multi: false },
-      ]
-    },
-    {
-      group: "Tactile Interface",
-      items: [
-        { id: 'accessories', label: 'Master Accessories', icon: <MousePointer2 size={24} />, multi: true },
+        { id: 'storage', label: 'Storage (SSD)', icon: <HardDrive size={24} />, multi: true },
+        { id: 'cpu cooler', label: 'CPU Cooler', icon: <Waves size={24} />, multi: false },
+        { id: 'psu', label: 'Power Supply', icon: <Zap size={24} />, multi: false },
+        { id: 'case', label: 'Cases', icon: <Monitor size={24} />, multi: false },
       ]
     }
   ];
@@ -258,7 +228,7 @@ const PCBuilder: React.FC = () => {
     if (!activePopup) return;
     setSelections(prev => {
       const newSels = { ...prev };
-      if (activePopup === 'storage' || activePopup === 'accessories') {
+      if (activePopup === 'storage') {
         newSels[activePopup] = [...(newSels[activePopup] || []), { ...item }];
       } else if (activePopup === 'ram') {
         newSels[activePopup] = { ...item, quantity: 1 };
@@ -313,7 +283,7 @@ const PCBuilder: React.FC = () => {
     const ramQty = selections.ram?.quantity || 0;
     const memAlloc = Math.min(100, (ramBase * 0.8) + (ramQty > 1 ? 20 : 0));
     const stabilityBase = selections.psu ? 60 : 0;
-    const coolingBonus = (getWeight('cpu cooler') / 5) + (getWeight('fans') / 10);
+    const coolingBonus = (getWeight('cpu cooler') / 5);
     const systemStability = Math.min(100, stabilityBase + coolingBonus);
 
     return {
@@ -507,7 +477,7 @@ const PCBuilder: React.FC = () => {
               <div className="relative z-10 space-y-20">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="font-serif text-5xl font-light text-white leading-tight">Diagnostics.</h2>
+                    <h2 className="font-serif text-3xl font-light text-white leading-tight">Performance Overview.</h2>
                     <p className="text-[12px] font-black text-rose-500 uppercase tracking-[0.4em] mt-3">Live Telemetry</p>
                   </div>
                   <Activity size={40} className={`text-rose-500 ${totalBudget > 0 ? 'animate-pulse' : 'opacity-20'}`} />
@@ -515,10 +485,10 @@ const PCBuilder: React.FC = () => {
 
                 <div className="space-y-14">
                   {[
-                    { id: 'procPower', label: 'Processing Output', value: `${diagnostics.procPower}%`, color: 'bg-rose-600', width: diagnostics.procPower },
-                    { id: 'graphPower', label: 'Graphical Load', value: `${diagnostics.graphPower}%`, color: 'bg-rose-700', width: diagnostics.graphPower },
-                    { id: 'memAlloc', label: 'Data Registry', value: `${diagnostics.memAlloc}%`, color: 'bg-rose-800', width: diagnostics.memAlloc },
-                    { id: 'stability', label: 'Engine Health', value: diagnostics.stability, color: 'bg-white', width: diagnostics.stability !== 'None' ? 100 : 0 },
+                    { id: 'procPower', label: 'Processing Power (CPU)', value: `${diagnostics.procPower}%`, color: 'bg-rose-600', width: diagnostics.procPower },
+                    { id: 'graphPower', label: 'Graphical Performance (GPU)', value: `${diagnostics.graphPower}%`, color: 'bg-rose-700', width: diagnostics.graphPower },
+                    { id: 'memAlloc', label: 'Memory (RAM Size/Speed)', value: `${diagnostics.memAlloc}%`, color: 'bg-rose-800', width: diagnostics.memAlloc },
+                    { id: 'stability', label: 'Storage', value: diagnostics.stability, color: 'bg-white', width: diagnostics.stability !== 'None' ? 100 : 0 },
                   ].map((metric) => {
                     const isHoverLinked = hoveredZone && metricMapping[hoveredZone]?.includes(metric.id);
                     
@@ -551,15 +521,6 @@ const PCBuilder: React.FC = () => {
 
                 <div className="pt-16 border-t border-white/10 space-y-12">
                    <div className="flex items-end justify-between">
-                      <div>
-                        <p className="text-[12px] font-black text-white/40 uppercase tracking-[0.5em] mb-4">Investment Scale</p>
-                        <p className={`text-7xl font-black tracking-tighter transition-all duration-1000 ${totalBudget > 0 ? 'text-white' : 'text-white/20'}`}>
-                          RM {totalBudget.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                        </p>
-                      </div>
-                      <div className="p-6 bg-white/5 rounded-[1.5rem] border border-white/10">
-                         <Calculator size={32} className="text-rose-500" />
-                      </div>
                    </div>
                    
                    <div className="p-10 bg-rose-600/10 border border-rose-600/30 rounded-[3rem] flex items-center gap-8 group/support cursor-pointer hover:bg-rose-600/20 transition-all">
@@ -567,8 +528,7 @@ const PCBuilder: React.FC = () => {
                          <MessageCircle size={28} />
                       </div>
                       <div>
-                         <p className="text-[13px] font-black uppercase tracking-[0.2em] text-white">Direct Advisory</p>
-                         <p className="text-[11px] font-bold uppercase text-rose-500 mt-1">Registry Architect Link</p>
+                         <p className="text-[13px] font-black uppercase tracking-[0.2em] text-white">Contact Us</p>
                       </div>
                       <ChevronRight size={24} className="ml-auto text-rose-500 transition-transform group-hover/support:translate-x-2" />
                    </div>
@@ -586,8 +546,8 @@ const PCBuilder: React.FC = () => {
           
           <div className="flex items-center gap-20 px-12">
             <div className="flex flex-col">
-              <span className="text-[12px] font-black text-rose-500 uppercase tracking-[0.6em]">Registry Manifest</span>
-              <span className="font-serif text-4xl font-light text-white tracking-tight italic mt-2">Prototype_Noir</span>
+              <span className="text-[12px] font-black text-rose-500 uppercase tracking-[0.6em]">Total Price</span>
+              <span className="font-serif text-2xl font-light text-white tracking-tight italic mt-2">RM {totalBudget.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
             </div>
             <div className="hidden md:flex flex-col items-start border-l border-white/10 pl-20">
                <span className="text-[11px] font-black text-white/50 uppercase tracking-[0.4em]">Hardware Calibration</span>
