@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   ShoppingCart, 
@@ -32,6 +32,7 @@ import {
   Facebook,
   Instagram
 } from 'lucide-react';
+import PublicNavbar from '../../components/PublicNavbar';
 import { supabase } from '../../lib/supabase';
 import { Product, Profile, Brand } from '../../types';
 
@@ -158,6 +159,28 @@ const Home: React.FC = () => {
   const [headerSearch, setHeaderSearch] = useState('');
   const [scrolled, setScrolled] = useState(false);
   const [activeStoreIndex, setActiveStoreIndex] = useState(0);
+  const collectionRef = useRef<HTMLDivElement>(null);
+  const promoRef = useRef<HTMLDivElement>(null);
+
+  const scrollCollection = (direction: 'left' | 'right') => {
+    if (collectionRef.current) {
+      const scrollAmount = 400;
+      collectionRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollPromo = (direction: 'left' | 'right') => {
+    if (promoRef.current) {
+      const scrollAmount = 400;
+      promoRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -525,60 +548,23 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Editorial Floating Header */}
-      <nav className={`fixed left-0 right-0 z-[100] px-4 md:px-10 pointer-events-none transition-all duration-500 ${scrolled ? 'top-0 py-4 bg-white/80 backdrop-blur-2xl border-b border-slate-100 shadow-lg' : 'top-0'}`}>
-        <div className="max-w-[1440px] mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center pointer-events-auto group">
-            <img src={LOGO_URL} className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 h-24 md:h-36`} alt="Meadow" />
-          </Link>
-
-          <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-8 py-3 gap-6 md:gap-8 lg:gap-10 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90 group">
-            <form onSubmit={handleHeaderSearch} className="relative flex items-center">
-              <Search size={18} className="absolute left-5 text-slate-400" />
-              <input 
-                type="text" 
-                placeholder="Search products..." 
-                value={headerSearch}
-                onChange={(e) => setHeaderSearch(e.target.value)}
-                className="bg-slate-100/50 border-none rounded-full py-3 pl-14 pr-8 text-sm font-bold w-48 focus:w-64 transition-all outline-none focus:bg-white focus:ring-1 focus:ring-slate-200"
-              />
-            </form>
-            <Link to="/categories" className="text-sm font-nav uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Category</Link>
-            <Link to="/categories" className="text-sm font-nav uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 transition-all">Brand</Link>
-            <Link 
-              to="/customised" 
-              className="px-8 py-4 bg-slate-900 text-white text-xs font-nav uppercase tracking-[0.3em] rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-slate-900/20 hover:shadow-rose-600/30 flex items-center gap-2"
-            >
-              <Zap size={18} className="text-rose-400" />
-              Build Your Own PC
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-3 md:gap-6 pointer-events-auto">
-            {!user ? (
-               <button onClick={() => setIsAuthModalOpen(true)} className="w-14 h-14 md:w-16 md:h-16 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-xl hover:scale-105">
-                 <UserIcon size={22} />
-               </button>
-            ) : (
-               <button onClick={() => navigate(profile?.role === 'admin' ? '/admin/dashboard' : '/customer/dashboard')} className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-slate-200 overflow-hidden shadow-sm">
-                 <img src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`} className="w-full h-full object-cover" />
-               </button>
-            )}
-            <button onClick={() => setIsCartOpen(true)} className="w-14 h-14 md:w-16 md:h-16 bg-slate-900 text-white rounded-full flex items-center justify-center relative shadow-xl hover:scale-105 transition-all">
-              <ShoppingCart size={22} />
-              {cart.length > 0 && <span className="absolute -top-1 -right-1 w-6 h-6 md:w-7 md:h-7 bg-blue-500 text-white text-[10px] md:text-xs font-black flex items-center justify-center rounded-full border-2 border-white">{cart.length}</span>}
-            </button>
-          </div>
-        </div>
-      </nav>
+      <PublicNavbar 
+        user={user}
+        profile={profile}
+        cartCount={cart.length}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
+        onOpenCart={() => setIsCartOpen(true)}
+        scrolled={scrolled}
+      />
 
       {/* Hero Section */}
-      <header className="relative pt-4 md:pt-6 px-4 md:px-10 pb-0">
+      <header className="relative pt-16 md:pt-20 pb-0">
         <div className="hidden lg:block absolute top-20 left-10 text-[11vw] font-black text-slate-50 tracking-tighter leading-none pointer-events-none select-none -z-10 uppercase">
           Precision Engineering
         </div>
 
-        <div className="max-w-[1440px] mx-auto bg-[#F7F8FA] rounded-[2rem] md:rounded-[3.5rem] relative min-h-[400px] md:min-h-[550px] flex items-center overflow-hidden border border-slate-100 shadow-2xl shadow-slate-200/40">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-10">
+          <div className="bg-[#F7F8FA] rounded-[2rem] md:rounded-[3.5rem] relative min-h-[400px] md:min-h-[550px] flex items-center overflow-hidden border border-slate-100 shadow-2xl shadow-slate-200/40">
           
           {/* Animated Background Slider */}
           <div className="absolute inset-0 z-0">
@@ -613,6 +599,7 @@ const Home: React.FC = () => {
              ))}
           </div>
         </div>
+      </div>
 
         {/* Slider Controls - Repositioned to screen edges */}
         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-30 px-4 md:px-10 flex justify-between pointer-events-none">
@@ -646,7 +633,7 @@ const Home: React.FC = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+        <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 md:gap-8 pb-10 scrollbar-hide">
           {[
             { name: 'PC Component', img: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80', slug: 'pc-component' },
             { name: 'Laptop', img: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80', slug: 'laptop' },
@@ -660,7 +647,7 @@ const Home: React.FC = () => {
             <Link 
               key={cat.name}
               to={`/products?category=${cat.slug}`}
-              className="group relative aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-xl border border-slate-100 flex flex-col justify-end p-8"
+              className="group relative flex-shrink-0 w-[85vw] md:w-[350px] aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-xl border border-slate-100 flex flex-col justify-end p-8 snap-start"
             >
               <img 
                 src={cat.img} 
@@ -715,27 +702,33 @@ const Home: React.FC = () => {
       </section>
 
       {/* THE COLLECTION Section */}
-      <section className="bg-[#FAF9FB] px-4 md:px-10 pt-16 md:pt-24 pb-20 md:pb-32 overflow-hidden border-t border-slate-50">
-        <div className="max-w-[1440px] mx-auto">
+      <section className="bg-[#FAF9FB] pt-16 md:pt-24 pb-20 md:pb-32 overflow-hidden border-t border-slate-50">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-10">
           <div className="flex items-center justify-between mb-8">
              <div className="flex flex-col">
                 <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-3">The Collection</h2>
                 <p className="text-sm text-slate-500 font-medium">Essentials that pair perfectly with your favourite devices.</p>
              </div>
              <div className="hidden md:flex gap-4">
-                <button className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all"><Search size={22} /></button>
+                <button 
+                  onClick={() => scrollCollection('left')}
+                  className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all"
+                >
+                  <ChevronLeft size={22} />
+                </button>
+                <button 
+                  onClick={() => scrollCollection('right')}
+                  className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all"
+                >
+                  <ChevronRight size={22} />
+                </button>
              </div>
           </div>
 
-          <div className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10">
-            {/* Description Block */}
-            <div className="w-[550px] h-[400px] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 flex flex-col justify-between shadow-sm border border-slate-100 snap-start flex-shrink-0 bg-[url('https://www.businesstoday.com.my/wp-content/uploads/2021/11/M6.jpg?auto=format&fit=crop&q=80')] bg-cover bg-center">
-               <div className="space-y-2">
-                 <h3 className="text-2xl font-black text-white tracking-tighter uppercase">Here and wow.</h3>
-                 <p className="text-xs text-white/70 font-medium">The accessories you love. In a fresh mix of colours.</p>
-               </div>
-            </div>
-
+          <div 
+            ref={collectionRef}
+            className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10"
+          >
             {/* Product Cards */}
             {featuredProducts.map((p) => (
               <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
@@ -746,7 +739,7 @@ const Home: React.FC = () => {
                     <Heart size={14} />
                  </button>
                  <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-3 relative flex items-center justify-center">
-                     <img src={p.image_url} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
+                     <img src={p.image_url || undefined} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                  </div>
                  <div className="mb-1">
                      <h3 className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 truncate">{p.name}</h3>
@@ -762,7 +755,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Banner Section */}
-      <section className="w-full h-24 bg-slate-900 flex items-center justify-center">
+      <section className="w-full h-24 bg-slate-900 flex items-center justify-center px-4 md:px-10">
         <p className="text-white font-black uppercase tracking-widest text-sm">
           Free Shipping on all orders over RM500
         </p>
@@ -770,16 +763,29 @@ const Home: React.FC = () => {
 
       {/* Promo Products Section */}
       <section className="py-10 md:py-16 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-3">Promotions</h2>
-          <div className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10">
-            {/* Description Block */}
-            <div className="w-[550px] h-[400px] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 flex flex-col justify-between shadow-sm border border-slate-100 snap-start flex-shrink-0 bg-[url('https://ea.vox-cdn.com/production/theverge-circuit-breaker/images/final_cb_0086-45553ade.jpg')] bg-cover bg-center">
-               <div className="space-y-2">
-                 <h3 className="text-2xl font-black text-white tracking-tighter uppercase">Promotional Deals.</h3>
-                 <p className="text-xs text-white/70 font-medium">Limited time offers on selected items.</p>
-               </div>
-            </div>
+        <div className="max-w-[1440px] mx-auto px-4 md:px-10">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">Promotions</h2>
+            <div className="hidden md:flex gap-4">
+                <button 
+                  onClick={() => scrollPromo('left')}
+                  className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all"
+                >
+                  <ChevronLeft size={22} />
+                </button>
+                <button 
+                  onClick={() => scrollPromo('right')}
+                  className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all"
+                >
+                  <ChevronRight size={22} />
+                </button>
+             </div>
+          </div>
+          <div 
+            ref={promoRef}
+            className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10"
+          >
+            {/* Product Cards */}
 
             {promoProducts.map((p) => (
               <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
@@ -790,7 +796,7 @@ const Home: React.FC = () => {
                     <Heart size={14} />
                  </button>
                  <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-3 relative flex items-center justify-center">
-                     <img src={p.image_url} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
+                     <img src={p.image_url || undefined} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                  </div>
                  <div className="mb-1">
                      <h3 className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 truncate">{p.name}</h3>
@@ -835,15 +841,15 @@ const Home: React.FC = () => {
       </section>
 
       {/* VISIT OUR STORE Section */}
-      <section className="bg-white px-4 md:px-10 py-20 md:py-32 overflow-hidden border-t border-slate-50">
-        <div className="max-w-[1440px] mx-auto">
-          <h2 className="text-3xl md:text-5xl font-black text-[#ef4444] tracking-tighter uppercase mb-12">Visit Our Store.</h2>
+      <section className="bg-white py-20 md:py-32 overflow-hidden border-t border-slate-50">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-10">
+          <h2 className="text-3xl md:text-5xl font-black text-[#e11d48] tracking-tighter uppercase mb-12">Visit Our Store.</h2>
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Left Card */}
-            <div className="lg:w-1/3 bg-[#f3f4f6] rounded-2xl p-8 flex flex-col justify-between min-h-[400px] shadow-sm text-center">
-              <div className="flex-1 flex flex-col justify-center">
-                <h3 className="text-2xl md:text-3xl font-black leading-tight text-black uppercase">
-                  View all Meadow IT Location.
+            <div className="lg:w-1/3 bg-[#f3f4f6] rounded-2xl p-8 flex flex-col justify-between min-h-[400px] shadow-sm">
+              <div className="flex-1 flex flex-col justify-start">
+                <h3 className="text-2xl md:text-3xl font-black leading-tight text-black uppercase text-left">
+                  View All Meadow Computer Store Location.
                 </h3>
               </div>
               <Link 
@@ -920,7 +926,7 @@ const Home: React.FC = () => {
                    <div key={item.id} className="group relative">
                       <div className="flex gap-10">
                          <div className="w-32 h-32 rounded-[2.5rem] bg-[#F9FAFB] overflow-hidden shrink-0 border border-slate-50 p-5 transition-all group-hover:scale-105">
-                           <img src={item.image_url} className="w-full h-full object-contain" />
+                           <img src={item.image_url || undefined} className="w-full h-full object-contain" />
                          </div>
                          <div className="flex-1 py-3">
                            <div className="flex justify-between items-start gap-4 mb-5">
@@ -955,8 +961,8 @@ const Home: React.FC = () => {
       )}
 
       {/* Editorial Footer */}
-      <footer className="bg-[#F9FAFB] px-4 md:px-10 pt-24 pb-12 border-t border-slate-100">
-        <div className="max-w-[1440px] mx-auto">
+      <footer className="bg-[#F9FAFB] pt-24 pb-12 border-t border-slate-100">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-10">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
             <div className="col-span-1 md:col-span-1">
               <img src={LOGO_URL} className="h-16 w-auto mb-8 grayscale opacity-50" alt="Meadow" />
@@ -1016,3 +1022,17 @@ const Home: React.FC = () => {
 };
 
 export default Home;
+
+// Add scrollbar-hide utility
+const style = document.createElement('style');
+style.textContent = `
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+`;
+document.head.appendChild(style);
+

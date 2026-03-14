@@ -85,7 +85,7 @@ const Customised: React.FC = () => {
 
         <div className="hidden lg:flex items-center bg-white/10 border border-white/20 rounded-full p-2 gap-2">
             <Link to="/buildpc" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Custom Build PC</Link>
-            <Link to="/products?category=desktop" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Pre-Built PC</Link>
+            <Link to="/prebuilt" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Pre-Built PC</Link>
             <Link to="/track-order" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Track Your Order</Link>
             <Link to="/stores" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Contact Us</Link>
         </div>
@@ -130,33 +130,33 @@ const Customised: React.FC = () => {
         <div className="mt-24 w-full h-px bg-gradient-to-r from-transparent via-rose-600/40 to-transparent"></div>
       </section>
 
-      {/* Product Categories Grid */}
-      <section className="relative z-10 px-8 md:px-20 max-w-[1600px] mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+      {/* Product Categories Slider */}
+      <section className="relative z-10 px-8 md:px-20 max-w-[1800px] mx-auto overflow-hidden">
+        <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 md:gap-10 pb-12 scrollbar-hide cursor-grab active:cursor-grabbing">
           {/* Custom Build PC */}
-          <div className="relative aspect-video group overflow-hidden rounded-[2.5rem] shadow-2xl border border-white/5">
+          <div className="relative flex-shrink-0 w-[85vw] md:w-[600px] aspect-video group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5 snap-center">
             <img 
               src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1200&auto=format&fit=crop" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
               alt="Custom PC"
               referrerPolicy="no-referrer"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/80"></div>
-            <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-10 text-center space-y-6">
-              <div className="space-y-3">
-                <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-white">Custom build PC</h2>
-                <p className="text-slate-300 text-[9px] md:text-[10px] font-medium uppercase tracking-[0.3em] leading-relaxed max-w-xs mx-auto">
+            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/20 to-black/80"></div>
+            <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-12 text-center space-y-8">
+              <div className="space-y-4">
+                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white">Custom build PC</h2>
+                <p className="text-slate-300 text-[10px] md:text-[12px] font-medium uppercase tracking-[0.4em] leading-relaxed max-w-sm mx-auto">
                   Gaming, Work, Media — fully tailored, high-performance, and stylish.
                 </p>
               </div>
-              <Link to="/buildpc" className="px-8 py-3.5 bg-rose-600 text-white rounded-full font-black text-[9px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
+              <Link to="/buildpc" className="px-10 py-4 bg-rose-600 text-white rounded-full font-black text-[10px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
                 Build Now
               </Link>
             </div>
           </div>
 
           {/* Pre-Built PC */}
-          <div className="relative aspect-video group overflow-hidden rounded-[2.5rem] shadow-2xl border border-white/5">
+          <div className="relative flex-shrink-0 w-[85vw] md:w-[600px] aspect-video group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5 snap-center">
             <img 
               src="https://images.unsplash.com/photo-1593640408182-31c70c8268f5?q=80&w=1200&auto=format&fit=crop" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
@@ -164,21 +164,21 @@ const Customised: React.FC = () => {
               referrerPolicy="no-referrer"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/80"></div>
-            <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-10 text-center space-y-6">
-              <div className="space-y-3">
-                <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-white">Pre-Built PC</h2>
-                <p className="text-slate-300 text-[9px] md:text-[10px] font-medium uppercase tracking-[0.3em] leading-relaxed max-w-xs mx-auto">
+            <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-12 text-center space-y-8">
+              <div className="space-y-4">
+                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white">Pre-Built PC</h2>
+                <p className="text-slate-300 text-[10px] md:text-[12px] font-medium uppercase tracking-[0.4em] leading-relaxed max-w-sm mx-auto">
                   Built around your budget and tailored to your journey.
                 </p>
               </div>
-              <Link to="/products?category=desktop" className="px-8 py-3.5 bg-rose-600 text-white rounded-full font-black text-[9px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
+              <Link to="/products?category=desktop" className="px-10 py-4 bg-rose-600 text-white rounded-full font-black text-[10px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
                 View Now
               </Link>
             </div>
           </div>
 
           {/* Workstation PC */}
-          <div className="relative aspect-video group overflow-hidden rounded-[2.5rem] shadow-2xl border border-white/5">
+          <div className="relative flex-shrink-0 w-[85vw] md:w-[600px] aspect-video group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5 snap-center">
             <img 
               src="https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1200&auto=format&fit=crop" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
@@ -186,21 +186,21 @@ const Customised: React.FC = () => {
               referrerPolicy="no-referrer"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/80"></div>
-            <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-10 text-center space-y-6">
-              <div className="space-y-3">
-                <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-white">Workstation PC</h2>
-                <p className="text-slate-300 text-[9px] md:text-[10px] font-medium uppercase tracking-[0.3em] leading-relaxed max-w-xs mx-auto">
+            <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-12 text-center space-y-8">
+              <div className="space-y-4">
+                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white">Workstation PC</h2>
+                <p className="text-slate-300 text-[10px] md:text-[12px] font-medium uppercase tracking-[0.4em] leading-relaxed max-w-sm mx-auto">
                   Built for work — from paperwork to high-end rendering.
                 </p>
               </div>
-              <Link to="/products?category=workstation" className="px-8 py-3.5 bg-rose-600 text-white rounded-full font-black text-[9px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
+              <Link to="/products?category=workstation" className="px-10 py-4 bg-rose-600 text-white rounded-full font-black text-[10px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
                 View Now
               </Link>
             </div>
           </div>
 
           {/* Laptop */}
-          <div className="relative aspect-video group overflow-hidden rounded-[2.5rem] shadow-2xl border border-white/5">
+          <div className="relative flex-shrink-0 w-[85vw] md:w-[600px] aspect-video group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5 snap-center">
             <img 
               src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1200&auto=format&fit=crop" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
@@ -208,14 +208,14 @@ const Customised: React.FC = () => {
               referrerPolicy="no-referrer"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/80"></div>
-            <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-10 text-center space-y-6">
-              <div className="space-y-3">
-                <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-white">Laptop</h2>
-                <p className="text-slate-300 text-[9px] md:text-[10px] font-medium uppercase tracking-[0.3em] leading-relaxed max-w-xs mx-auto">
+            <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-12 text-center space-y-8">
+              <div className="space-y-4">
+                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white">Laptop</h2>
+                <p className="text-slate-300 text-[10px] md:text-[12px] font-medium uppercase tracking-[0.4em] leading-relaxed max-w-sm mx-auto">
                   Compact design. Powerful results.
                 </p>
               </div>
-              <Link to="/products?category=laptop" className="px-8 py-3.5 bg-rose-600 text-white rounded-full font-black text-[9px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
+              <Link to="/products?category=laptop" className="px-10 py-4 bg-rose-600 text-white rounded-full font-black text-[10px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
                 View Now
               </Link>
             </div>

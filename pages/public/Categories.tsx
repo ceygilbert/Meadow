@@ -31,6 +31,7 @@ import {
   Facebook,
   Instagram
 } from 'lucide-react';
+import PublicNavbar from '../../components/PublicNavbar';
 import { supabase } from '../../lib/supabase';
 import { Category, SubCategory, Profile, Product } from '../../types';
 
@@ -135,7 +136,10 @@ const Categories: React.FC = () => {
       if (catRes.error) throw catRes.error;
       if (subRes.error) throw subRes.error;
 
-      setCategories(catRes.data || []);
+      setCategories((catRes.data || []).filter(cat => {
+        const name = cat.name.toLowerCase();
+        return name !== 'accessories' && name !== 'gadget' && name !== 'gadgets';
+      }));
       setSubCategories(subRes.data || []);
     } catch (err: any) {
       setError(err.message);
@@ -205,52 +209,14 @@ const Categories: React.FC = () => {
         </div>
       </div>
 
-      {/* Header */}
-      <nav className={`fixed left-0 right-0 z-[100] px-4 md:px-10 pointer-events-none transition-all duration-500 ${scrolled ? 'top-0 py-4 bg-white/80 backdrop-blur-2xl border-b border-slate-100 shadow-lg' : 'top-0'}`}>
-        <div className="max-w-[1440px] mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center pointer-events-auto group">
-            <img src={LOGO_URL} className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${scrolled ? 'h-14 md:h-20' : 'h-24 md:h-36'}`} alt="Meadow" />
-          </Link>
-          
-          <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-8 py-3 gap-6 md:gap-8 lg:gap-10 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90 group">
-            <form onSubmit={handleHeaderSearch} className="relative flex items-center">
-              <Search size={18} className="absolute left-5 text-slate-400" />
-              <input 
-                type="text" 
-                placeholder="Search products..." 
-                value={headerSearch}
-                onChange={(e) => setHeaderSearch(e.target.value)}
-                className="bg-slate-100/50 border-none rounded-full py-3 pl-14 pr-8 text-sm font-bold w-48 focus:w-64 transition-all outline-none focus:bg-white focus:ring-1 focus:ring-slate-200"
-              />
-            </form>
-            <Link to="/categories" className="text-sm font-nav uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Category</Link>
-            <Link to="/categories" className="text-sm font-nav uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Brand</Link>
-            <Link 
-              to="/customised" 
-              className="px-8 py-4 bg-slate-900 text-white text-xs font-nav uppercase tracking-[0.3em] rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-slate-900/20 hover:shadow-rose-600/30 flex items-center gap-2"
-            >
-              <Zap size={18} className="text-rose-400" />
-              Build Your Own PC
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-3 md:gap-6 pointer-events-auto">
-            {!user ? (
-               <button onClick={() => navigate('/')} className="w-12 h-12 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-sm">
-                 <UserIcon size={20} />
-               </button>
-            ) : (
-               <button onClick={() => navigate(profile?.role === 'admin' ? '/admin/dashboard' : '/customer/dashboard')} className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-slate-200 overflow-hidden shadow-sm">
-                 <img src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`} className="w-full h-full object-cover" />
-               </button>
-            )}
-            <button onClick={() => setIsCartOpen(true)} className="w-14 h-14 md:w-16 md:h-16 bg-slate-900 text-white rounded-full flex items-center justify-center relative shadow-xl hover:scale-105 transition-all">
-              <ShoppingCart size={22} />
-              {cart.length > 0 && <span className="absolute -top-1 -right-1 w-6 h-6 md:w-7 md:h-7 bg-blue-500 text-white text-[10px] md:text-xs font-black flex items-center justify-center rounded-full border-2 border-white">{cart.length}</span>}
-            </button>
-          </div>
-        </div>
-      </nav>
+      <PublicNavbar 
+        user={user}
+        profile={profile}
+        cartCount={cart.length}
+        onOpenAuth={() => navigate('/')} 
+        onOpenCart={() => setIsCartOpen(true)}
+        scrolled={scrolled}
+      />
 
       {/* Main Content */}
       <main className="pt-24 md:pt-36 pb-20 px-4 md:px-10 max-w-[1440px] mx-auto">

@@ -274,7 +274,7 @@ const ProductDetails: React.FC = () => {
           <div className="lg:col-span-7 space-y-8 animate-in fade-in slide-in-from-left duration-700">
              <div className="aspect-square md:aspect-[4/5] bg-[#F7F8FA] rounded-[3rem] md:rounded-[4rem] overflow-hidden flex items-center justify-center p-12 md:p-24 relative border border-slate-50 group">
                 <img 
-                  src={product.image_url} 
+                  src={product.image_url || undefined} 
                   className="w-full h-full object-contain transition-transform duration-1000 group-hover:scale-110" 
                   alt={product.name} 
                 />
@@ -296,7 +296,7 @@ const ProductDetails: React.FC = () => {
              <div className="grid grid-cols-3 gap-6">
                 {[...Array(3)].map((_, i) => (
                    <div key={i} className="aspect-square bg-slate-50 rounded-[2rem] border border-slate-100 p-8 flex items-center justify-center opacity-60 hover:opacity-100 transition-all cursor-pointer">
-                      <img src={product.image_url} className="w-full h-full object-contain grayscale" />
+                      <img src={product.image_url || undefined} className="w-full h-full object-contain grayscale" />
                    </div>
                 ))}
              </div>
@@ -422,7 +422,7 @@ const ProductDetails: React.FC = () => {
               {relatedProducts.map((p) => (
                 <Link to={`/product/${p.slug}`} key={p.id} className="group flex flex-col bg-[#F9FAFB] rounded-[2.5rem] p-10 hover:bg-white hover:shadow-2xl transition-all duration-500 border border-transparent hover:border-slate-100">
                    <div className="aspect-[4/5] mb-8 overflow-hidden rounded-[2rem] flex items-center justify-center p-6">
-                      <img src={p.image_url} className="w-full h-full object-contain transition-transform duration-1000 group-hover:scale-110" alt={p.name} />
+                      <img src={p.image_url || undefined} className="w-full h-full object-contain transition-transform duration-1000 group-hover:scale-110" alt={p.name} />
                    </div>
                    <div className="space-y-4">
                       <div className="flex items-center justify-between">
@@ -463,7 +463,7 @@ const ProductDetails: React.FC = () => {
                    <div key={item.id} className="group relative">
                       <div className="flex gap-10">
                          <div className="w-32 h-32 rounded-[2.5rem] bg-[#F9FAFB] overflow-hidden shrink-0 border border-slate-50 p-5 transition-all group-hover:scale-105">
-                           <img src={item.image_url} className="w-full h-full object-contain" />
+                           <img src={item.image_url || undefined} className="w-full h-full object-contain" />
                          </div>
                          <div className="flex-1 py-3">
                            <div className="flex justify-between items-start gap-4 mb-5">
