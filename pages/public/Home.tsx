@@ -1012,7 +1012,7 @@ const Home: React.FC = () => {
             <div>
               <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Legal</h4>
               <ul className="space-y-4">
-                <li><a href="#" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Terms & Conditions</a></li>
+                <li><Link to="/terms" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Terms & Conditions</Link></li>
                 <li><a href="#" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Privacy Policy</a></li>
                 <li><a href="#" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Refund Policy</a></li>
               </ul>

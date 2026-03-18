@@ -221,7 +221,7 @@ const Customised: React.FC = () => {
                   Built around your budget and tailored to your journey.
                 </p>
               </div>
-              <Link to="/products?category=desktop" className="px-10 py-4 bg-rose-600 text-white rounded-full font-black text-[10px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
+              <Link to="/prebuilt" className="px-10 py-4 bg-rose-600 text-white rounded-full font-black text-[10px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
                 View Now
               </Link>
             </div>
@@ -439,7 +439,7 @@ const Customised: React.FC = () => {
                   <ul className="space-y-6 text-[12px] font-bold uppercase tracking-widest text-slate-400">
                      <li><a href="#" className="hover:text-rose-500 transition-all">Ownership Guide</a></li>
                      <li><a href="#" className="hover:text-rose-500 transition-all">Privacy Kernel</a></li>
-                     <li><a href="#" className="hover:text-rose-500 transition-all">Terms of Access</a></li>
+                     <li><Link to="/terms" className="hover:text-rose-500 transition-all">Terms of Access</Link></li>
                   </ul>
                </div>
                <div className="text-left space-y-10">
