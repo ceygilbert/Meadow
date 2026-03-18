@@ -558,7 +558,7 @@ const Home: React.FC = () => {
       />
 
       {/* Hero Section */}
-      <header className="relative pt-16 md:pt-20 pb-0">
+      <header className="relative pt-24 md:pt-32 pb-0">
         <div className="hidden lg:block absolute top-20 left-10 text-[11vw] font-black text-slate-50 tracking-tighter leading-none pointer-events-none select-none -z-10 uppercase">
           Precision Engineering
         </div>
@@ -625,15 +625,35 @@ const Home: React.FC = () => {
             <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-3">Categories</h2>
             <p className="text-xs text-slate-400 font-black uppercase tracking-[0.4em]">Browse by Hardware Class</p>
           </div>
-          <Link to="/products" className="group flex items-center gap-4 text-xs font-black uppercase tracking-widest text-slate-900 hover:text-blue-600 transition-colors">
-            View All Products
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all">
-              <ArrowUpRight size={16} />
-            </div>
-          </Link>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => {
+                const container = document.getElementById('categories-container');
+                if (container) container.scrollBy({ left: -350, behavior: 'smooth' });
+              }}
+              className="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button 
+              onClick={() => {
+                const container = document.getElementById('categories-container');
+                if (container) container.scrollBy({ left: 350, behavior: 'smooth' });
+              }}
+              className="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all"
+            >
+              <ChevronRight size={20} />
+            </button>
+            <Link to="/products" className="group flex items-center gap-4 text-xs font-black uppercase tracking-widest text-slate-900 hover:text-blue-600 transition-colors ml-4">
+              View All Products
+              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all">
+                <ArrowUpRight size={16} />
+              </div>
+            </Link>
+          </div>
         </div>
 
-        <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 md:gap-8 pb-10 scrollbar-hide">
+        <div id="categories-container" className="flex overflow-x-auto snap-x snap-mandatory gap-6 md:gap-8 pb-10 scrollbar-hide">
           {[
             { name: 'PC Component', img: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80', slug: 'pc-component' },
             { name: 'Laptop', img: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80', slug: 'laptop' },
@@ -847,17 +867,28 @@ const Home: React.FC = () => {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Left Card */}
             <div className="lg:w-1/3 bg-[#f3f4f6] rounded-2xl p-8 flex flex-col justify-between min-h-[400px] shadow-sm">
-              <div className="flex-1 flex flex-col justify-start">
-                <h3 className="text-2xl md:text-3xl font-black leading-tight text-black uppercase text-left">
+              <div className="flex flex-col justify-start gap-8">
+                <h3 className="text-2xl md:text-3xl font-black leading-tight uppercase text-left bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-orange-500">
                   View All Meadow Computer Store Location.
                 </h3>
               </div>
-              <Link 
-                to="/stores" 
-                className="block w-full px-8 py-4 bg-white border-2 border-black rounded-xl text-sm font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm text-center"
-              >
-                Store Locator
-              </Link>
+              
+              <div className="flex flex-col gap-6">
+                <Link 
+                  to="/stores" 
+                  className="block w-full px-8 py-4 bg-white border-2 border-black rounded-xl text-sm font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm text-center"
+                >
+                  Store Locator
+                </Link>
+                <div className="border-t border-black pt-6">
+                  <div className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-black mb-2">
+                    VIDEO DISPLAYING <ArrowRight size={16} />
+                  </div>
+                  <p className="text-sm font-black uppercase tracking-widest text-black">
+                    TAMAN PELANGI ASUS STORE
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Right Card (Video) */}

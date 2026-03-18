@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Cpu, 
   ShieldCheck, 
@@ -30,16 +31,36 @@ import {
   Download,
   BadgeCheck
 } from 'lucide-react';
+import StudioNavbar from '../../components/StudioNavbar';
 
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/White%20Full%20Logo.png";
 
 const Customised: React.FC = () => {
-  const [scrolled, setScrolled] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const heroSlides = [
+    {
+      type: 'video',
+      url: 'https://assets.mixkit.co/videos/preview/mixkit-circuit-board-of-a-computer-close-up-34863-large.mp4',
+      description: 'Fast • Beautiful • Thoughtfully Crafted. Architecting performance for the elite workspace.'
+    },
+    {
+      type: 'image',
+      url: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1920&auto=format&fit=crop',
+      description: 'Every component hand-picked for maximum sustained performance and reliability.'
+    },
+    {
+      type: 'image',
+      url: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?q=80&w=1920&auto=format&fit=crop',
+      description: 'Where high-end computational power meets executive-grade design and cable management.'
+    }
+  ];
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 8000);
+    return () => clearInterval(timer);
   }, []);
 
   const testimonials = [
@@ -76,65 +97,94 @@ const Customised: React.FC = () => {
       </div>
 
       {/* Header */}
-      <nav className={`fixed top-0 left-0 right-0 h-32 md:h-40 px-8 md:px-16 flex items-center justify-between z-[100] transition-all duration-1000 ${scrolled ? 'bg-[#050607]/95 backdrop-blur-2xl border-b border-white/5 py-4 h-24' : 'bg-transparent py-10'}`}>
-        <div className="flex items-center gap-12">
-          <Link to="/" className="group flex items-center gap-10">
-             <img src={LOGO_URL} className={`w-auto transition-all duration-500 group-hover:opacity-80 ${scrolled ? 'h-12 md:h-20' : 'h-24 md:h-36'}`} alt="Meadow" />
-          </Link>
+      <StudioNavbar />
+
+      {/* Hero Section Slider */}
+      <section className="relative h-screen min-h-[800px] flex items-center justify-center overflow-hidden z-10">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentSlide}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5 }}
+            className="absolute inset-0 z-0"
+          >
+            {heroSlides[currentSlide].type === 'video' ? (
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-full object-cover opacity-40 scale-105"
+              >
+                <source src={heroSlides[currentSlide].url} type="video/mp4" />
+              </video>
+            ) : (
+              <img
+                src={heroSlides[currentSlide].url}
+                className="w-full h-full object-cover opacity-40 scale-105"
+                alt="Hero Background"
+                referrerPolicy="no-referrer"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#050607] via-transparent to-[#050607]" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#050607] via-transparent to-[#050607]" />
+          </motion.div>
+        </AnimatePresence>
+
+        <div className="relative z-10 max-w-[1440px] mx-auto px-8 md:px-20 w-full">
+          <div className="flex flex-col items-center text-center">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentSlide}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.8 }}
+                className="flex flex-col items-center"
+              >
+                <div className="max-w-3xl space-y-10">
+                  <p className="text-lg md:text-2xl text-slate-300 font-light leading-relaxed">
+                    {heroSlides[currentSlide].description}
+                  </p>
+                  
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                    <Link to="/buildpc" className="h-16 px-12 bg-white text-black rounded-full font-black text-[10px] uppercase tracking-[0.4em] hover:bg-rose-600 hover:text-white transition-all duration-700 shadow-2xl flex items-center gap-4 group">
+                      Initialize Build
+                      <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                    <button className="h-16 px-10 bg-white/10 border border-white/20 text-white rounded-full font-black text-[10px] uppercase tracking-[0.4em] hover:bg-white/20 transition-all">
+                      The Archive
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
 
-        <div className="hidden lg:flex items-center bg-white/10 border border-white/20 rounded-full p-2 gap-2">
-            <Link to="/buildpc" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Custom Build PC</Link>
-            <Link to="/prebuilt" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Pre-Built PC</Link>
-            <Link to="/track-order" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Track Your Order</Link>
-            <Link to="/stores" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Contact Us</Link>
+        {/* Slider Navigation Dots */}
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-4 z-20">
+          {heroSlides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentSlide(i)}
+              className={`w-12 h-1 transition-all duration-500 rounded-full ${
+                currentSlide === i ? 'bg-rose-600 w-20' : 'bg-white/20 hover:bg-white/40'
+              }`}
+            />
+          ))}
         </div>
 
-        <div className="flex items-center gap-10">
-           <button className="h-14 w-14 bg-white/10 border border-white/20 rounded-full flex items-center justify-center hover:bg-rose-600 hover:border-rose-600 transition-all duration-500">
-              <ShoppingCart size={22} />
-           </button>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="relative pt-40 md:pt-48 pb-16 px-8 md:px-20 max-w-[1440px] mx-auto z-10">
-        <div className="flex flex-col items-center text-center">
-           <div className="flex items-center gap-4 mb-10 animate-in fade-in slide-in-from-top duration-1000">
-              <span className="text-[13px] font-black uppercase tracking-[0.6em] text-rose-500">Thoughtfully Crafted</span>
-           </div>
-           
-           <h1 className="font-black text-6xl md:text-[9rem] uppercase tracking-tighter leading-[0.85] text-white mb-12 animate-in fade-in slide-in-from-bottom duration-1000">
-              Silicon <br />
-              <span className="text-white/50">Sculpture</span>
-           </h1>
-           
-           <div className="max-w-3xl space-y-10 animate-in fade-in slide-in-from-bottom duration-1000 delay-300">
-              <p className="text-lg md:text-2xl text-slate-300 font-light leading-relaxed">
-                Fast • Beautiful • Thoughtfully Crafted. <br />
-                Architecting performance for the elite workspace.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                 <Link to="/buildpc" className="h-16 px-12 bg-white text-black rounded-full font-black text-[10px] uppercase tracking-[0.4em] hover:bg-rose-600 hover:text-white transition-all duration-700 shadow-2xl flex items-center gap-4 group">
-                    Initialize Build
-                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                 </Link>
-                 <button className="h-16 px-10 bg-white/10 border border-white/20 text-white rounded-full font-black text-[10px] uppercase tracking-[0.4em] hover:bg-white/20 transition-all">
-                    The Archive
-                 </button>
-              </div>
-           </div>
-        </div>
-
-        <div className="mt-24 w-full h-px bg-gradient-to-r from-transparent via-rose-600/40 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-rose-600/40 to-transparent"></div>
       </section>
 
-      {/* Product Categories Slider */}
-      <section className="relative z-10 px-8 md:px-20 max-w-[1800px] mx-auto overflow-hidden">
-        <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 md:gap-10 pb-12 scrollbar-hide cursor-grab active:cursor-grabbing">
+      {/* Product Categories Grid */}
+      <section className="relative z-10 px-8 md:px-20 max-w-[1800px] mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 pb-12">
           {/* Custom Build PC */}
-          <div className="relative flex-shrink-0 w-[85vw] md:w-[600px] aspect-video group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5 snap-center">
+          <div className="relative w-full aspect-video group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5">
             <img 
               src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1200&auto=format&fit=crop" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
@@ -156,7 +206,7 @@ const Customised: React.FC = () => {
           </div>
 
           {/* Pre-Built PC */}
-          <div className="relative flex-shrink-0 w-[85vw] md:w-[600px] aspect-video group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5 snap-center">
+          <div className="relative w-full aspect-video group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5">
             <img 
               src="https://images.unsplash.com/photo-1593640408182-31c70c8268f5?q=80&w=1200&auto=format&fit=crop" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
@@ -178,7 +228,7 @@ const Customised: React.FC = () => {
           </div>
 
           {/* Workstation PC */}
-          <div className="relative flex-shrink-0 w-[85vw] md:w-[600px] aspect-video group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5 snap-center">
+          <div className="relative w-full aspect-video group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5">
             <img 
               src="https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1200&auto=format&fit=crop" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
@@ -193,14 +243,14 @@ const Customised: React.FC = () => {
                   Built for work — from paperwork to high-end rendering.
                 </p>
               </div>
-              <Link to="/products?category=workstation" className="px-10 py-4 bg-rose-600 text-white rounded-full font-black text-[10px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
+              <Link to="/workstation" className="px-10 py-4 bg-rose-600 text-white rounded-full font-black text-[10px] uppercase tracking-[0.3em] hover:bg-rose-700 transition-all shadow-xl">
                 View Now
               </Link>
             </div>
           </div>
 
           {/* Laptop */}
-          <div className="relative flex-shrink-0 w-[85vw] md:w-[600px] aspect-video group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5 snap-center">
+          <div className="relative w-full aspect-video group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5">
             <img 
               src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1200&auto=format&fit=crop" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
@@ -271,8 +321,27 @@ const Customised: React.FC = () => {
       </section>
 
       {/* We Care for You Section */}
-      <section className="px-8 md:px-20 py-32 max-w-[1600px] mx-auto relative z-10">
-        <div className="text-center mb-24">
+      <section className="px-8 md:px-20 py-24 max-w-[1600px] mx-auto relative z-10">
+
+      {/* Cinematic Video Section */}
+        <div className="relative w-full aspect-video rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl group">
+          <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all duration-700 z-10 pointer-events-none flex flex-col items-center justify-center">
+             <div className="w-24 h-24 rounded-full bg-rose-600/80 backdrop-blur-md flex items-center justify-center text-white shadow-2xl group-hover:scale-110 transition-transform duration-500">
+                <div className="w-0 h-0 border-t-[12px] border-t-transparent border-l-[20px] border-l-white border-b-[12px] border-b-transparent ml-2"></div>
+             </div>
+             <p className="mt-8 text-[12px] font-black uppercase tracking-[0.6em] text-white opacity-0 group-hover:opacity-100 transition-opacity duration-500">Watch Our Craft</p>
+          </div>
+          <iframe 
+            className="absolute inset-0 w-full h-full"
+            src="https://www.youtube.com/embed/PXaLc9AYIcg?autoplay=1&mute=1&loop=1&playlist=PXaLc9AYIcg&controls=0&showinfo=0&rel=0&modestbranding=1" 
+            title="PC Build Craftsmanship"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        </div>
+
+        <div className="text-center mb-24 pt-12">
           <span className="text-[12px] font-black uppercase tracking-[0.6em] text-rose-500 mb-6 block">Our Commitment</span>
           <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase mb-8">We Care for You.</h2>
           <p className="text-slate-400 max-w-2xl mx-auto text-lg font-light leading-relaxed">
@@ -280,7 +349,7 @@ const Customised: React.FC = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-8 gap-y-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-8 gap-y-16 mb-32">
           {[
             { icon: <ShieldCheck size={32} />, label: "Lifetime Free Labor" },
             { icon: <RefreshCw size={32} />, label: "90 Days 1-to-1 Exchange" },
@@ -305,6 +374,7 @@ const Customised: React.FC = () => {
             </div>
           ))}
         </div>
+
       </section>
 
       {/* Financing */}

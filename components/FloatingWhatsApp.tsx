@@ -41,7 +41,7 @@ const FloatingWhatsApp: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-[1000] flex flex-col items-end gap-4">
+    <div className={`fixed ${location.pathname === '/buildpc' ? 'bottom-32' : 'bottom-8'} right-8 z-[1000] flex flex-col items-end gap-4`}>
       {/* Sub-buttons Container */}
       <div className={`flex flex-col gap-3 transition-all duration-500 origin-bottom ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-75 translate-y-10 pointer-events-none'}`}>
         {contacts.map((contact) => (

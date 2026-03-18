@@ -12,6 +12,7 @@ import {
   Clock,
   MapPin
 } from 'lucide-react';
+import StudioNavbar from '../../components/StudioNavbar';
 
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/White%20Full%20Logo.png";
 
@@ -44,16 +45,7 @@ const TrackOrder: React.FC = () => {
       </div>
 
       {/* Header */}
-      <nav className="fixed top-0 left-0 right-0 h-24 px-8 md:px-16 flex items-center justify-between z-[100] bg-[#050607]/80 backdrop-blur-xl border-b border-white/5">
-        <Link to="/customised" className="group flex items-center gap-4 text-white/60 hover:text-white transition-all">
-          <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-          <span className="text-[10px] font-black uppercase tracking-[0.3em]">Back to Studio</span>
-        </Link>
-        <Link to="/" className="absolute left-1/2 -translate-x-1/2">
-          <img src={LOGO_URL} className="h-12 md:h-16 w-auto" alt="Meadow" />
-        </Link>
-        <div className="w-24"></div> {/* Spacer */}
-      </nav>
+      <StudioNavbar />
 
       <main className="relative z-10 pt-48 pb-32 px-8">
         <div className="max-w-4xl mx-auto">

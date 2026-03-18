@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import { 
   Cpu, 
   Monitor, 
@@ -38,6 +39,7 @@ import {
   Trash2,
   ScanText
 } from 'lucide-react';
+import StudioNavbar from '../../components/StudioNavbar';
 
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/White%20Full%20Logo.png";
 
@@ -52,7 +54,6 @@ interface BuildItem {
 
 const PCBuilder: React.FC = () => {
   const navigate = useNavigate();
-  const [scrolled, setScrolled] = useState(false);
   const [hoveredZone, setHoveredZone] = useState<string | null>(null);
   const [activePopup, setActivePopup] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -88,12 +89,6 @@ const PCBuilder: React.FC = () => {
     localStorage.setItem('meadow_pc_build', JSON.stringify(selections));
   }, [selections]);
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const metricMapping: Record<string, string[]> = {
     cpu: ['procPower'],
     'cpu cooler': ['procPower', 'stability'],
@@ -105,6 +100,15 @@ const PCBuilder: React.FC = () => {
     fans: ['stability'],
     case: ['stability']
   };
+
+  const selectedCount = useMemo(() => {
+    const mainIds = ['cpu', 'motherboard', 'gpu', 'ram', 'storage', 'cpu cooler', 'psu', 'case'];
+    return mainIds.filter(id => {
+      const selection = selections[id];
+      if (Array.isArray(selection)) return selection.length > 0;
+      return selection !== null;
+    }).length;
+  }, [selections]);
 
   const COMPONENT_DATA: Record<string, { filters: string[], items: BuildItem[] }> = {
     promotion: {
@@ -294,6 +298,44 @@ const PCBuilder: React.FC = () => {
     };
   }, [selections]);
 
+  const [radarPulse, setRadarPulse] = useState(false);
+
+  useEffect(() => {
+    setRadarPulse(true);
+    const timer = setTimeout(() => setRadarPulse(false), 1000);
+    return () => clearTimeout(timer);
+  }, [selections]);
+
+  const radarData = useMemo(() => {
+    const getWeight = (id: string) => selections[id]?.perfWeight || 0;
+    
+    // Performance: GPU (60%) + CPU (30%) + RAM (10%)
+    const performance = Math.round((getWeight('gpu') * 0.6) + (getWeight('cpu') * 0.3) + (getWeight('ram') * 0.1)) || 0;
+    
+    // Speed: CPU (50%) + RAM (50%)
+    const speed = Math.round((getWeight('cpu') * 0.5) + (getWeight('ram') * 0.5)) || 0;
+    
+    // Storage: Storage (SSD)
+    const storageWeight = Array.isArray(selections['storage']) && selections['storage'].length > 0 
+      ? selections['storage'].reduce((acc: number, curr: any) => acc + (curr.perfWeight || 0), 0) / selections['storage'].length
+      : 0;
+    const storage = Math.round(storageWeight) || 0;
+    
+    // Cooling: CPU Cooler (70%) + Fans (30%)
+    const cooling = Math.round((getWeight('cpu cooler') * 0.7) + (getWeight('fans') * 0.3)) || 0;
+    
+    // Stability: PSU (60%) + Motherboard (40%)
+    const stability = Math.round((getWeight('psu') * 0.6) + (getWeight('motherboard') * 0.4)) || 0;
+
+    return [
+      { subject: 'Performance', A: performance, fullMark: 100 },
+      { subject: 'Speed', A: speed, fullMark: 100 },
+      { subject: 'Storage', A: storage, fullMark: 100 },
+      { subject: 'Cooling', A: cooling, fullMark: 100 },
+      { subject: 'Stability', A: stability, fullMark: 100 },
+    ];
+  }, [selections]);
+
   const handleOpenPopup = (id: string) => {
     setActivePopup(id);
     setActiveFilter('ALL');
@@ -309,6 +351,13 @@ const PCBuilder: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#050607] font-sans text-slate-100 selection:bg-rose-600 selection:text-white overflow-x-hidden">
+      <style>{`
+        @keyframes scan {
+          0% { top: 0%; opacity: 0; }
+          50% { opacity: 1; }
+          100% { top: 100%; opacity: 0; }
+        }
+      `}</style>
       
       {/* Background Atmosphere */}
       <div className="fixed inset-0 pointer-events-none z-0">
@@ -318,33 +367,10 @@ const PCBuilder: React.FC = () => {
       </div>
 
       {/* Header */}
-      <nav className={`fixed top-0 left-0 right-0 h-32 md:h-40 px-8 md:px-16 flex items-center justify-between z-[100] transition-all duration-1000 ${scrolled ? 'bg-[#050607]/95 backdrop-blur-2xl border-b border-white/5 h-24' : 'bg-transparent py-10'}`}>
-        <div className="flex items-center gap-12">
-          <Link to="/customised" className="group flex items-center gap-10">
-             <img src={LOGO_URL} className="h-14 md:h-20 w-auto transition-all group-hover:opacity-80" alt="Meadow" />
-             <div className="hidden lg:flex flex-col border-l border-white/20 pl-10">
-                <span className="text-[13px] font-black tracking-[0.5em] text-white/50 uppercase">Forge Mode</span>
-                <span className="text-[11px] font-bold tracking-[0.3em] text-rose-500 uppercase mt-1">System.Eng_V2.5</span>
-             </div>
-          </Link>
-        </div>
-
-        <div className="hidden xl:flex items-center bg-white/10 border border-white/20 rounded-full p-2 gap-2">
-          <Link to="/buildpc" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all bg-white text-black shadow-2xl">Custom Build PC</Link>
-          <Link to="/products?category=desktop" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Pre-Built PC</Link>
-          <Link to="/customer/dashboard" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Track Your Order</Link>
-          <Link to="/stores" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Contact Us</Link>
-        </div>
-
-        <div className="flex items-center gap-10">
-          <button onClick={() => { localStorage.removeItem('meadow_pc_build'); window.location.reload(); }} className="w-14 h-14 bg-white/10 border border-white/20 rounded-full flex items-center justify-center text-white/60 hover:text-rose-500 transition-all">
-            <RotateCcw size={22} />
-          </button>
-          <button className="h-14 w-14 bg-rose-600 text-white rounded-full flex items-center justify-center shadow-xl shadow-rose-600/20">
-            <ShoppingCart size={22} />
-          </button>
-        </div>
-      </nav>
+      <StudioNavbar 
+        showReset={true} 
+        onReset={() => { localStorage.removeItem('meadow_pc_build'); window.location.reload(); }} 
+      />
 
       <main className="relative pt-48 md:pt-64 px-8 md:px-16 max-w-[1800px] mx-auto z-10 pb-64">
         <div className="grid lg:grid-cols-12 gap-16 items-start">
@@ -470,90 +496,160 @@ const PCBuilder: React.FC = () => {
           </div>
 
           {/* Master HUD - Editorial Noir Style */}
-          <div className="lg:col-span-4 space-y-16">
-            <div className="bg-[#0A0B0C] border border-white/10 rounded-[4rem] p-16 sticky top-48 shadow-[0_50px_100px_rgba(0,0,0,0.5)] overflow-hidden group">
-              <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_100%_0%,_#200a0a_0%,_transparent_50%)]"></div>
-              
-              <div className="relative z-10 space-y-20">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="font-serif text-3xl font-light text-white leading-tight">Performance Overview.</h2>
-                    <p className="text-[12px] font-black text-rose-500 uppercase tracking-[0.4em] mt-3">Live Telemetry</p>
+          <div className="lg:col-span-4">
+            <div className="sticky top-32 z-50 space-y-8">
+              <div className="bg-[#0A0B0C]/80 backdrop-blur-xl border border-white/10 rounded-[1.5rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden group relative transition-all duration-500 hover:border-rose-600/30 hover:shadow-[0_20px_80px_rgba(225,29,72,0.15)]">
+                <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_100%_0%,_#200a0a_0%,_transparent_50%)]"></div>
+                
+                <div className="relative z-10 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="font-serif text-lg font-light text-white leading-tight">Performance Overview.</h2>
+                      <p className="text-[8px] font-black text-rose-500 uppercase tracking-[0.3em] mt-1">Live Telemetry</p>
+                    </div>
+                    <Activity size={20} className={`text-rose-500 ${totalBudget > 0 ? 'animate-pulse' : 'opacity-20'}`} />
                   </div>
-                  <Activity size={40} className={`text-rose-500 ${totalBudget > 0 ? 'animate-pulse' : 'opacity-20'}`} />
-                </div>
 
-                <div className="space-y-14">
-                  {[
-                    { id: 'procPower', label: 'Processing Power (CPU)', value: `${diagnostics.procPower}%`, color: 'bg-rose-600', width: diagnostics.procPower },
-                    { id: 'graphPower', label: 'Graphical Performance (GPU)', value: `${diagnostics.graphPower}%`, color: 'bg-rose-700', width: diagnostics.graphPower },
-                    { id: 'memAlloc', label: 'Memory (RAM Size/Speed)', value: `${diagnostics.memAlloc}%`, color: 'bg-rose-800', width: diagnostics.memAlloc },
-                    { id: 'stability', label: 'Storage', value: diagnostics.stability, color: 'bg-white', width: diagnostics.stability !== 'None' ? 100 : 0 },
-                  ].map((metric) => {
-                    const isHoverLinked = hoveredZone && metricMapping[hoveredZone]?.includes(metric.id);
-                    
-                    return (
-                      <div key={metric.id} className={`space-y-5 transition-all duration-500 ${isHoverLinked ? 'scale-105' : ''}`}>
-                        <div className="flex items-center justify-between px-1">
-                          <span className={`text-[12px] font-black uppercase tracking-[0.3em] transition-colors ${isHoverLinked ? 'text-rose-500' : 'text-white/60'}`}>
-                            {metric.label}
-                          </span>
-                          <span className="text-[13px] font-black text-white uppercase tracking-[0.2em]">{metric.value}</span>
-                        </div>
-                        <div className={`h-[3px] w-full bg-white/10 rounded-full overflow-hidden relative ${isHoverLinked ? 'shadow-[0_0_20px_rgba(225,29,72,0.4)]' : ''}`}>
-                          <div 
-                            className={`h-full ${metric.color} transition-all duration-1000 relative`}
-                            style={{ width: `${metric.width}%` }}
-                          >
-                            {/* "Razer" Laser/Glitch Effect on Hover */}
+                  <div className="space-y-4">
+                    {[
+                      { id: 'procPower', label: 'Processing Power (CPU)', value: `${diagnostics.procPower}%`, color: 'bg-rose-600', width: diagnostics.procPower },
+                      { id: 'graphPower', label: 'Graphical Performance (GPU)', value: `${diagnostics.graphPower}%`, color: 'bg-rose-700', width: diagnostics.graphPower },
+                      { id: 'memAlloc', label: 'Memory (RAM Size/Speed)', value: `${diagnostics.memAlloc}%`, color: 'bg-rose-800', width: diagnostics.memAlloc },
+                      { id: 'stability', label: 'Storage', value: diagnostics.stability, color: 'bg-white', width: diagnostics.stability !== 'None' ? 100 : 0 },
+                    ].map((metric) => {
+                      const isHoverLinked = hoveredZone && metricMapping[hoveredZone]?.includes(metric.id);
+                      
+                      return (
+                        <div key={metric.id} className={`space-y-2 transition-all duration-500 ${isHoverLinked ? 'scale-105' : ''}`}>
+                          <div className="flex items-center justify-between px-1">
+                            <span className={`text-[9px] font-black uppercase tracking-[0.2em] transition-colors ${isHoverLinked ? 'text-rose-500' : 'text-white/60'}`}>
+                              {metric.label}
+                            </span>
+                            <span className="text-[11px] font-black text-white uppercase tracking-[0.2em]">{metric.value}</span>
+                          </div>
+                          <div className={`h-[2px] w-full bg-white/10 rounded-full overflow-hidden relative ${isHoverLinked ? 'shadow-[0_0_20px_rgba(225,29,72,0.4)]' : ''}`}>
+                            <div 
+                              className={`h-full ${metric.color} transition-all duration-1000 relative`}
+                              style={{ width: `${metric.width}%` }}
+                            >
+                              {/* "Razer" Laser/Glitch Effect on Hover */}
+                              {isHoverLinked && (
+                                <div className="absolute top-0 right-0 h-full w-[20%] bg-white/40 blur-[4px] animate-[ping_1s_infinite]"></div>
+                              )}
+                            </div>
                             {isHoverLinked && (
-                              <div className="absolute top-0 right-0 h-full w-[20%] bg-white/40 blur-[4px] animate-[ping_1s_infinite]"></div>
+                               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_1.5s_infinite] pointer-events-none"></div>
                             )}
                           </div>
-                          {isHoverLinked && (
-                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_1.5s_infinite] pointer-events-none"></div>
-                          )}
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
 
-                <div className="pt-16 border-t border-white/10 space-y-12">
-                   <div className="flex items-end justify-between">
-                   </div>
-                   
-                   <div className="p-10 bg-rose-600/10 border border-rose-600/30 rounded-[3rem] flex items-center gap-8 group/support cursor-pointer hover:bg-rose-600/20 transition-all">
-                      <div className="w-16 h-16 rounded-[1.25rem] bg-rose-600/20 flex items-center justify-center text-rose-500">
-                         <MessageCircle size={28} />
+                  <div className="pt-6 border-t border-white/10 space-y-4">
+                     <div className="flex items-end justify-between">
+                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ability Pentagon Chart */}
+              <div className={`bg-[#0A0B0C]/80 backdrop-blur-xl border transition-all duration-500 rounded-[1.5rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden group relative ${radarPulse ? 'border-rose-600 shadow-[0_0_40px_rgba(225,29,72,0.3)] scale-[1.02]' : 'border-white/10'}`}>
+                <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_0%_100%,_#0a1a20_0%,_transparent_50%)]"></div>
+                
+                <div className="relative z-10 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="font-serif text-lg font-light text-white leading-tight">System Dynamics.</h2>
+                      <p className="text-[8px] font-black text-rose-500 uppercase tracking-[0.3em] mt-1">Ability Matrix</p>
+                    </div>
+                    <ScanText size={20} className="text-rose-500 opacity-50" />
+                  </div>
+
+                  <div className="h-[220px] w-full relative">
+                    {/* Scanning Line Effect */}
+                    {radarPulse && (
+                      <div className="absolute inset-0 z-20 pointer-events-none overflow-hidden rounded-full">
+                        <div className="w-full h-[2px] bg-rose-500/50 shadow-[0_0_15px_rgba(225,29,72,0.8)] absolute top-0 animate-[scan_1s_ease-in-out_infinite]"></div>
                       </div>
-                      <div>
-                         <p className="text-[13px] font-black uppercase tracking-[0.2em] text-white">Contact Us</p>
+                    )}
+                    
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                        <PolarGrid stroke="rgba(255,255,255,0.25)" gridType="polygon" />
+                        <PolarAngleAxis 
+                          dataKey="subject" 
+                          tick={{ 
+                            fill: radarPulse ? '#e11d48' : 'rgba(255,255,255,0.7)', 
+                            fontSize: 10, 
+                            fontWeight: '900', 
+                            letterSpacing: '0.05em',
+                            transition: 'all 0.3s ease'
+                          }}
+                        />
+                        <PolarRadiusAxis 
+                          angle={90} 
+                          domain={[0, 100]} 
+                          tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 8, fontWeight: 'bold' }}
+                          axisLine={true}
+                          stroke="rgba(255,255,255,0.1)"
+                          orientation="middle"
+                        />
+                        {/* Background Shadow Radar */}
+                        <Radar
+                          name="System Shadow"
+                          dataKey="A"
+                          stroke="none"
+                          fill="#e11d48"
+                          fillOpacity={0.2}
+                          animationDuration={1000}
+                        />
+                        {/* Main Radar */}
+                        <Radar
+                          name="System"
+                          dataKey="A"
+                          stroke="#e11d48"
+                          strokeWidth={3}
+                          fill="#e11d48"
+                          fillOpacity={0.7}
+                          animationDuration={1500}
+                          isAnimationActive={true}
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-2 pt-4 border-t border-white/5">
+                    {radarData.map((stat) => (
+                      <div key={stat.subject} className="flex items-center justify-between">
+                        <span className="text-[8px] font-black text-white/40 uppercase tracking-wider">{stat.subject}</span>
+                        <span className="text-[10px] font-black text-white">{stat.A}</span>
                       </div>
-                      <ChevronRight size={24} className="ml-auto text-rose-500 transition-transform group-hover/support:translate-x-2" />
-                   </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+
         </div>
       </main>
 
       {/* Floating Checkout Deck */}
-      <div className="fixed bottom-0 left-0 right-0 z-[200] p-10 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none">
-        <div className="max-w-[1600px] mx-auto bg-[#0A0B0C]/90 backdrop-blur-3xl border border-white/10 rounded-[4rem] p-6 flex items-center justify-between shadow-[0_40px_120px_rgba(0,0,0,1)] pointer-events-auto overflow-hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-[200] p-6 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none">
+        <div className="max-w-[1600px] mx-auto bg-[#0A0B0C]/90 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-2 flex items-center justify-between shadow-[0_40px_120px_rgba(0,0,0,1)] pointer-events-auto overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-rose-600/30 to-transparent"></div>
           
-          <div className="flex items-center gap-20 px-12">
+          <div className="flex items-center gap-12 px-8">
             <div className="flex flex-col">
-              <span className="text-[12px] font-black text-rose-500 uppercase tracking-[0.6em]">Total Price</span>
-              <span className="font-serif text-2xl font-light text-white tracking-tight italic mt-2">RM {totalBudget.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              <span className="text-[10px] font-black text-rose-500 uppercase tracking-[0.6em]">Total Price</span>
+              <span className="font-serif text-xl font-light text-white tracking-tight italic mt-1">RM {totalBudget.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
             </div>
-            <div className="hidden md:flex flex-col items-start border-l border-white/10 pl-20">
-               <span className="text-[11px] font-black text-white/50 uppercase tracking-[0.4em]">Hardware Calibration</span>
-               <div className="flex gap-3 mt-5">
-                  {[...Array(6)].map((_, i) => (
-                    <div key={i} className={`w-10 h-[2px] rounded-full transition-all duration-700 ${totalBudget > 0 && i < 3 ? 'bg-rose-600 shadow-[0_0_10px_rose-600]' : 'bg-white/10'}`}></div>
+            <div className="hidden md:flex flex-col items-start border-l border-white/10 pl-12">
+               <span className="text-[9px] font-black text-white/50 uppercase tracking-[0.4em]">Hardware Calibration</span>
+               <div className="flex gap-2 mt-3">
+                  {[...Array(8)].map((_, i) => (
+                    <div key={i} className={`w-8 h-[1.5px] rounded-full transition-all duration-700 ${i < selectedCount ? 'bg-rose-600 shadow-[0_0_10px_rose-600]' : 'bg-white/10'}`}></div>
                   ))}
                </div>
             </div>
@@ -562,12 +658,9 @@ const PCBuilder: React.FC = () => {
           <button 
             disabled={totalBudget === 0}
             onClick={() => navigate('/checkout')}
-            className="h-24 px-16 bg-white text-black disabled:opacity-20 rounded-[2.5rem] font-black text-[13px] uppercase tracking-[0.5em] hover:bg-rose-600 hover:text-white transition-all flex items-center gap-12 group shadow-3xl active:scale-95"
+            className="h-10 px-8 bg-white text-black disabled:opacity-20 rounded-full font-black text-[11px] uppercase tracking-[0.5em] hover:bg-rose-600 hover:text-white transition-all flex items-center gap-8 group shadow-3xl active:scale-95"
           >
-            Finalize Phase
-            <div className="w-14 h-14 bg-black/10 rounded-full flex items-center justify-center transition-transform group-hover:translate-x-2">
-              <ArrowRight size={28} />
-            </div>
+            Next
           </button>
         </div>
       </div>
@@ -644,15 +737,6 @@ const PCBuilder: React.FC = () => {
            </div>
         </div>
       )}
-
-      <style>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
 
     </div>
   );

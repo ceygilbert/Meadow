@@ -8,6 +8,7 @@ import Prebuilt from './pages/public/Prebuilt';
 import PrebuiltProduct from './pages/public/PrebuiltProduct';
 import TrackOrder from './pages/public/TrackOrder';
 import PCBuilder from './pages/public/PCBuilder';
+import Workstation from './pages/public/Workstation';
 import Checkout from './pages/public/Checkout';
 import ProductDetails from './pages/public/ProductDetails';
 import ProductListing from './pages/public/ProductListing';
@@ -133,6 +134,7 @@ const App: React.FC = () => {
         <Route path="/prebuilt/:slug" element={<PrebuiltProduct />} />
         <Route path="/track-order" element={<TrackOrder />} />
         <Route path="/buildpc" element={<PCBuilder />} />
+        <Route path="/workstation" element={<Workstation />} />
         <Route path="/checkout" element={<Checkout />} />
         
         <Route 

@@ -1,40 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { Zap, ShoppingCart } from 'lucide-react';
+import { Zap } from 'lucide-react';
+import StudioNavbar from '../../components/StudioNavbar';
 
 const Prebuilt: React.FC = () => {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   return (
     <div className="min-h-screen bg-[#050607] text-slate-100 selection:bg-rose-600 selection:text-white overflow-x-hidden">
       
       {/* Header */}
-      <nav className={`fixed top-0 left-0 right-0 h-32 md:h-40 px-8 md:px-16 flex items-center justify-between z-[100] transition-all duration-1000 ${scrolled ? 'bg-[#050607]/95 backdrop-blur-2xl border-b border-white/5 py-4 h-24' : 'bg-transparent py-10'}`}>
-        <div className="flex items-center gap-12">
-          <Link to="/" className="group flex items-center gap-10">
-             <img src="https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/White%20Full%20Logo.png" className={`w-auto transition-all duration-500 group-hover:opacity-80 ${scrolled ? 'h-12 md:h-20' : 'h-24 md:h-36'}`} alt="Meadow" />
-          </Link>
-        </div>
-
-        <div className="hidden lg:flex items-center bg-white/10 border border-white/20 rounded-full p-2 gap-2">
-            <Link to="/buildpc" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Custom Build PC</Link>
-            <Link to="/prebuilt" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Pre-Built PC</Link>
-            <Link to="/track-order" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Track Your Order</Link>
-            <Link to="/stores" className="px-10 py-3.5 rounded-full text-sm font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Contact Us</Link>
-        </div>
-
-        <div className="flex items-center gap-10">
-           <button className="h-14 w-14 bg-white/10 border border-white/20 rounded-full flex items-center justify-center hover:bg-rose-600 hover:border-rose-600 transition-all duration-500">
-              <ShoppingCart size={22} />
-           </button>
-        </div>
-      </nav>
+      <StudioNavbar />
 
       {/* Hero Section */}
       <section className="pt-40 pb-20 px-8 md:px-16">

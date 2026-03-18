@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Share2, RefreshCw, Copy, List, Calculator, MessageCircle, ArrowRight } from 'lucide-react';
+import StudioNavbar from '../../components/StudioNavbar';
 
 const PrebuiltProduct: React.FC = () => {
   const { slug } = useParams();
@@ -25,53 +26,57 @@ const PrebuiltProduct: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050607] text-white p-8">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
-        
-        {/* Left: Image Gallery */}
-        <div>
-          <div className="aspect-square bg-[#1a1a1a] rounded-3xl mb-6 flex items-center justify-center">
-            <span className="text-slate-600">Product Image</span>
-          </div>
-          <div className="flex gap-4">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="w-20 h-20 bg-[#1a1a1a] rounded-xl border border-white/10" />
-            ))}
-          </div>
-        </div>
-
-        {/* Right: Configuration */}
-        <div>
-          <h1 className="text-3xl font-black mb-6">{product.name}</h1>
+    <div className="min-h-screen bg-[#050607] text-white">
+      <StudioNavbar />
+      
+      <div className="pt-40 pb-32 px-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
           
-          <div className="flex items-center gap-4 mb-8">
-            <div className="flex bg-[#1a1a1a] rounded-full p-1">
-              <button className="px-6 py-2 bg-rose-600 rounded-full text-sm font-bold">PC Configuration</button>
-              <button className="px-6 py-2 rounded-full text-sm font-bold text-slate-400">Accessories</button>
-              <button className="px-6 py-2 rounded-full text-sm font-bold text-slate-400">Gaming Chair & Desk</button>
+          {/* Left: Image Gallery */}
+          <div>
+            <div className="aspect-square bg-[#1a1a1a] rounded-3xl mb-6 flex items-center justify-center">
+              <span className="text-slate-600">Product Image</span>
             </div>
-            <Share2 className="text-slate-400" />
-            <div className="flex items-center gap-2 bg-[#1a1a1a] px-4 py-2 rounded-full">
-              <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
-              <span>{quantity}</span>
-              <button onClick={() => setQuantity(quantity + 1)}>+</button>
+            <div className="flex gap-4">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="w-20 h-20 bg-[#1a1a1a] rounded-xl border border-white/10" />
+              ))}
             </div>
-            <RefreshCw className="text-slate-400" />
-            <Copy className="text-slate-400" />
-            <List className="text-slate-400" />
           </div>
 
-          {/* Configuration List */}
-          <div className="space-y-4">
-            {product.specs.map((spec, index) => (
-              <div key={index} className="bg-[#1a1a1a] p-4 rounded-xl flex justify-between items-center border border-white/5">
-                <div>
-                  <p className="text-[10px] text-slate-400 uppercase">{spec.label}</p>
-                  <p className="font-bold">{spec.value}</p>
-                </div>
-                <ChevronRight className="text-rose-600" />
+          {/* Right: Configuration */}
+          <div>
+            <h1 className="text-3xl font-black mb-6">{product.name}</h1>
+            
+            <div className="flex items-center gap-4 mb-8">
+              <div className="flex bg-[#1a1a1a] rounded-full p-1">
+                <button className="px-6 py-2 bg-rose-600 rounded-full text-sm font-bold">PC Configuration</button>
+                <button className="px-6 py-2 rounded-full text-sm font-bold text-slate-400">Accessories</button>
+                <button className="px-6 py-2 rounded-full text-sm font-bold text-slate-400">Gaming Chair & Desk</button>
               </div>
-            ))}
+              <Share2 className="text-slate-400" />
+              <div className="flex items-center gap-2 bg-[#1a1a1a] px-4 py-2 rounded-full">
+                <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
+                <span>{quantity}</span>
+                <button onClick={() => setQuantity(quantity + 1)}>+</button>
+              </div>
+              <RefreshCw className="text-slate-400" />
+              <Copy className="text-slate-400" />
+              <List className="text-slate-400" />
+            </div>
+
+            {/* Configuration List */}
+            <div className="space-y-4">
+              {product.specs.map((spec, index) => (
+                <div key={index} className="bg-[#1a1a1a] p-4 rounded-xl flex justify-between items-center border border-white/5">
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase">{spec.label}</p>
+                    <p className="font-bold">{spec.value}</p>
+                  </div>
+                  <ChevronRight className="text-rose-600" />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
