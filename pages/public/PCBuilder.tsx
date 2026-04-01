@@ -40,6 +40,7 @@ import {
   ScanText
 } from 'lucide-react';
 import StudioNavbar from '../../components/StudioNavbar';
+import WaveGradient from '../../components/WaveGradient';
 
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/White%20Full%20Logo.png";
 
@@ -81,7 +82,9 @@ const PCBuilder: React.FC = () => {
       fans: null,
       networking: null,
       os: null,
-      accessories: []
+      accessories: [],
+      argb_fan: null,
+      led_strip: null
     };
   });
 
@@ -204,6 +207,18 @@ const PCBuilder: React.FC = () => {
         { name: "Logitech G Pro X Superlight 2", desc: "Wireless", price: 699, status: "Available", perfWeight: 100 },
         { name: "Razer Huntsman V3 Pro", desc: "Analog Optical", price: 999, status: "Available", perfWeight: 100 },
       ]
+    },
+    argb_fan: {
+      filters: ['ALL'],
+      items: [
+        { name: "ARGB Fan", desc: "High-performance ARGB cooling fan", price: 59, status: "Available" },
+      ]
+    },
+    led_strip: {
+      filters: ['ALL'],
+      items: [
+        { name: "LED Strip", desc: "Vibrant RGB lighting strip", price: 39, status: "Available" },
+      ]
     }
   };
 
@@ -224,6 +239,13 @@ const PCBuilder: React.FC = () => {
         { id: 'cpu cooler', label: 'CPU Cooler', icon: <Waves size={24} />, multi: false },
         { id: 'psu', label: 'Power Supply', icon: <Zap size={24} />, multi: false },
         { id: 'case', label: 'Cases', icon: <Monitor size={24} />, multi: false },
+      ]
+    },
+    {
+      group: "Optional",
+      items: [
+        { id: 'argb_fan', label: 'ARGB Fan', icon: <Fan size={24} />, multi: false },
+        { id: 'led_strip', label: 'LED Strip', icon: <Zap size={24} />, multi: false },
       ]
     }
   ];
@@ -497,70 +519,15 @@ const PCBuilder: React.FC = () => {
 
           {/* Master HUD - Editorial Noir Style */}
           <div className="lg:col-span-4">
-            <div className="sticky top-32 z-50 space-y-8">
-              <div className="bg-[#0A0B0C]/80 backdrop-blur-xl border border-white/10 rounded-[1.5rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden group relative transition-all duration-500 hover:border-rose-600/30 hover:shadow-[0_20px_80px_rgba(225,29,72,0.15)]">
-                <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_100%_0%,_#200a0a_0%,_transparent_50%)]"></div>
+            <div className="sticky top-32 z-50">
+              <div className={`bg-[#0A0B0C]/80 backdrop-blur-xl border transition-all duration-500 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden group relative ${radarPulse ? 'border-rose-600 shadow-[0_0_40px_rgba(225,29,72,0.3)] scale-[1.02]' : 'border-white/10'}`}>
+                <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,_#200a0a_0%,_transparent_70%)] opacity-50"></div>
                 
-                <div className="relative z-10 space-y-6">
-                  <div className="flex items-center justify-between">
+                {/* Ability Pentagon Chart */}
+                <div className="relative z-10 p-8 border-b border-white/5">
+                  <div className="flex items-center justify-between mb-8">
                     <div>
-                      <h2 className="font-serif text-lg font-light text-white leading-tight">Performance Overview.</h2>
-                      <p className="text-[8px] font-black text-rose-500 uppercase tracking-[0.3em] mt-1">Live Telemetry</p>
-                    </div>
-                    <Activity size={20} className={`text-rose-500 ${totalBudget > 0 ? 'animate-pulse' : 'opacity-20'}`} />
-                  </div>
-
-                  <div className="space-y-4">
-                    {[
-                      { id: 'procPower', label: 'Processing Power (CPU)', value: `${diagnostics.procPower}%`, color: 'bg-rose-600', width: diagnostics.procPower },
-                      { id: 'graphPower', label: 'Graphical Performance (GPU)', value: `${diagnostics.graphPower}%`, color: 'bg-rose-700', width: diagnostics.graphPower },
-                      { id: 'memAlloc', label: 'Memory (RAM Size/Speed)', value: `${diagnostics.memAlloc}%`, color: 'bg-rose-800', width: diagnostics.memAlloc },
-                      { id: 'stability', label: 'Storage', value: diagnostics.stability, color: 'bg-white', width: diagnostics.stability !== 'None' ? 100 : 0 },
-                    ].map((metric) => {
-                      const isHoverLinked = hoveredZone && metricMapping[hoveredZone]?.includes(metric.id);
-                      
-                      return (
-                        <div key={metric.id} className={`space-y-2 transition-all duration-500 ${isHoverLinked ? 'scale-105' : ''}`}>
-                          <div className="flex items-center justify-between px-1">
-                            <span className={`text-[9px] font-black uppercase tracking-[0.2em] transition-colors ${isHoverLinked ? 'text-rose-500' : 'text-white/60'}`}>
-                              {metric.label}
-                            </span>
-                            <span className="text-[11px] font-black text-white uppercase tracking-[0.2em]">{metric.value}</span>
-                          </div>
-                          <div className={`h-[2px] w-full bg-white/10 rounded-full overflow-hidden relative ${isHoverLinked ? 'shadow-[0_0_20px_rgba(225,29,72,0.4)]' : ''}`}>
-                            <div 
-                              className={`h-full ${metric.color} transition-all duration-1000 relative`}
-                              style={{ width: `${metric.width}%` }}
-                            >
-                              {/* "Razer" Laser/Glitch Effect on Hover */}
-                              {isHoverLinked && (
-                                <div className="absolute top-0 right-0 h-full w-[20%] bg-white/40 blur-[4px] animate-[ping_1s_infinite]"></div>
-                              )}
-                            </div>
-                            {isHoverLinked && (
-                               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_1.5s_infinite] pointer-events-none"></div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="pt-6 border-t border-white/10 space-y-4">
-                     <div className="flex items-end justify-between">
-                     </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Ability Pentagon Chart */}
-              <div className={`bg-[#0A0B0C]/80 backdrop-blur-xl border transition-all duration-500 rounded-[1.5rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden group relative ${radarPulse ? 'border-rose-600 shadow-[0_0_40px_rgba(225,29,72,0.3)] scale-[1.02]' : 'border-white/10'}`}>
-                <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_0%_100%,_#0a1a20_0%,_transparent_50%)]"></div>
-                
-                <div className="relative z-10 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="font-serif text-lg font-light text-white leading-tight">System Dynamics.</h2>
+                      <h2 className="font-black text-xl text-white uppercase tracking-tighter">Performance Overview.</h2>
                       <p className="text-[8px] font-black text-rose-500 uppercase tracking-[0.3em] mt-1">Ability Matrix</p>
                     </div>
                     <ScanText size={20} className="text-rose-500 opacity-50" />
@@ -595,7 +562,6 @@ const PCBuilder: React.FC = () => {
                           stroke="rgba(255,255,255,0.1)"
                           orientation="middle"
                         />
-                        {/* Background Shadow Radar */}
                         <Radar
                           name="System Shadow"
                           dataKey="A"
@@ -604,7 +570,6 @@ const PCBuilder: React.FC = () => {
                           fillOpacity={0.2}
                           animationDuration={1000}
                         />
-                        {/* Main Radar */}
                         <Radar
                           name="System"
                           dataKey="A"
@@ -618,14 +583,43 @@ const PCBuilder: React.FC = () => {
                       </RadarChart>
                     </ResponsiveContainer>
                   </div>
+                </div>
 
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-2 pt-4 border-t border-white/5">
-                    {radarData.map((stat) => (
-                      <div key={stat.subject} className="flex items-center justify-between">
-                        <span className="text-[8px] font-black text-white/40 uppercase tracking-wider">{stat.subject}</span>
-                        <span className="text-[10px] font-black text-white">{stat.A}</span>
-                      </div>
-                    ))}
+                {/* Master HUD */}
+                <div className="relative z-10 p-8 space-y-6">
+                  <div className="space-y-4">
+                    {[
+                      { id: 'procPower', label: 'Processing Power (CPU)', value: `${diagnostics.procPower}%`, color: 'bg-rose-600', width: diagnostics.procPower },
+                      { id: 'graphPower', label: 'Graphical Performance (GPU)', value: `${diagnostics.graphPower}%`, color: 'bg-rose-700', width: diagnostics.graphPower },
+                      { id: 'memAlloc', label: 'Memory (RAM Size/Speed)', value: `${diagnostics.memAlloc}%`, color: 'bg-rose-800', width: diagnostics.memAlloc },
+                      { id: 'stability', label: 'Storage', value: diagnostics.stability, color: 'bg-white', width: diagnostics.stability !== 'None' ? 100 : 0 },
+                    ].map((metric) => {
+                      const isHoverLinked = hoveredZone && metricMapping[hoveredZone]?.includes(metric.id);
+                      
+                      return (
+                        <div key={metric.id} className={`space-y-2 transition-all duration-500 ${isHoverLinked ? 'scale-105' : ''}`}>
+                          <div className="flex items-center justify-between px-1">
+                            <span className={`text-[9px] font-black uppercase tracking-[0.2em] transition-colors ${isHoverLinked ? 'text-rose-500' : 'text-white/60'}`}>
+                              {metric.label}
+                            </span>
+                            <span className="text-[11px] font-black text-white uppercase tracking-[0.2em]">{metric.value}</span>
+                          </div>
+                          <div className={`h-[2px] w-full bg-white/10 rounded-full overflow-hidden relative ${isHoverLinked ? 'shadow-[0_0_20px_rgba(225,29,72,0.4)]' : ''}`}>
+                            <div 
+                              className={`h-full ${metric.color} transition-all duration-1000 relative`}
+                              style={{ width: `${metric.width}%` }}
+                            >
+                              {isHoverLinked && (
+                                <div className="absolute top-0 right-0 h-full w-[20%] bg-white/40 blur-[4px] animate-[ping_1s_infinite]"></div>
+                              )}
+                            </div>
+                            {isHoverLinked && (
+                               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_1.5s_infinite] pointer-events-none"></div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -634,6 +628,8 @@ const PCBuilder: React.FC = () => {
 
         </div>
       </main>
+
+      <WaveGradient />
 
       {/* Floating Checkout Deck */}
       <div className="fixed bottom-0 left-0 right-0 z-[200] p-6 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none">

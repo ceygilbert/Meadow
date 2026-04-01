@@ -127,6 +127,7 @@ const Home: React.FC = () => {
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [promoProducts, setPromoProducts] = useState<Product[]>([]);
+  const [newArrivalProducts, setNewArrivalProducts] = useState<Product[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -161,6 +162,7 @@ const Home: React.FC = () => {
   const [activeStoreIndex, setActiveStoreIndex] = useState(0);
   const collectionRef = useRef<HTMLDivElement>(null);
   const promoRef = useRef<HTMLDivElement>(null);
+  const newArrivalRef = useRef<HTMLDivElement>(null);
 
   const scrollCollection = (direction: 'left' | 'right') => {
     if (collectionRef.current) {
@@ -176,6 +178,16 @@ const Home: React.FC = () => {
     if (promoRef.current) {
       const scrollAmount = 400;
       promoRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollNewArrival = (direction: 'left' | 'right') => {
+    if (newArrivalRef.current) {
+      const scrollAmount = 400;
+      newArrivalRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
       });
@@ -308,6 +320,7 @@ const Home: React.FC = () => {
         setFeaturedProducts(featured.length > 0 ? featured : prodRes.data.slice(0, 12));
         const promo = prodRes.data.filter(p => p.is_Promo === true);
         setPromoProducts(promo);
+        setNewArrivalProducts(prodRes.data.slice(0, 12));
       }
       if (brandRes.data) setBrands(brandRes.data);
     } catch (err: any) {
@@ -721,6 +734,35 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* Specialized Infinite Ticker Section */}
+      <section className="py-10 md:py-16 bg-white overflow-hidden relative">
+         <div className="absolute top-0 inset-x-0 h-px bg-slate-100"></div>
+         <div className="absolute bottom-0 inset-x-0 h-px bg-slate-100"></div>
+         
+         <div className="relative flex whitespace-nowrap overflow-hidden">
+            <div className="flex items-center gap-12 animate-ticker-infinite">
+               {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, idx) => (
+                 <div key={idx} className="flex items-center gap-12">
+                   <span className={`text-6xl md:text-[8rem] font-black uppercase tracking-tighter leading-none ${idx % 2 === 0 ? 'text-slate-900' : 'text-transparent stroke-text'}`} style={{ WebkitTextStroke: '2px #0f172a' }}>
+                     {item}
+                   </span>
+                   <Circle className="text-blue-600 shrink-0" size={24} fill="currentColor" />
+                 </div>
+               ))}
+            </div>
+         </div>
+
+         <style>{`
+           @keyframes ticker-infinite {
+             0% { transform: translateX(0); }
+             100% { transform: translateX(-50%); }
+           }
+           .animate-ticker-infinite {
+             animation: ticker-infinite 40s linear infinite;
+           }
+         `}</style>
+      </section>
+
       {/* THE COLLECTION Section */}
       <section className="bg-[#FAF9FB] pt-16 md:pt-24 pb-20 md:pb-32 overflow-hidden border-t border-slate-50">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
@@ -831,33 +873,53 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Specialized Infinite Ticker Section */}
-      <section className="py-10 md:py-16 bg-white overflow-hidden relative">
-         <div className="absolute top-0 inset-x-0 h-px bg-slate-100"></div>
-         <div className="absolute bottom-0 inset-x-0 h-px bg-slate-100"></div>
-         
-         <div className="relative flex whitespace-nowrap overflow-hidden">
-            <div className="flex items-center gap-12 animate-ticker-infinite">
-               {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, idx) => (
-                 <div key={idx} className="flex items-center gap-12">
-                   <span className={`text-6xl md:text-[8rem] font-black uppercase tracking-tighter leading-none ${idx % 2 === 0 ? 'text-slate-900' : 'text-transparent stroke-text'}`} style={{ WebkitTextStroke: '2px #0f172a' }}>
-                     {item}
-                   </span>
-                   <Circle className="text-blue-600 shrink-0" size={24} fill="currentColor" />
+      {/* New Arrival Section */}
+      <section className="py-10 md:py-16 bg-white">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-10">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">New Arrival</h2>
+            <div className="hidden md:flex gap-4">
+                <button 
+                  onClick={() => scrollNewArrival('left')}
+                  className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all"
+                >
+                  <ChevronLeft size={22} />
+                </button>
+                <button 
+                  onClick={() => scrollNewArrival('right')}
+                  className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all"
+                >
+                  <ChevronRight size={22} />
+                </button>
+             </div>
+          </div>
+          <div 
+            ref={newArrivalRef}
+            className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10"
+          >
+            {/* Product Cards */}
+            {newArrivalProducts.map((p) => (
+              <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-slate-50 rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+                 <button 
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
+                 >
+                    <Heart size={14} />
+                 </button>
+                 <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-3 relative flex items-center justify-center">
+                     <img src={p.image_url || undefined} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                  </div>
-               ))}
-            </div>
-         </div>
-
-         <style>{`
-           @keyframes ticker-infinite {
-             0% { transform: translateX(0); }
-             100% { transform: translateX(-50%); }
-           }
-           .animate-ticker-infinite {
-             animation: ticker-infinite 40s linear infinite;
-           }
-         `}</style>
+                 <div className="mb-1">
+                     <h3 className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 truncate">{p.name}</h3>
+                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Meadow Tech</p>
+                 </div>
+                 <div>
+                     <span className="text-xs font-black text-slate-900">RM{p.price.toLocaleString()}</span>
+                 </div>
+              </Link>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* VISIT OUR STORE Section */}

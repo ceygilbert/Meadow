@@ -57,8 +57,32 @@ const Checkout: React.FC = () => {
   const [selectedBranch, setSelectedBranch] = useState('MEADOW IT DISTRIBUTION (HQ)');
   const [deliveryMethod, setDeliveryMethod] = useState('Shipping');
   const [paymentMethod, setPaymentMethod] = useState('Credit Card');
-
   const [selections, setSelections] = useState<Record<string, any>>({});
+
+  const filteredHubs = useMemo(() => {
+    if (deliveryMethod === 'Shipping') {
+      return [{ id: 'wm', name: 'WEST MALAYSIA', city: 'LOGISTICS', available: true }];
+    }
+    if (deliveryMethod === 'Self-Pickup') {
+      return [
+        { id: 'jj', name: 'JOHOR JAYA BRANCH', city: 'HQ', available: true },
+        { id: 'pp', name: 'PLAZA PELANGI', city: 'JB', available: true },
+        { id: 'lk', name: 'LARKIN (COMING SOON)', city: 'JB', available: false },
+        { id: 'tu', name: 'TAMAN UNIVERSITI (COMING SOON)', city: 'SKUDAI', available: false }
+      ];
+    }
+    if (deliveryMethod === 'Onsite') {
+      return [{ id: 'jb', name: 'JB AREA', city: 'LOCAL', available: true }];
+    }
+    return [];
+  }, [deliveryMethod]);
+
+  useEffect(() => {
+    // Reset selected branch if it's not in the filtered list
+    if (filteredHubs.length > 0 && !filteredHubs.find(h => h.name === selectedBranch)) {
+      setSelectedBranch(filteredHubs[0].name);
+    }
+  }, [filteredHubs]);
 
   useEffect(() => {
     const saved = localStorage.getItem('meadow_pc_build');
@@ -109,14 +133,6 @@ const Checkout: React.FC = () => {
   const deliveryFee = deliveryMethod === 'Shipping' ? 45 : 0;
   const grandTotal = subtotal + deliveryFee;
 
-  const branches = [
-    { id: 'hq', name: 'MEADOW IT DISTRIBUTION (HQ)', city: 'Johor Jaya' },
-    { id: 'tu', name: 'MEADOW COMPUTER TAMAN U', city: 'Skudai' },
-    { id: 'pp', name: 'MEADOW COMPUTER PLAZA PELANGI', city: 'Johor Bahru' },
-    { id: 'as', name: 'ASUS CONCEPT STORE MEADOW', city: 'Johor Bahru' },
-    { id: 'hp', name: 'HP WORLD MEADOW TOPPEN', city: 'Johor Bahru' },
-    { id: 'hw', name: 'HUAWEI EXPERIENCE STORE', city: 'Johor Bahru' }
-  ];
 
   const deliveryOptions = [
     { id: 'Shipping', label: 'Shipping By GDEX', sub: 'West Malaysia Coverage' },
@@ -168,7 +184,7 @@ const Checkout: React.FC = () => {
             <section className="space-y-10">
               <div className="flex items-center gap-6">
                  <div className="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></div>
-                 <h2 className="font-serif text-4xl md:text-5xl font-light text-white tracking-tight italic">Client Registry.</h2>
+                 <h2 className="font-black text-4xl md:text-5xl text-white tracking-tighter uppercase">Client Registry.</h2>
               </div>
               
               <div className="grid md:grid-cols-2 gap-8 bg-white/[0.02] border border-white/5 p-10 rounded-[3rem]">
@@ -214,37 +230,16 @@ const Checkout: React.FC = () => {
               </div>
             </section>
 
-            {/* Logistics Deployment */}
+            {/* Shipping Method & Logistics Deployment */}
             <section className="space-y-10">
               <div className="flex items-center gap-6">
                  <div className="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></div>
-                 <h2 className="font-serif text-4xl md:text-5xl font-light text-white tracking-tight italic">Logistics Deployment.</h2>
+                 <h2 className="font-black text-4xl md:text-5xl text-white tracking-tighter uppercase">Logistics Deployment.</h2>
               </div>
               
               <div className="space-y-12">
                 <div className="space-y-6">
-                   <p className="text-[11px] font-black text-rose-500 uppercase tracking-[0.4em]">Select Operations Hub</p>
-                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {branches.map((branch) => (
-                        <button 
-                          key={branch.id}
-                          onClick={() => setSelectedBranch(branch.name)}
-                          className={`p-8 rounded-[2.5rem] border text-left transition-all duration-500 relative overflow-hidden group min-h-[140px] flex flex-col justify-center ${
-                            selectedBranch === branch.name 
-                              ? 'bg-rose-600 border-rose-600 shadow-[0_0_40px_rgba(225,29,72,0.2)]' 
-                              : 'bg-white/[0.02] border-white/5 hover:border-white/20'
-                          }`}
-                        >
-                           <p className={`text-[10px] font-black uppercase tracking-widest mb-2 ${selectedBranch === branch.name ? 'text-white/70' : 'text-white/30'}`}>{branch.city}</p>
-                           <p className={`text-sm md:text-base font-black tracking-tight leading-tight ${selectedBranch === branch.name ? 'text-white' : 'text-white/60 group-hover:text-white'}`}>{branch.name}</p>
-                           {selectedBranch === branch.name && <div className="absolute top-4 right-4 text-white"><CheckCircle2 size={16} /></div>}
-                        </button>
-                      ))}
-                   </div>
-                </div>
-
-                <div className="space-y-6">
-                   <p className="text-[11px] font-black text-rose-500 uppercase tracking-[0.4em]">Transmission Method</p>
+                   <p className="text-[11px] font-black text-rose-500 uppercase tracking-[0.4em]">Shipping Method</p>
                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {deliveryOptions.map((opt) => (
                         <button 
@@ -263,6 +258,30 @@ const Checkout: React.FC = () => {
                       ))}
                    </div>
                 </div>
+
+                <div className="space-y-6">
+                   <p className="text-[11px] font-black text-rose-500 uppercase tracking-[0.4em]">Select Operations Hub</p>
+                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {filteredHubs.map((branch) => (
+                        <button 
+                          key={branch.id}
+                          onClick={() => branch.available && setSelectedBranch(branch.name)}
+                          disabled={!branch.available}
+                          className={`p-8 rounded-[2.5rem] border text-left transition-all duration-500 relative overflow-hidden group min-h-[140px] flex flex-col justify-center ${
+                            selectedBranch === branch.name 
+                              ? 'bg-rose-600 border-rose-600 shadow-[0_0_40px_rgba(225,29,72,0.2)]' 
+                              : branch.available 
+                                ? 'bg-white/[0.02] border-white/5 hover:border-white/20'
+                                : 'bg-white/[0.01] border-white/5 opacity-40 cursor-not-allowed'
+                          }`}
+                        >
+                           <p className={`text-[10px] font-black uppercase tracking-widest mb-2 ${selectedBranch === branch.name ? 'text-white/70' : 'text-white/30'}`}>{branch.city}</p>
+                           <p className={`text-sm md:text-base font-black tracking-tight leading-tight ${selectedBranch === branch.name ? 'text-white' : 'text-white/60 group-hover:text-white'}`}>{branch.name}</p>
+                           {selectedBranch === branch.name && <div className="absolute top-4 right-4 text-white"><CheckCircle2 size={16} /></div>}
+                        </button>
+                      ))}
+                   </div>
+                </div>
               </div>
             </section>
 
@@ -270,7 +289,7 @@ const Checkout: React.FC = () => {
             <section className="space-y-10">
               <div className="flex items-center gap-6">
                  <div className="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></div>
-                 <h2 className="font-serif text-4xl md:text-5xl font-light text-white tracking-tight italic">Financial Resolution.</h2>
+                 <h2 className="font-black text-4xl md:text-5xl text-white tracking-tighter uppercase">Financial Resolution.</h2>
               </div>
               
               <div className="space-y-10">
@@ -344,7 +363,7 @@ const Checkout: React.FC = () => {
                 <div className="relative z-10">
                    <div className="flex items-center justify-between mb-10">
                       <div>
-                        <h2 className="font-serif text-4xl font-light text-white italic">The Manifest.</h2>
+                        <h2 className="font-black text-4xl text-white tracking-tighter uppercase">The Manifest.</h2>
                         <p className="text-[11px] font-black text-rose-600 uppercase tracking-[0.4em] mt-2">Active Buffer</p>
                       </div>
                       <FileText size={32} className="text-white/10" />
@@ -408,9 +427,8 @@ const Checkout: React.FC = () => {
                    </div>
 
                    <div className="mt-12 space-y-4">
-                      <button className="w-full h-24 bg-white text-black rounded-[2.5rem] font-black text-[13px] uppercase tracking-[0.5em] hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center gap-6 group shadow-3xl">
-                         Authorize Checkout
-                         <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
+                      <button className="w-full h-16 bg-white text-black rounded-[2rem] font-black text-[13px] uppercase tracking-[0.5em] hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center gap-6 group shadow-3xl">
+                         Checkout
                       </button>
                       <button className="w-full h-16 bg-white/5 border border-white/10 text-white/40 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.4em] hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-4">
                          <Printer size={18} />
@@ -418,13 +436,7 @@ const Checkout: React.FC = () => {
                       </button>
                    </div>
                    
-                   <div className="mt-12 flex items-center gap-6 px-6 py-4 bg-white/[0.03] rounded-2xl border border-white/5">
-                      <ShieldCheck size={24} className="text-rose-600" />
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-white">Meadow Shield</p>
-                        <p className="text-[9px] text-white/40 font-medium leading-relaxed">Full technical insurance & validation included.</p>
-                      </div>
-                   </div>
+
                 </div>
              </div>
           </div>

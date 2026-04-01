@@ -26,6 +26,7 @@ import {
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Product, Profile, Brand } from '../../types';
+import PublicNavbar from '../../components/PublicNavbar';
 
 interface ITStore {
   id: string;
@@ -115,6 +116,15 @@ const StoreLocator: React.FC = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     checkUser();
@@ -186,39 +196,36 @@ const StoreLocator: React.FC = () => {
       <div className={`fixed inset-0 z-[500] bg-white transition-all duration-700 ease-[cubic-bezier(0.85,0,0.15,1)] ${isFullMenuOpen ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="h-full flex flex-col">
           {/* Menu Header */}
-          <div className="h-24 px-6 md:px-12 flex items-center justify-between shrink-0">
-             <div className="flex items-center gap-2">
-                <Link to="/" onClick={() => setIsFullMenuOpen(false)} className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white">
-                  <Cpu size={18} />
-                </Link>
-                <span className="text-lg font-black tracking-tighter uppercase">Meadow</span>
-             </div>
+          <div className="h-32 md:h-48 px-6 md:px-12 flex items-center justify-between shrink-0">
+             <Link to="/" onClick={() => setIsFullMenuOpen(false)} className="flex items-center group">
+                <img src="https://illuminatelabs.space/assets/meadow_logo.png" className="h-24 md:h-36 w-auto object-contain transition-transform group-hover:scale-105" alt="Meadow" />
+             </Link>
              <button 
                 onClick={() => setIsFullMenuOpen(false)}
-                className="w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                className="w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform"
              >
-                <X size={24} />
+                <X size={28} />
              </button>
           </div>
 
           <div className="flex-1 flex flex-col md:flex-row px-6 md:px-24 py-12 gap-12 overflow-y-auto overflow-x-hidden">
              <div className="flex-1">
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300 mb-12">Navigation Protocol</p>
+                <p className="text-xs font-black uppercase tracking-[0.4em] text-slate-300 mb-12">Navigation Protocol</p>
                 <nav className="flex flex-col gap-12 md:gap-16">
                    
                    {/* Story Mode */}
                    {(menuMode === 'all' || menuMode === 'story') && (
                      <div className="flex flex-col gap-6 group animate-in slide-in-from-left duration-500">
                         <div className="flex items-center gap-6">
-                          <span className="text-4xl md:text-7xl font-nav uppercase tracking-tighter text-slate-900">Brand Story</span>
+                          <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Brand Story</span>
                         </div>
                         <div className="flex flex-col items-start gap-3 pl-2 md:pl-4 border-l-2 border-slate-100">
-                           <Link to="/" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
+                           <a href="#" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
                               Brand Story <ArrowUpRight size={16} className="opacity-0 group-hover:opacity-100" />
-                           </Link>
-                           <Link to="/" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
+                           </a>
+                           <a href="#" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
                               Join Our Team <ArrowUpRight size={16} className="opacity-0 group-hover:opacity-100" />
-                           </Link>
+                           </a>
                         </div>
                      </div>
                    )}
@@ -226,7 +233,7 @@ const StoreLocator: React.FC = () => {
                    {/* Products Mode */}
                    {(menuMode === 'all' || menuMode === 'products') && (
                      <Link to="/categories" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6 animate-in slide-in-from-left duration-500">
-                        <span className="text-4xl md:text-7xl font-nav uppercase tracking-tighter text-slate-900 transition-all group-hover:italic group-hover:translate-x-4">Category</span>
+                        <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900 transition-all group-hover:italic group-hover:translate-x-4">Category</span>
                         <ArrowUpRight className="text-slate-200 group-hover:text-slate-900 transition-colors" size={32} />
                      </Link>
                    )}
@@ -235,12 +242,12 @@ const StoreLocator: React.FC = () => {
                    {(menuMode === 'all' || menuMode === 'contact') && (
                      <div className="flex flex-col gap-6 group animate-in slide-in-from-left duration-500">
                         <div className="flex items-center gap-6">
-                          <span className="text-4xl md:text-7xl font-nav uppercase tracking-tighter text-slate-900">Contact Us</span>
+                          <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Contact Us</span>
                         </div>
                         <div className="flex flex-col items-start gap-3 pl-2 md:pl-4 border-l-2 border-slate-100">
-                           <Link to="/" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
+                           <a href="#" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
                               Inquiry Form <ArrowUpRight size={16} className="opacity-0 group-hover:opacity-100" />
-                           </Link>
+                           </a>
                            <Link to="/stores" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-blue-500 hover:text-blue-700 transition-colors flex items-center gap-2">
                               Store Locator <ArrowUpRight size={16} />
                            </Link>
@@ -251,7 +258,7 @@ const StoreLocator: React.FC = () => {
                    {menuMode !== 'all' && (
                      <button 
                         onClick={() => setMenuMode('all')}
-                        className="text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-slate-900 transition-colors flex items-center gap-2 mt-8"
+                        className="text-xs font-black uppercase tracking-widest text-slate-300 hover:text-slate-900 transition-colors flex items-center gap-2 mt-8"
                      >
                         <ArrowLeft size={14} /> Back to Full Menu
                      </button>
@@ -276,58 +283,17 @@ const StoreLocator: React.FC = () => {
         </div>
       </div>
 
-      {/* Editorial Floating Header (Synced with Home) */}
-      <nav className="fixed top-4 md:top-6 left-0 right-0 z-[100] px-4 md:px-10 pointer-events-none">
-        <div className="max-w-[1440px] mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 pointer-events-auto">
-            <Link to="/" className="w-8 h-8 md:w-9 md:h-9 bg-slate-900 rounded-lg flex items-center justify-center text-white shadow-lg">
-              <Cpu size={18} />
-            </Link>
-            <span className="text-base md:text-lg font-black tracking-tighter uppercase leading-none">Meadow</span>
-          </div>
-
-          <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-8 py-3 gap-6 md:gap-8 lg:gap-10 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90 group">
-            <form onSubmit={handleHeaderSearch} className="relative flex items-center">
-              <Search size={18} className="absolute left-5 text-slate-400" />
-              <input 
-                type="text" 
-                placeholder="Search products..." 
-                value={headerSearch}
-                onChange={(e) => setHeaderSearch(e.target.value)}
-                className="bg-slate-100/50 border-none rounded-full py-4 pl-14 pr-8 text-sm font-bold w-48 focus:w-64 transition-all outline-none focus:bg-white focus:ring-1 focus:ring-slate-200"
-              />
-            </form>
-            <Link to="/categories" className="text-sm font-nav uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-all">Category</Link>
-            <Link to="/categories" className="text-sm font-nav uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-all">Brand</Link>
-            <Link 
-              to="/customised" 
-              className="px-8 py-4 bg-slate-900 text-white text-xs font-nav uppercase tracking-[0.3em] rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-slate-900/20 hover:shadow-rose-600/30 flex items-center gap-2"
-            >
-              <Zap size={18} className="text-rose-400" />
-              Build Your Own PC
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-2 md:gap-4 pointer-events-auto">
-            {!user ? (
-               <button onClick={() => navigate('/')} className="w-10 h-10 md:w-12 md:h-12 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-sm">
-                 <UserIcon size={20} />
-               </button>
-            ) : (
-               <button onClick={() => navigate(profile?.role === 'admin' ? '/admin/dashboard' : '/customer/dashboard')} className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-slate-200 overflow-hidden shadow-sm">
-                 <img src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`} className="w-full h-full object-cover" />
-               </button>
-            )}
-            <button onClick={() => setIsCartOpen(true)} className="w-10 h-10 md:w-11 md:h-11 bg-slate-900 text-white rounded-full flex items-center justify-center relative shadow-xl hover:scale-105 transition-all">
-              <ShoppingCart size={16} />
-              {cart.length > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-blue-500 text-white text-[8px] md:text-[9px] font-black flex items-center justify-center rounded-full border-2 border-white">{cart.length}</span>}
-            </button>
-          </div>
-        </div>
-      </nav>
+      <PublicNavbar 
+        user={user}
+        profile={profile}
+        cartCount={cart.length}
+        onOpenAuth={() => navigate('/')} 
+        onOpenCart={() => setIsCartOpen(true)}
+        scrolled={scrolled}
+      />
 
       {/* Main Content Area */}
-      <div className="flex flex-1 overflow-hidden pt-24 md:pt-32">
+      <div className="flex flex-1 overflow-hidden pt-24 md:pt-36">
         {/* Sidebar */}
         <div className="w-full md:w-[400px] border-r border-slate-100 flex flex-col bg-slate-50/30 overflow-hidden shadow-xl z-10 relative">
           <div className="p-6 space-y-4 shrink-0 bg-white shadow-sm border-b border-slate-100">
@@ -453,6 +419,55 @@ const StoreLocator: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Cart Slider */}
+      {isCartOpen && (
+        <div className="fixed inset-0 z-[1000] flex justify-end">
+          <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-md" onClick={() => setIsCartOpen(false)}></div>
+          <div className="relative w-full max-w-md bg-white h-full shadow-2xl animate-in slide-in-from-right duration-700 flex flex-col p-10 md:p-14">
+            <div className="flex items-center justify-between mb-16">
+               <div className="flex flex-col">
+                 <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">Your Selection</h2>
+                 <p className="text-xs text-slate-300 font-black uppercase tracking-[0.3em] mt-3">Active Buffer</p>
+               </div>
+               <button onClick={() => setIsCartOpen(false)} className="w-12 h-12 md:w-14 md:h-14 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-full flex items-center justify-center transition-all shadow-sm"><X size={30} /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto space-y-12 scrollbar-hide">
+               {cart.length === 0 ? (
+                 <div className="h-full flex flex-col items-center justify-center text-center opacity-30">
+                    <div className="w-28 h-28 bg-slate-50 rounded-[3rem] flex items-center justify-center text-slate-300 mb-10"><ShoppingCart size={48} /></div>
+                    <p className="text-xs font-black uppercase tracking-[0.3em]">No items in buffer.</p>
+                 </div>
+               ) : (
+                 cart.map(item => (
+                   <div key={item.id} className="group relative">
+                      <div className="flex gap-10">
+                         <div className="w-32 h-32 rounded-[2.5rem] bg-[#F9FAFB] overflow-hidden shrink-0 border border-slate-50 p-5 transition-all group-hover:scale-105">
+                           <img src={item.image_url} className="w-full h-full object-contain" />
+                         </div>
+                         <div className="flex-1 py-3">
+                           <div className="flex justify-between items-start gap-4 mb-5">
+                             <h4 className="font-black text-slate-900 text-base uppercase tracking-tight leading-none truncate max-w-[150px]">{item.name}</h4>
+                             <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="text-slate-200 hover:text-rose-500 transition-colors"><X size={18} /></button>
+                           </div>
+                           <div className="flex items-center justify-between mt-auto">
+                              <span className="font-black text-sm">Qty: {item.quantity}</span>
+                              <span className="font-black text-slate-900 text-base">RM{(item.price * item.quantity).toLocaleString()}</span>
+                           </div>
+                         </div>
+                      </div>
+                   </div>
+                 ))
+               )}
+            </div>
+            {cart.length > 0 && (
+              <div className="mt-auto pt-14 border-t border-slate-50">
+                 <button onClick={() => navigate('/checkout')} className="w-full py-7 bg-slate-900 text-white font-black rounded-3xl hover:bg-black transition-all shadow-2xl uppercase tracking-[0.3em] text-xs">Initialize Purchase</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

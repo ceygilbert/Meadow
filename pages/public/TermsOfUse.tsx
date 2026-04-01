@@ -85,7 +85,7 @@ const TermsOfUse: React.FC = () => {
             <section id="scope" className="prose prose-slate max-w-none">
               <div className="p-8 md:p-12 bg-slate-50 rounded-[2.5rem] border border-slate-100 mb-12">
                 <p className="text-sm md:text-base font-bold text-slate-700 leading-relaxed m-0">
-                  This Terms & Policy Section only applies exclusively to Brightstar Computer Official E-Commerce website [https://www.brightstarcomp.com]. For marketplace store, please refer to the respective help sections on each individual website for their specific terms and services.
+                  This Terms & Policy Section only applies exclusively to Meadow Computer Official E-Commerce website [https://www.meadow.com]. For marketplace store, please refer to the respective help sections on each individual website for their specific terms and services.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
                   {[
@@ -110,7 +110,7 @@ const TermsOfUse: React.FC = () => {
                     Acceptance of Terms
                   </h2>
                   <p className="text-slate-600 leading-relaxed font-medium">
-                    BRIGHTSTAR COMPUTER SDN BHD [921893-M] and its affiliates ("Brightstar," "we," "our," and "us") offer website information services, an e-commerce store, and product catalog features. Prior to accessing our website or utilizing any features, it is imperative to thoroughly review these terms and use, encompassing both the Terms and Use and Privacy Policy. This is essential to ensure an understanding of the legal rights and obligations associated with the use of our services.
+                    MEADOW COMPUTER SDN BHD [921893-M] and its affiliates ("Meadow," "we," "our," and "us") offer website information services, an e-commerce store, and product catalog features. Prior to accessing our website or utilizing any features, it is imperative to thoroughly review these terms and use, encompassing both the Terms and Use and Privacy Policy. This is essential to ensure an understanding of the legal rights and obligations associated with the use of our services.
                   </p>
                 </div>
 
@@ -120,7 +120,7 @@ const TermsOfUse: React.FC = () => {
                     User Rights & Obligations
                   </h2>
                   <p className="text-slate-600 leading-relaxed font-medium">
-                    By accessing or using the Brightstar website, you agree to be bound by these Terms of Use. If you do not agree to these terms, please refrain from using our website. We reserve the right to update or modify these terms at any time without prior notice. Your continued use of the website following any changes constitutes your acceptance of the revised terms.
+                    By accessing or using the Meadow website, you agree to be bound by these Terms of Use. If you do not agree to these terms, please refrain from using our website. We reserve the right to update or modify these terms at any time without prior notice. Your continued use of the website following any changes constitutes your acceptance of the revised terms.
                   </p>
                 </div>
 
@@ -150,7 +150,7 @@ const TermsOfUse: React.FC = () => {
                     Limitation of Liability
                   </h2>
                   <p className="text-slate-600 leading-relaxed font-medium">
-                    Brightstar shall not be liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with the use of our website or services. This includes, but is not limited to, damages for loss of profits, goodwill, use, data, or other intangible losses.
+                    Meadow shall not be liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with the use of our website or services. This includes, but is not limited to, damages for loss of profits, goodwill, use, data, or other intangible losses.
                   </p>
                 </div>
               </div>
@@ -163,7 +163,7 @@ const TermsOfUse: React.FC = () => {
                   <img src={LOGO_URL} className="h-10 w-auto grayscale opacity-30" alt="Meadow" />
                   <div className="h-8 w-px bg-slate-100"></div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-300">
-                    Brightstar Computer SDN BHD [921893-M]
+                    Meadow Computer SDN BHD [921893-M]
                   </p>
                 </div>
                 <button 

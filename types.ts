@@ -29,6 +29,7 @@ export interface Brand {
   name: string;
   logo_url: string;
   description: string;
+  on_list?: boolean;
 }
 
 export interface Product {

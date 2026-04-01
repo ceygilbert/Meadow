@@ -14,6 +14,7 @@ import TermsOfUse from './pages/public/TermsOfUse';
 import ProductDetails from './pages/public/ProductDetails';
 import ProductListing from './pages/public/ProductListing';
 import Categories from './pages/public/Categories';
+import AllBrands from './pages/public/AllBrands';
 import AdminLogin from './pages/admin/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import ProductManagement from './pages/admin/Products';
@@ -127,6 +128,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/categories" element={<Categories />} />
+        <Route path="/brands" element={<AllBrands />} />
         <Route path="/products" element={<ProductListing />} />
         <Route path="/product/:slug" element={<ProductDetails />} />
         <Route path="/stores" element={<StoreLocator />} />

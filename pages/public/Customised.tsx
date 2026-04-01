@@ -32,11 +32,61 @@ import {
   BadgeCheck
 } from 'lucide-react';
 import StudioNavbar from '../../components/StudioNavbar';
+import WaveGradient from '../../components/WaveGradient';
 
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/White%20Full%20Logo.png";
 
 const Customised: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [activeRangeTab, setActiveRangeTab] = useState('originals');
+
+  const rangeCategories = [
+    { id: 'originals', label: 'AFTERSHOCK ORIGINALS' },
+    { id: 'showcase', label: 'SHOWCASE' },
+    { id: 'artisan', label: 'ARTISAN' },
+    { id: 'airflow', label: 'AIRFLOW' },
+    { id: 'compact', label: 'COMPACT' },
+    { id: 'workstations', label: 'WORKSTATIONS' },
+    { id: 'laptops', label: 'LAPTOPS' },
+  ];
+
+  const rangeProducts: Record<string, any[]> = {
+    originals: [
+      { name: 'RAPID', subtitle: 'The E-Sport Battlestation', image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=800&auto=format&fit=crop' },
+      { name: 'RAPID', subtitle: 'The E-Sport Battlestation', image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=800&auto=format&fit=crop' },
+      { name: 'ZEAL-M', subtitle: 'Showcase Chassis', image: 'https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=800&auto=format&fit=crop' },
+    ],
+    showcase: [
+      { name: 'BUBBLEGUM', subtitle: 'Full Pink PC', image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=800&auto=format&fit=crop' },
+      { name: 'NIMBUS', subtitle: 'Curved Glass Showcase', image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=800&auto=format&fit=crop' },
+      { name: 'EVOLVE', subtitle: 'Explore New Horizons', image: 'https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=800&auto=format&fit=crop' },
+    ],
+    workstations: [
+      { name: 'FOCUS', subtitle: 'Productivity Optimised PC', image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=800&auto=format&fit=crop' },
+      { name: 'FOCUS PRIME', subtitle: 'High Performance Workstation', image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=800&auto=format&fit=crop' },
+      { name: 'HYPERFOCUS', subtitle: 'High Performance Tower', image: 'https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=800&auto=format&fit=crop' },
+    ],
+    artisan: [
+       { name: 'ARTISAN I', subtitle: 'Hand-Crafted Masterpiece', image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=800&auto=format&fit=crop' },
+       { name: 'ARTISAN II', subtitle: 'Bespoke Engineering', image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=800&auto=format&fit=crop' },
+       { name: 'ARTISAN III', subtitle: 'The Ultimate Craft', image: 'https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=800&auto=format&fit=crop' },
+    ],
+    airflow: [
+       { name: 'WIND', subtitle: 'Maximum Cooling', image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=800&auto=format&fit=crop' },
+       { name: 'GALE', subtitle: 'High Airflow Chassis', image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=800&auto=format&fit=crop' },
+       { name: 'STORM', subtitle: 'Thermal Dominance', image: 'https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=800&auto=format&fit=crop' },
+    ],
+    compact: [
+       { name: 'NANO', subtitle: 'Small Form Factor', image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=800&auto=format&fit=crop' },
+       { name: 'PICO', subtitle: 'Ultra Compact PC', image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=800&auto=format&fit=crop' },
+       { name: 'ATOM', subtitle: 'Miniature Powerhouse', image: 'https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=800&auto=format&fit=crop' },
+    ],
+    laptops: [
+       { name: 'FORGE', subtitle: 'Portable Performance', image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=800&auto=format&fit=crop' },
+       { name: 'BLADE', subtitle: 'Thin & Light Gaming', image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=800&auto=format&fit=crop' },
+       { name: 'TITAN', subtitle: 'Desktop Replacement', image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=800&auto=format&fit=crop' },
+    ]
+  };
 
   const heroSlides = [
     {
@@ -341,6 +391,64 @@ const Customised: React.FC = () => {
           ></iframe>
         </div>
 
+        {/* Explore Our Range Section */}
+        <div className="mt-40 mb-40">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+            <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter">Explore <br /> Our Range</h2>
+            
+            <div className="flex flex-wrap gap-x-8 gap-y-4 border-b border-white/5 pb-4">
+              {rangeCategories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveRangeTab(cat.id)}
+                  className={`text-[11px] font-black uppercase tracking-[0.2em] transition-all relative pb-2 ${
+                    activeRangeTab === cat.id ? 'text-rose-600' : 'text-white/40 hover:text-white'
+                  }`}
+                >
+                  {cat.label}
+                  {activeRangeTab === cat.id && (
+                    <motion.div 
+                      layoutId="activeTab"
+                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-rose-600"
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <AnimatePresence mode="wait">
+              {rangeProducts[activeRangeTab]?.map((product, idx) => (
+                <motion.div
+                  key={`${activeRangeTab}-${idx}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.5, delay: idx * 0.1 }}
+                  className="group"
+                >
+                  <div className="bg-[#0a0b0c] border border-white/10 rounded-[2rem] overflow-hidden transition-all duration-500 hover:border-rose-600/30 hover:shadow-[0_20px_80px_rgba(225,29,72,0.1)]">
+                    <div className="p-8 text-center bg-gradient-to-b from-white/[0.03] to-transparent">
+                      <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">{product.name}</h3>
+                      <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">{product.subtitle}</p>
+                    </div>
+                    <div className="relative aspect-square overflow-hidden">
+                      <img 
+                        src={product.image} 
+                        alt={product.name}
+                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        </div>
+
         <div className="text-center mb-24 pt-12">
           <span className="text-[12px] font-black uppercase tracking-[0.6em] text-rose-500 mb-6 block">Our Commitment</span>
           <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase mb-8">We Care for You.</h2>
@@ -427,6 +535,8 @@ const Customised: React.FC = () => {
            </div>
         </div>
       </section>
+
+      <WaveGradient />
 
       {/* Footer */}
       <footer className="px-8 md:px-20 py-48 bg-[#050607] border-t border-white/10 relative z-10 overflow-hidden">

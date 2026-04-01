@@ -149,10 +149,10 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
         )}
       </AnimatePresence>
 
-      <nav className={`fixed left-0 right-0 z-[100] px-4 md:px-10 transition-all duration-500 ${scrolled || activeMenu ? 'top-0 py-4 bg-white/90 backdrop-blur-2xl border-b border-slate-100 shadow-lg pointer-events-auto' : 'top-0 pointer-events-none'}`}>
+      <nav className={`fixed left-0 right-0 z-[100] px-4 md:px-10 transition-all duration-500 ${scrolled || activeMenu ? 'top-0 py-3 bg-white/90 backdrop-blur-2xl border-b border-slate-100 shadow-lg pointer-events-auto' : 'top-0 pointer-events-none'}`}>
         <div className="max-w-[1440px] mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center pointer-events-auto group">
-            <img src={LOGO_URL} className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 h-24 md:h-36`} alt="Meadow" />
+            <img src={LOGO_URL} className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${scrolled || activeMenu ? 'h-10 md:h-12' : 'h-24 md:h-36'}`} alt="Meadow" />
           </Link>
 
           <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-8 py-3 gap-6 md:gap-8 lg:gap-10 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90 group">
@@ -202,17 +202,17 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
 
           <div className="flex items-center gap-3 md:gap-6 pointer-events-auto">
             {!user ? (
-               <button onClick={onOpenAuth} className="w-14 h-14 md:w-16 md:h-16 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-xl hover:scale-105">
-                 <UserIcon size={22} />
+               <button onClick={onOpenAuth} className={`bg-slate-100 text-slate-500 rounded-full flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-xl hover:scale-105 ${scrolled || activeMenu ? 'w-12 h-12 md:w-14 md:h-14' : 'w-14 h-14 md:w-16 md:h-16'}`}>
+                 <UserIcon size={scrolled || activeMenu ? 18 : 22} />
                </button>
             ) : (
-               <button onClick={() => navigate(profile?.role === 'admin' ? '/admin/dashboard' : '/customer/dashboard')} className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-slate-200 overflow-hidden shadow-sm">
+               <button onClick={() => navigate(profile?.role === 'admin' ? '/admin/dashboard' : '/customer/dashboard')} className={`rounded-full border border-slate-200 overflow-hidden shadow-sm transition-all ${scrolled || activeMenu ? 'w-10 h-10 md:w-12 md:h-12' : 'w-12 h-12 md:w-14 md:h-14'}`}>
                  <img src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`} className="w-full h-full object-cover" />
                </button>
             )}
-            <button onClick={onOpenCart} className="w-14 h-14 md:w-16 md:h-16 bg-slate-900 text-white rounded-full flex items-center justify-center relative shadow-xl hover:scale-105 transition-all">
-              <ShoppingCart size={22} />
-              {cartCount > 0 && <span className="absolute -top-1 -right-1 w-6 h-6 md:w-7 md:h-7 bg-blue-500 text-white text-[10px] md:text-xs font-black flex items-center justify-center rounded-full border-2 border-white">{cartCount}</span>}
+            <button onClick={onOpenCart} className={`bg-slate-900 text-white rounded-full flex items-center justify-center relative shadow-xl hover:scale-105 transition-all ${scrolled || activeMenu ? 'w-12 h-12 md:w-14 md:h-14' : 'w-14 h-14 md:w-16 md:h-16'}`}>
+              <ShoppingCart size={scrolled || activeMenu ? 18 : 22} />
+              {cartCount > 0 && <span className={`absolute -top-1 -right-1 bg-blue-500 text-white font-black flex items-center justify-center rounded-full border-2 border-white ${scrolled || activeMenu ? 'w-5 h-5 text-[8px]' : 'w-6 h-6 md:w-7 md:h-7 text-[10px] md:text-xs'}`}>{cartCount}</span>}
             </button>
           </div>
         </div>
@@ -318,7 +318,7 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-8 text-center">Shop by Brand</p>
                     <div className="grid grid-cols-6 gap-8">
-                      {brands.map((brand) => (
+                      {brands.filter(b => b.on_list).map((brand) => (
                         <Link 
                           key={brand.id}
                           to={`/products?brand=${brand.id}`}
@@ -331,6 +331,17 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
                           <span className="text-xs font-black uppercase tracking-widest text-slate-400 group-hover:text-slate-900">{brand.name}</span>
                         </Link>
                       ))}
+                      {/* View All Button */}
+                      <Link 
+                        to="/brands"
+                        className="group flex flex-col items-center gap-4 p-6 rounded-3xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100"
+                        onClick={() => setActiveMenu(null)}
+                      >
+                        <div className="w-20 h-20 rounded-2xl bg-slate-900 text-white shadow-sm flex items-center justify-center p-4 group-hover:scale-110 transition-transform">
+                          <ArrowUpRight size={32} />
+                        </div>
+                        <span className="text-xs font-black uppercase tracking-widest text-slate-400 group-hover:text-slate-900">View All</span>
+                      </Link>
                     </div>
                   </div>
                 )}
