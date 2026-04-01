@@ -41,7 +41,7 @@ const Customised: React.FC = () => {
   const [activeRangeTab, setActiveRangeTab] = useState('originals');
 
   const rangeCategories = [
-    { id: 'originals', label: 'AFTERSHOCK ORIGINALS' },
+    { id: 'originals', label: 'Meadow original' },
     { id: 'showcase', label: 'SHOWCASE' },
     { id: 'artisan', label: 'ARTISAN' },
     { id: 'airflow', label: 'AIRFLOW' },
