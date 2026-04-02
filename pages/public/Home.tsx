@@ -768,7 +768,7 @@ const Home: React.FC = () => {
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
           <div className="flex items-center justify-between mb-8">
              <div className="flex flex-col">
-                <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-3">The Collection</h2>
+                <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-3">Top Seller</h2>
                 <p className="text-sm text-slate-500 font-medium">Essentials that pair perfectly with your favourite devices.</p>
              </div>
              <div className="hidden md:flex gap-4">
@@ -816,18 +816,12 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Banner Section */}
-      <section className="w-full h-24 bg-slate-900 flex items-center justify-center px-4 md:px-10">
-        <p className="text-white font-black uppercase tracking-widest text-sm">
-          Free Shipping on all orders over RM500
-        </p>
-      </section>
 
       {/* Promo Products Section */}
       <section className="py-10 md:py-16 bg-slate-50">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">Promotions</h2>
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">New Arrival</h2>
             <div className="hidden md:flex gap-4">
                 <button 
                   onClick={() => scrollPromo('left')}
