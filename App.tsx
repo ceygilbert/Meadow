@@ -12,6 +12,7 @@ import Workstation from './pages/public/Workstation';
 import Checkout from './pages/public/Checkout';
 import LightCheckout from './pages/public/LightCheckout';
 import TermsOfUse from './pages/public/TermsOfUse';
+import ProductPolicy from './pages/public/ProductPolicy';
 import ProductDetails from './pages/public/ProductDetails';
 import ProductListing from './pages/public/ProductListing';
 import Categories from './pages/public/Categories';
@@ -142,6 +143,7 @@ const App: React.FC = () => {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/checkout-light" element={<LightCheckout />} />
         <Route path="/terms" element={<TermsOfUse />} />
+        <Route path="/product-policy" element={<ProductPolicy />} />
         
         <Route 
           path="/admin/login" 

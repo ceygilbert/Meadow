@@ -321,43 +321,43 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
                 )}
 
                 {activeMenu === 'brand' && (
-                  <div className="flex h-full min-h-[500px]">
+                  <div className="flex max-h-[65vh]">
                     {/* Left Info Panel */}
-                    <div className="w-1/4 p-12 pr-16 bg-slate-50/50 flex flex-col border-r border-slate-100">
-                      <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter uppercase mb-6">Brands</h2>
-                      <p className="text-sm font-medium text-slate-500 leading-relaxed max-w-xs mb-10">
+                    <div className="w-1/4 p-8 lg:p-12 pr-12 lg:pr-16 bg-slate-50/50 flex flex-col border-r border-slate-100 overflow-y-auto">
+                      <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter uppercase mb-6 shrink-0">Brands</h2>
+                      <p className="text-sm font-medium text-slate-500 leading-relaxed max-w-xs mb-10 shrink-0">
                         We will never stop exploring and expanding the brands we carry. Stay tuned with us for more exciting updates.
                       </p>
                       
-                      <div className="mt-auto pt-10 border-t border-slate-100">
+                      <div className="mt-auto pt-10 border-t border-slate-100 shrink-0">
                         <span className="text-xs font-black uppercase tracking-[0.2em] text-blue-600">Passion Driven</span>
                       </div>
                     </div>
 
                     {/* Right Scrollable Brand Grid */}
-                    <div className="flex-1 p-12 relative flex flex-col bg-white">
-                      <div className="flex-1 overflow-y-auto pr-6 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent h-[450px]">
-                        <div className="grid grid-cols-4 gap-x-12 gap-y-0 text-slate-900">
+                    <div className="flex-1 p-8 lg:p-12 relative flex flex-col bg-white min-h-0">
+                      <div className="flex-1 overflow-y-auto pr-6 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                        <div className="grid grid-cols-4 gap-x-8 lg:gap-x-12 text-slate-900">
                           {brands.map((brand, idx) => (
                             <React.Fragment key={brand.id}>
                               <Link 
                                 to={`/products?brand=${brand.id}`}
-                                className="group flex flex-col items-center gap-6 py-12"
+                                className="group flex flex-col items-center gap-6 py-8 lg:py-12"
                                 onClick={() => setActiveMenu(null)}
                               >
-                                <div className="w-full aspect-[3/2] flex items-center justify-center p-6 relative">
+                                <div className="w-full h-16 lg:h-20 flex items-center justify-center relative">
                                   <img 
                                     src={brand.logo_url || undefined} 
                                     className="max-w-full max-h-full object-contain grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" 
                                     alt={brand.name} 
                                   />
                                 </div>
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-slate-900 transition-colors uppercase">{brand.name}</span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-slate-900 text-center">{brand.name}</span>
                               </Link>
                               
                               {/* Horizontal Divider after every 4 items (row end) */}
                               {(idx + 1) % 4 === 0 && (
-                                <div className="col-span-4 h-px bg-slate-100 my-4" />
+                                <div className="col-span-4 h-px bg-slate-100 my-2" />
                               )}
                             </React.Fragment>
                           ))}
@@ -365,7 +365,7 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
                       </div>
 
                       {/* Scroll Indicator */}
-                      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 animate-bounce">
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 animate-bounce pointer-events-none bg-white px-4 py-2 rounded-full shadow-sm border border-slate-50">
                         <ChevronRight className="rotate-90" size={12} />
                         Scroll down for more brands
                       </div>
