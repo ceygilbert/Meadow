@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Share2, RefreshCw, Copy, List, Calculator, MessageCircle, ArrowRight, X, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Share2, RefreshCw, Copy, List, Calculator, MessageCircle, ArrowRight, X, Check, ChevronDown } from 'lucide-react';
 import StudioNavbar from '../../components/StudioNavbar';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -28,6 +28,24 @@ const FAN_OPTIONS: Option[] = [
   { id: '9fans', label: '9 FANS ARGB', price: 120 },
 ];
 
+const COOLER_OPTIONS: Option[] = [
+  { id: 'stock', label: 'AMD WRAITH STEALTH', price: 0 },
+  { id: 'tower', label: 'DEEPCOOL AG400 ARGB TOWER COOLER', price: 90 },
+  { id: 'aio240', label: 'DEEPCOOL LE520 240MM AIO LIQUID COOLING', price: 250 },
+];
+
+const WIFI_OPTIONS: Option[] = [
+  { id: 'none', label: 'NONE', price: 0 },
+  { id: 'wifi5', label: 'AC600 WIFI 5 USB ADAPTER', price: 30 },
+  { id: 'wifi6', label: 'AX3000 WIFI 6 PCIE CARD + BLUETOOTH', price: 120 },
+];
+
+const OS_OPTIONS: Option[] = [
+  { id: 'none', label: 'NONE', price: 0 },
+  { id: 'win11_trial', label: 'WINDOWS 11 HOME (TRIAL / UNACTIVATED)', price: 40 },
+  { id: 'win11_pro', label: 'WINDOWS 11 PRO (ACTIVATED)', price: 150 },
+];
+
 const PrebuiltProduct: React.FC = () => {
   const { slug } = useParams();
   const [quantity, setQuantity] = useState(1);
@@ -35,26 +53,32 @@ const PrebuiltProduct: React.FC = () => {
   const [selectedRam, setSelectedRam] = useState(RAM_OPTIONS[0]);
   const [selectedSsd, setSelectedSsd] = useState(SSD_OPTIONS[0]);
   const [selectedFan, setSelectedFan] = useState(FAN_OPTIONS[0]);
+  const [selectedCooler, setSelectedCooler] = useState(COOLER_OPTIONS[0]);
+  const [selectedWifi, setSelectedWifi] = useState(WIFI_OPTIONS[0]);
+  const [selectedOs, setSelectedOs] = useState(OS_OPTIONS[0]);
   
-  const [activeModal, setActiveModal] = useState<'RAM' | 'SSD' | 'FAN' | null>(null);
+  const [activeModal, setActiveModal] = useState<'RAM' | 'SSD' | 'FAN' | 'COOLER' | 'WIFI' | 'OS' | null>(null);
 
   const basePrice = 2299.00;
   const saved = 494.00;
 
   const totalPrice = useMemo(() => {
-    return (basePrice + selectedRam.price + selectedSsd.price + selectedFan.price) * quantity;
-  }, [selectedRam, selectedSsd, selectedFan, quantity]);
+    return (basePrice + selectedRam.price + selectedSsd.price + selectedFan.price + selectedCooler.price + selectedWifi.price + selectedOs.price) * quantity;
+  }, [selectedRam, selectedSsd, selectedFan, selectedCooler, selectedWifi, selectedOs, quantity]);
 
   const getAddonPrice = (type: string) => {
     if (type === 'RAM') return selectedRam.price;
     if (type === 'SSD') return selectedSsd.price;
     if (type === 'FAN') return selectedFan.price;
+    if (type === 'COOLER') return selectedCooler.price;
+    if (type === 'WIFI') return selectedWifi.price;
+    if (type === 'OS') return selectedOs.price;
     return 0;
   };
 
   const specs = [
     { label: "CPU", value: "AMD RYZEN 5 5500", reselectable: false },
-    { label: "CPU COOLER", value: "AMD WRAITH STEALTH", reselectable: false },
+    { label: "CPU COOLER", value: selectedCooler.label, reselectable: true, type: 'COOLER' },
     { label: "MOTHERBOARD", value: "AMD A520M (MSI/GIGABYTE) (NON WIFI) ( 2x RAM SLOT | 1x NVME SLOT )", reselectable: false },
     { label: "RAM", value: selectedRam.label, reselectable: true, type: 'RAM' },
     { label: "SSD", value: selectedSsd.label, reselectable: true, type: 'SSD' },
@@ -62,6 +86,8 @@ const PrebuiltProduct: React.FC = () => {
     { label: "PSU", value: "THERMALTAKE 650W", reselectable: false },
     { label: "CASE", value: "TECWARE VXO M BLACK", reselectable: false },
     { label: "FAN", value: selectedFan.label, reselectable: true, type: 'FAN' },
+    { label: "WIFI", value: selectedWifi.label, reselectable: true, type: 'WIFI' },
+    { label: "OS", value: selectedOs.label, reselectable: true, type: 'OS' },
   ];
 
   const renderModal = () => {
@@ -79,10 +105,22 @@ const PrebuiltProduct: React.FC = () => {
       options = SSD_OPTIONS;
       currentSelection = selectedSsd;
       setSelection = setSelectedSsd;
-    } else {
+    } else if (activeModal === 'FAN') {
       options = FAN_OPTIONS;
       currentSelection = selectedFan;
       setSelection = setSelectedFan;
+    } else if (activeModal === 'COOLER') {
+      options = COOLER_OPTIONS;
+      currentSelection = selectedCooler;
+      setSelection = setSelectedCooler;
+    } else if (activeModal === 'WIFI') {
+      options = WIFI_OPTIONS;
+      currentSelection = selectedWifi;
+      setSelection = setSelectedWifi;
+    } else {
+      options = OS_OPTIONS;
+      currentSelection = selectedOs;
+      setSelection = setSelectedOs;
     }
 
     return (
@@ -232,6 +270,62 @@ const PrebuiltProduct: React.FC = () => {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* FAQ Section */}
+        <div className="max-w-3xl mx-auto mt-32">
+          <div className="text-center mb-10">
+            <h2 className="text-sm font-black text-rose-500 uppercase tracking-[0.3em] mb-2">Support & Info</h2>
+            <h3 className="text-3xl font-black uppercase tracking-tighter">Frequently Asked Questions</h3>
+          </div>
+          
+          <div className="space-y-4">
+            {[
+              {
+                question: "What is the warranty on this prebuilt system?",
+                answer: "All our prebuilt systems come with a comprehensive 3-year warranty covering both parts and labor. We handle RMAs and repairs directly to ensure your system is running perfectly."
+              },
+              {
+                question: "How long does assembly and shipping take?",
+                answer: "Standard assembly and stress testing takes 3-5 business days. Once shipped, delivery within Peninsula Malaysia typically takes 1-3 business days, while East Malaysia may take up to 7 business days."
+              },
+              {
+                question: "Are the components upgradable in the future?",
+                answer: "Absolutely. Unlike some proprietary prebuilts, we use entirely standard, off-the-shelf ATX/mATX components. This means you can easily upgrade the GPU, RAM, storage, or any other part whenever you want."
+              },
+              {
+                question: "Does it come with Windows pre-installed?",
+                answer: "Yes, if you select a Windows OS option during configuration, we will install it along with all necessary motherboard, GPU, and chipset drivers so it is perfectly plug-and-play."
+              }
+            ].map((faq, index) => {
+              const [isOpen, setIsOpen] = useState(false);
+              return (
+                <div key={index} className="bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden transition-all duration-300">
+                  <button 
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="w-full px-6 py-5 flex items-center justify-between text-left hover:bg-white/[0.02]"
+                  >
+                    <span className="font-bold text-white/90">{faq.question}</span>
+                    <ChevronDown size={20} className={`text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="px-6 pb-6 text-sm text-slate-400 leading-relaxed border-t border-white/5 pt-4">
+                          {faq.answer}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

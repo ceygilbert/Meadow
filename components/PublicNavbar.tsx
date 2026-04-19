@@ -92,7 +92,7 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
     const timeout = setTimeout(() => {
       setActiveMenu(null);
       setHoveredCategory(null);
-    }, 300); // 300ms delay
+    }, 500); // Increased to 500ms for better stability
     setCloseTimeout(timeout);
   };
 
@@ -144,18 +144,24 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-white/20 backdrop-blur-md z-[90]"
-            onMouseEnter={handleMouseLeave}
+            onClick={() => setActiveMenu(null)}
           />
         )}
       </AnimatePresence>
 
-      <nav className={`fixed left-0 right-0 z-[100] px-4 md:px-10 transition-all duration-500 ${scrolled || activeMenu ? 'top-0 py-3 bg-white/90 backdrop-blur-2xl border-b border-slate-100 shadow-lg pointer-events-auto' : 'top-0 pointer-events-none'}`}>
-        <div className="max-w-[1440px] mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center pointer-events-auto group">
-            <img src={LOGO_URL} className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${scrolled || activeMenu ? 'h-10 md:h-12' : 'h-24 md:h-36'}`} alt="Meadow" />
+      <nav 
+        className={`fixed left-0 right-0 z-[100] px-4 md:px-10 transition-all duration-500 top-0 pointer-events-none 
+          ${scrolled ? 'py-3' : 'py-5'} 
+          ${scrolled || activeMenu ? 'bg-white/95 backdrop-blur-2xl border-b border-slate-100 shadow-lg pointer-events-auto' : ''}`}
+        onMouseEnter={handleMenuMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div className="max-w-[1440px] mx-auto flex items-center justify-between pointer-events-auto">
+          <Link to="/" className="flex items-center group">
+            <img src={LOGO_URL} className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${scrolled ? 'h-10 md:h-12' : 'h-24 md:h-36'}`} alt="Meadow" />
           </Link>
 
-          <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-white/40 rounded-full px-8 py-3 gap-6 md:gap-8 lg:gap-10 shadow-xl shadow-slate-200/20 pointer-events-auto transition-all hover:bg-white/90 group">
+          <div className="hidden md:flex items-center bg-white/70 backdrop-blur-3xl border border-slate-100 rounded-full px-8 py-3 gap-6 md:gap-8 lg:gap-10 shadow-xl shadow-slate-200/10 transition-all hover:bg-white/95 group">
             <form onSubmit={handleSearch} className="relative flex items-center">
               <Search size={18} className="absolute left-5 text-slate-400" />
               <input 
@@ -175,8 +181,8 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
               <button className={`text-sm font-nav uppercase tracking-[0.25em] transition-all ${activeMenu === 'category' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-900'}`}>
                 Category
               </button>
-              {/* Hover Bridge */}
-              <div className="absolute top-full left-0 right-0 h-8 pointer-events-auto" />
+              {/* Hover Bridge - Wider and taller for better hit area */}
+              <div className="absolute top-full -left-4 -right-4 h-12 pointer-events-auto" />
             </div>
 
             <div 
@@ -187,8 +193,8 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
               <button className={`text-sm font-nav uppercase tracking-[0.25em] transition-all ${activeMenu === 'brand' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-900'}`}>
                 Brand
               </button>
-              {/* Hover Bridge */}
-              <div className="absolute top-full left-0 right-0 h-8 pointer-events-auto" />
+              {/* Hover Bridge - Wider and taller for better hit area */}
+              <div className="absolute top-full -left-4 -right-4 h-12 pointer-events-auto" />
             </div>
 
             <Link 
@@ -202,17 +208,17 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
 
           <div className="flex items-center gap-3 md:gap-6 pointer-events-auto">
             {!user ? (
-               <button onClick={onOpenAuth} className={`bg-slate-100 text-slate-500 rounded-full flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-xl hover:scale-105 ${scrolled || activeMenu ? 'w-12 h-12 md:w-14 md:h-14' : 'w-14 h-14 md:w-16 md:h-16'}`}>
-                 <UserIcon size={scrolled || activeMenu ? 18 : 22} />
+               <button onClick={onOpenAuth} className={`bg-slate-100 text-slate-500 rounded-full flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-xl hover:scale-105 ${scrolled ? 'w-12 h-12 md:w-14 md:h-14' : 'w-14 h-14 md:w-16 md:h-16'}`}>
+                 <UserIcon size={scrolled ? 18 : 22} />
                </button>
             ) : (
-               <button onClick={() => navigate(profile?.role === 'admin' ? '/admin/dashboard' : '/customer/dashboard')} className={`rounded-full border border-slate-200 overflow-hidden shadow-sm transition-all ${scrolled || activeMenu ? 'w-10 h-10 md:w-12 md:h-12' : 'w-12 h-12 md:w-14 md:h-14'}`}>
+               <button onClick={() => navigate(profile?.role === 'admin' ? '/admin/dashboard' : '/customer/dashboard')} className={`rounded-full border border-slate-200 overflow-hidden shadow-sm transition-all ${scrolled ? 'w-10 h-10 md:w-12 md:h-12' : 'w-12 h-12 md:w-14 md:h-14'}`}>
                  <img src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`} className="w-full h-full object-cover" />
                </button>
             )}
-            <button onClick={onOpenCart} className={`bg-slate-900 text-white rounded-full flex items-center justify-center relative shadow-xl hover:scale-105 transition-all ${scrolled || activeMenu ? 'w-12 h-12 md:w-14 md:h-14' : 'w-14 h-14 md:w-16 md:h-16'}`}>
-              <ShoppingCart size={scrolled || activeMenu ? 18 : 22} />
-              {cartCount > 0 && <span className={`absolute -top-1 -right-1 bg-blue-500 text-white font-black flex items-center justify-center rounded-full border-2 border-white ${scrolled || activeMenu ? 'w-5 h-5 text-[8px]' : 'w-6 h-6 md:w-7 md:h-7 text-[10px] md:text-xs'}`}>{cartCount}</span>}
+            <button onClick={onOpenCart} className={`bg-slate-900 text-white rounded-full flex items-center justify-center relative shadow-xl hover:scale-105 transition-all ${scrolled ? 'w-12 h-12 md:w-14 md:h-14' : 'w-14 h-14 md:w-16 md:h-16'}`}>
+              <ShoppingCart size={scrolled ? 18 : 22} />
+              {cartCount > 0 && <span className={`absolute -top-1 -right-1 bg-blue-500 text-white font-black flex items-center justify-center rounded-full border-2 border-white ${scrolled ? 'w-5 h-5 text-[8px]' : 'w-6 h-6 md:w-7 md:h-7 text-[10px] md:text-xs'}`}>{cartCount}</span>}
             </button>
           </div>
         </div>
@@ -228,9 +234,9 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
               onMouseEnter={handleMenuMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
-              <div className="max-w-[1440px] mx-auto p-12">
+              <div className="max-w-[1440px] mx-auto">
                 {activeMenu === 'category' && (
-                  <div className="grid grid-cols-12 gap-12">
+                  <div className="max-w-[1440px] mx-auto p-12 grid grid-cols-12 gap-12">
                     {/* Categories List */}
                     <div className="col-span-4 border-r border-slate-100 pr-12">
                       <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-8">Explore Categories</p>
@@ -315,33 +321,54 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
                 )}
 
                 {activeMenu === 'brand' && (
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-8 text-center">Shop by Brand</p>
-                    <div className="grid grid-cols-6 gap-8">
-                      {brands.filter(b => b.on_list).map((brand) => (
-                        <Link 
-                          key={brand.id}
-                          to={`/products?brand=${brand.id}`}
-                          className="group flex flex-col items-center gap-4 p-6 rounded-3xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100"
-                          onClick={() => setActiveMenu(null)}
-                        >
-                          <div className="w-20 h-20 rounded-2xl bg-white shadow-sm flex items-center justify-center p-4 group-hover:scale-110 transition-transform">
-                            <img src={brand.logo_url || undefined} className="max-w-full max-h-full object-contain grayscale group-hover:grayscale-0 transition-all" alt={brand.name} />
-                          </div>
-                          <span className="text-xs font-black uppercase tracking-widest text-slate-400 group-hover:text-slate-900">{brand.name}</span>
-                        </Link>
-                      ))}
-                      {/* View All Button */}
-                      <Link 
-                        to="/brands"
-                        className="group flex flex-col items-center gap-4 p-6 rounded-3xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100"
-                        onClick={() => setActiveMenu(null)}
-                      >
-                        <div className="w-20 h-20 rounded-2xl bg-slate-900 text-white shadow-sm flex items-center justify-center p-4 group-hover:scale-110 transition-transform">
-                          <ArrowUpRight size={32} />
+                  <div className="flex h-full min-h-[500px]">
+                    {/* Left Info Panel */}
+                    <div className="w-1/4 p-12 pr-16 bg-slate-50/50 flex flex-col border-r border-slate-100">
+                      <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter uppercase mb-6">Brands</h2>
+                      <p className="text-sm font-medium text-slate-500 leading-relaxed max-w-xs mb-10">
+                        We will never stop exploring and expanding the brands we carry. Stay tuned with us for more exciting updates.
+                      </p>
+                      
+                      <div className="mt-auto pt-10 border-t border-slate-100">
+                        <span className="text-xs font-black uppercase tracking-[0.2em] text-blue-600">Passion Driven</span>
+                      </div>
+                    </div>
+
+                    {/* Right Scrollable Brand Grid */}
+                    <div className="flex-1 p-12 relative flex flex-col bg-white">
+                      <div className="flex-1 overflow-y-auto pr-6 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent h-[450px]">
+                        <div className="grid grid-cols-4 gap-x-12 gap-y-0 text-slate-900">
+                          {brands.map((brand, idx) => (
+                            <React.Fragment key={brand.id}>
+                              <Link 
+                                to={`/products?brand=${brand.id}`}
+                                className="group flex flex-col items-center gap-6 py-12"
+                                onClick={() => setActiveMenu(null)}
+                              >
+                                <div className="w-full aspect-[3/2] flex items-center justify-center p-6 relative">
+                                  <img 
+                                    src={brand.logo_url || undefined} 
+                                    className="max-w-full max-h-full object-contain grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" 
+                                    alt={brand.name} 
+                                  />
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-slate-900 transition-colors uppercase">{brand.name}</span>
+                              </Link>
+                              
+                              {/* Horizontal Divider after every 4 items (row end) */}
+                              {(idx + 1) % 4 === 0 && (
+                                <div className="col-span-4 h-px bg-slate-100 my-4" />
+                              )}
+                            </React.Fragment>
+                          ))}
                         </div>
-                        <span className="text-xs font-black uppercase tracking-widest text-slate-400 group-hover:text-slate-900">View All</span>
-                      </Link>
+                      </div>
+
+                      {/* Scroll Indicator */}
+                      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 animate-bounce">
+                        <ChevronRight className="rotate-90" size={12} />
+                        Scroll down for more brands
+                      </div>
                     </div>
                   </div>
                 )}

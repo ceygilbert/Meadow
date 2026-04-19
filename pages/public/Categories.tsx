@@ -394,7 +394,7 @@ const Categories: React.FC = () => {
             </div>
             {cart.length > 0 && (
               <div className="mt-auto pt-14 border-t border-slate-50">
-                 <button onClick={() => navigate('/checkout')} className="w-full py-7 bg-slate-900 text-white font-black rounded-3xl hover:bg-black transition-all shadow-2xl uppercase tracking-[0.3em] text-xs">Initialize Purchase</button>
+                 <button onClick={() => navigate('/checkout-light')} className="w-full py-7 bg-slate-900 text-white font-black rounded-3xl hover:bg-black transition-all shadow-2xl uppercase tracking-[0.3em] text-xs">Initialize Purchase</button>
               </div>
             )}
           </div>

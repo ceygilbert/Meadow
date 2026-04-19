@@ -663,35 +663,35 @@ const PCBuilder: React.FC = () => {
 
       {/* Popups & Dialogs Re-themed */}
       {activePopup && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-8 animate-in fade-in duration-700">
-           <div className="absolute inset-0 bg-[#050607]/90 backdrop-blur-3xl" onClick={() => setActivePopup(null)}></div>
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 animate-in fade-in duration-300">
+           <div className="absolute inset-0 bg-[#050607]/80 backdrop-blur-sm" onClick={() => setActivePopup(null)}></div>
            
-           <div className="relative w-full max-w-[1100px] bg-[#0A0B0C] border border-white/10 rounded-[5rem] shadow-[0_0_150px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col max-h-[85vh]">
+           <div className="relative w-full max-w-[650px] bg-[#0A0B0C] border border-white/10 rounded-[2rem] shadow-[0_30px_100px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col max-h-[80vh]">
               
-              <div className="p-14 border-b border-white/10 shrink-0 bg-gradient-to-b from-white/[0.03] to-transparent">
-                 <button onClick={() => setActivePopup(null)} className="absolute top-14 right-14 w-16 h-16 rounded-full bg-white/10 text-white/50 hover:text-white hover:bg-rose-600 transition-all z-20 flex items-center justify-center shadow-2xl">
-                    <X size={32} />
+              <div className="px-6 py-4 border-b border-white/10 shrink-0 bg-gradient-to-b from-white/[0.03] to-transparent relative">
+                 <button onClick={() => setActivePopup(null)} className="absolute top-1/2 -translate-y-1/2 right-6 w-8 h-8 rounded-full bg-white/10 text-white/50 hover:text-white hover:bg-rose-600 transition-all z-20 flex items-center justify-center shadow-md">
+                    <X size={16} />
                  </button>
 
-                 <div className="max-w-[700px] mx-auto relative group">
-                    <Search className="absolute left-10 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-rose-500 transition-colors" size={24} />
+                 <div className="max-w-[450px] relative group">
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-rose-500 transition-colors" size={16} />
                     <input 
                       type="text" 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder={`Locate Master ${schematicZones.flatMap(z => z.items).find(i => i.id === activePopup)?.label || 'Units'}...`} 
-                      className="w-full pl-24 pr-16 py-8 bg-white/[0.04] border border-white/10 rounded-full text-lg font-bold text-white placeholder:text-white/30 outline-none focus:ring-1 focus:ring-rose-600/30 transition-all tracking-wide uppercase"
+                      className="w-full pl-12 pr-6 py-2.5 bg-white/[0.04] border border-white/10 rounded-full text-xs font-bold text-white placeholder:text-white/30 outline-none focus:ring-1 focus:border-rose-600/50 focus:bg-white/[0.08] transition-all tracking-wide uppercase"
                     />
                  </div>
               </div>
 
-              <div className="px-14 py-8 border-b border-white/10 flex items-center gap-6 shrink-0 overflow-x-auto scrollbar-hide">
+              <div className="px-6 py-2.5 border-b border-white/10 flex items-center gap-2 shrink-0 overflow-x-auto scrollbar-hide">
                  {currentPopupData.filters.map((filter) => (
                    <button 
                      key={filter}
                      onClick={() => setActiveFilter(filter)}
-                     className={`px-12 py-4 rounded-full text-[12px] font-black uppercase tracking-[0.3em] transition-all border ${
-                       activeFilter === filter ? 'bg-rose-600 text-white border-rose-600 shadow-2xl' : 'bg-white/10 text-white/60 border-white/10 hover:bg-white/20'
+                     className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] transition-all border ${
+                       activeFilter === filter ? 'bg-rose-600/20 text-rose-500 border-rose-600/50' : 'bg-transparent text-white/50 border-white/10 hover:bg-white/10 hover:text-white'
                      }`}
                    >
                      {filter}
@@ -699,36 +699,35 @@ const PCBuilder: React.FC = () => {
                  ))}
               </div>
 
-              <div className="flex-1 overflow-y-auto p-14 space-y-6 scrollbar-hide">
-                 <p className="text-[12px] font-black uppercase tracking-[0.5em] text-rose-500 mb-10 px-6">Available Registry Manifest</p>
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2.5 scrollbar-hide">
                  {filteredItems.map((item, idx) => (
                    <div 
                      key={idx}
                      onClick={() => handleSelectItem(item)}
-                     className="group p-10 rounded-[3rem] border border-transparent hover:border-rose-600/30 hover:bg-white/[0.04] flex items-center justify-between transition-all duration-500 cursor-pointer mb-4"
+                     className="group px-4 py-3 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-rose-600/40 hover:bg-white/[0.06] flex items-center justify-between transition-all duration-300 cursor-pointer"
                    >
-                      <div className="flex flex-col gap-3">
-                         <h4 className="font-serif text-3xl font-light text-white group-hover:italic transition-all">{item.name}</h4>
-                         <p className="text-[12px] font-medium text-white/50 uppercase tracking-[0.2em]">{item.desc}</p>
+                      <div className="flex flex-col gap-1 pr-4">
+                         <h4 className="font-sans text-sm font-bold text-white/90 group-hover:text-white transition-all uppercase">{item.name}</h4>
+                         <p className="text-[9px] text-white/40 uppercase tracking-[0.1em]">{item.desc}</p>
                       </div>
-                      <div className="flex flex-col items-end gap-6 shrink-0">
-                         <span className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border ${
-                           item.status === 'Available' ? 'bg-rose-600/20 text-rose-500 border-rose-600/30' : 'bg-white/10 text-white/40 border-white/10'
+                      <div className="flex flex-col items-end gap-1.5 shrink-0">
+                         <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${
+                           item.status === 'Available' ? 'bg-rose-600/10 text-rose-400 border-rose-600/20' : 'bg-white/5 text-white/30 border-white/10'
                          }`}>
                             {item.status}
                          </span>
-                         <span className="text-3xl font-black text-white tracking-tighter">RM {item.price.toLocaleString()}</span>
+                         <span className="text-sm font-black text-rose-500 tracking-tighter">RM {item.price.toLocaleString()}</span>
                       </div>
                    </div>
                  ))}
               </div>
 
-              <div className="p-10 bg-white/[0.02] border-t border-white/10 flex items-center justify-between shrink-0">
-                 <div className="flex items-center gap-6">
-                    <div className="w-3 h-3 rounded-full bg-rose-600 animate-ping"></div>
-                    <span className="text-[11px] font-black uppercase tracking-[0.5em] text-white/40">Manifest_Stream_Authenticated</span>
+              <div className="px-6 py-3 bg-white/[0.02] border-t border-white/10 flex items-center justify-between shrink-0">
+                 <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-ping"></div>
+                    <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30">Manifest_Stream_Authenticated</span>
                  </div>
-                 <button onClick={() => { setActiveFilter('ALL'); setSearchQuery(''); }} className="px-12 py-4 bg-white/10 text-white/60 rounded-full text-[11px] font-black uppercase tracking-[0.3em] hover:bg-rose-600 hover:text-white transition-all shadow-xl">Flush Selection</button>
+                 <button onClick={() => { setActiveFilter('ALL'); setSearchQuery(''); }} className="px-4 py-1.5 bg-white/5 text-white/50 border border-white/5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all shadow-xl">Flush</button>
               </div>
            </div>
         </div>

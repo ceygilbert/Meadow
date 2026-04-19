@@ -270,47 +270,47 @@ const ProductDetails: React.FC = () => {
       <main className="pt-24 md:pt-36 pb-20 px-4 md:px-10 max-w-[1440px] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-20 items-start">
           
-          {/* Visual Showcase (Left - 7 Columns) */}
-          <div className="lg:col-span-7 space-y-8 animate-in fade-in slide-in-from-left duration-700">
-             <div className="aspect-square md:aspect-[4/5] bg-[#F7F8FA] rounded-[3rem] md:rounded-[4rem] overflow-hidden flex items-center justify-center p-12 md:p-24 relative border border-slate-50 group">
+          {/* Visual Showcase (Left - 6 Columns) */}
+          <div className="lg:col-span-6 space-y-8 animate-in fade-in slide-in-from-left duration-700">
+             <div className="w-full max-w-md lg:max-w-[420px] mx-auto aspect-[3/4] bg-[#F7F8FA] rounded-[2rem] md:rounded-[3rem] overflow-hidden flex items-center justify-center p-8 md:p-12 relative border border-slate-50 group">
                 <img 
                   src={product.image_url || undefined} 
                   className="w-full h-full object-contain transition-transform duration-1000 group-hover:scale-110" 
                   alt={product.name} 
                 />
-                <div className="absolute top-10 left-10">
-                   <div className="px-5 py-2 bg-white/80 backdrop-blur-xl border border-white rounded-full flex items-center gap-3 shadow-sm">
+                <div className="absolute top-6 left-6 md:top-8 md:left-8">
+                   <div className="px-4 py-2 bg-white/80 backdrop-blur-xl border border-white rounded-full flex items-center gap-3 shadow-sm">
                       <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Stock Verified</span>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Stock Verified</span>
                    </div>
                 </div>
                 {product.discount_type !== 'none' && (
-                  <div className="absolute top-10 right-10">
-                     <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center font-black text-xs uppercase tracking-widest shadow-xl rotate-12">
+                  <div className="absolute top-6 right-6 md:top-8 md:right-8">
+                     <div className="w-12 h-12 md:w-14 md:h-14 bg-blue-600 text-white rounded-full flex items-center justify-center font-black text-[10px] uppercase tracking-widest shadow-xl rotate-12">
                         Sale
                      </div>
                   </div>
                 )}
              </div>
 
-             <div className="grid grid-cols-3 gap-6">
-                {[...Array(3)].map((_, i) => (
-                   <div key={i} className="aspect-square bg-slate-50 rounded-[2rem] border border-slate-100 p-8 flex items-center justify-center opacity-60 hover:opacity-100 transition-all cursor-pointer">
+             <div className="flex flex-wrap justify-center gap-4">
+                {[...Array(4)].map((_, i) => (
+                   <div key={i} className="aspect-square w-[80px] md:w-[100px] bg-slate-50 rounded-2xl border border-slate-100 p-3 md:p-4 flex items-center justify-center opacity-60 hover:opacity-100 transition-all cursor-pointer">
                       <img src={product.image_url || undefined} className="w-full h-full object-contain grayscale" />
                    </div>
                 ))}
              </div>
           </div>
 
-          {/* Product Info (Right - 5 Columns) */}
-          <div className="lg:col-span-5 space-y-12 md:sticky md:top-48 animate-in fade-in slide-in-from-right duration-700">
+          {/* Product Info (Right - 6 Columns) */}
+          <div className="lg:col-span-6 space-y-12 md:sticky md:top-48 animate-in fade-in slide-in-from-right duration-700">
              <div className="space-y-4">
                 <div className="flex items-center gap-3">
                    <span className="text-[11px] font-black uppercase tracking-[0.4em] text-blue-600">{category?.name || 'Hardware'}</span>
                    <div className="w-1 h-1 bg-slate-200 rounded-full"></div>
                    <span className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-400">{brand?.name || 'Meadow IT'}</span>
                 </div>
-                <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter uppercase leading-[0.9]">
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight uppercase leading-[1.2]">
                    {product.name}
                 </h1>
                 <div className="flex items-center gap-2 pt-2">
@@ -320,13 +320,13 @@ const ProductDetails: React.FC = () => {
              </div>
 
              <div className="space-y-8 pb-12 border-b border-slate-100">
-                <div className="flex items-end gap-6">
+                <div className="flex items-end gap-4">
                    <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Investment Value</span>
-                      <span className="text-5xl font-black text-slate-900 tracking-tighter">RM{finalPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Retail Price</span>
+                      <span className="text-3xl lg:text-3xl font-black text-slate-900 tracking-tight">RM{finalPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                    </div>
                    {product.discount_type !== 'none' && (
-                     <span className="text-xl font-bold text-slate-300 line-through mb-1.5">RM{product.price.toLocaleString()}</span>
+                     <span className="text-lg font-bold text-slate-300 line-through mb-1">RM{product.price.toLocaleString()}</span>
                    )}
                 </div>
                 
@@ -348,9 +348,9 @@ const ProductDetails: React.FC = () => {
                      className="flex-1 h-20 bg-slate-900 text-white rounded-[2rem] font-black text-xs md:text-sm uppercase tracking-widest flex items-center justify-center gap-6 hover:bg-blue-600 transition-all shadow-2xl group active:scale-95"
                    >
                      {isAdded ? (
-                       <><CheckCircle size={20} /> Item Indexed</>
+                       <><CheckCircle size={20} /> Added to cart</>
                      ) : (
-                       <>Add to terminal <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white group-hover:text-blue-600 transition-all"><ShoppingCart size={18} /></div></>
+                       <>Add to cart <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white group-hover:text-blue-600 transition-all"><ShoppingCart size={18} /></div></>
                      )}
                    </button>
                 </div>
@@ -482,7 +482,7 @@ const ProductDetails: React.FC = () => {
             </div>
             {cart.length > 0 && (
               <div className="mt-auto pt-14 border-t border-slate-50">
-                 <button onClick={() => navigate('/checkout')} className="w-full py-7 bg-slate-900 text-white font-black rounded-3xl hover:bg-black transition-all shadow-2xl uppercase tracking-[0.3em] text-xs">Initialize Purchase</button>
+                 <button onClick={() => navigate('/checkout-light')} className="w-full py-7 bg-slate-900 text-white font-black rounded-3xl hover:bg-black transition-all shadow-2xl uppercase tracking-[0.3em] text-xs">Initialize Purchase</button>
               </div>
             )}
           </div>

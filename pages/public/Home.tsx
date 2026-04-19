@@ -919,12 +919,12 @@ const Home: React.FC = () => {
       {/* VISIT OUR STORE Section */}
       <section className="bg-white py-20 md:py-32 overflow-hidden border-t border-slate-50">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
-          <h2 className="text-3xl md:text-5xl font-black text-[#e11d48] tracking-tighter uppercase mb-12">Visit Our Store.</h2>
+          <h2 className="text-3xl md:text-5xl font-black text-black tracking-tighter uppercase mb-12">Visit Our Store.</h2>
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Left Card */}
             <div className="lg:w-1/3 bg-[#f3f4f6] rounded-2xl p-8 flex flex-col justify-between min-h-[400px] shadow-sm">
               <div className="flex flex-col justify-start gap-8">
-                <h3 className="text-2xl md:text-3xl font-black leading-tight uppercase text-left bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-orange-500">
+                <h3 className="text-2xl md:text-3xl font-black leading-tight uppercase text-left text-black">
                   View All Meadow Computer Store Location.
                 </h3>
               </div>

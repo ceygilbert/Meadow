@@ -10,6 +10,7 @@ import TrackOrder from './pages/public/TrackOrder';
 import PCBuilder from './pages/public/PCBuilder';
 import Workstation from './pages/public/Workstation';
 import Checkout from './pages/public/Checkout';
+import LightCheckout from './pages/public/LightCheckout';
 import TermsOfUse from './pages/public/TermsOfUse';
 import ProductDetails from './pages/public/ProductDetails';
 import ProductListing from './pages/public/ProductListing';
@@ -139,6 +140,7 @@ const App: React.FC = () => {
         <Route path="/buildpc" element={<PCBuilder />} />
         <Route path="/workstation" element={<Workstation />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/checkout-light" element={<LightCheckout />} />
         <Route path="/terms" element={<TermsOfUse />} />
         
         <Route 

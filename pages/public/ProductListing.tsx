@@ -139,7 +139,14 @@ const ProductListing: React.FC = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      let query = supabase.from('products').select('*, categories!inner(*), subcategories!inner(*)');
+      let selectStr = '*, categories!inner(*)';
+      if (subcategorySlug) {
+        selectStr += ', subcategories!inner(*)';
+      } else {
+        selectStr += ', subcategories(*)';
+      }
+
+      let query = supabase.from('products').select(selectStr);
 
       if (categorySlug) {
         query = query.eq('categories.slug', categorySlug);
@@ -248,61 +255,155 @@ const ProductListing: React.FC = () => {
           </h1>
         </div>
 
-        {/* Toolbar */}
-        <div className="flex flex-col md:flex-row gap-6 mb-12 items-center justify-between">
-          <div className="relative w-full md:max-w-xl">
-            <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-300" size={22} />
-            <input 
-              type="text" 
-              placeholder="Search hardware matrix..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-20 pl-20 pr-8 bg-slate-50 border border-slate-100 rounded-[2rem] text-base font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
-            />
-          </div>
-
-          <div className="flex items-center gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-            <select 
-              value={selectedBrandId}
-              onChange={(e) => setSelectedBrandId(e.target.value)}
-              className="h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest focus:outline-none"
-            >
-              <option value="all">All Brands</option>
-              {brands.map(b => (
-                <option key={b.id} value={b.id}>{b.name}</option>
-              ))}
-            </select>
-
-            <select 
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest focus:outline-none"
-            >
-              <option value="newest">Newest First</option>
-              <option value="price-asc">Price: Low to High</option>
-              <option value="price-desc">Price: High to Low</option>
-              <option value="name-asc">Name: A-Z</option>
-            </select>
-
-            <div className="flex bg-slate-50 p-2 rounded-2xl border border-slate-100">
-              <button 
-                onClick={() => setViewMode('grid')}
-                className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-blue-500' : 'text-slate-300'}`}
-              >
-                <LayoutGrid size={18} />
-              </button>
-              <button 
-                onClick={() => setViewMode('list')}
-                className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-blue-500' : 'text-slate-300'}`}
-              >
-                <List size={18} />
-              </button>
+        {/* Main Content Layout (Sidebar + Products) */}
+        <div className="flex flex-col lg:flex-row gap-10 items-start">
+          
+          {/* Floating Sidebar (Left) */}
+          <aside className="w-full lg:w-[320px] shrink-0 lg:sticky lg:top-32 space-y-6 z-10">
+            {/* Search */}
+            <div className="relative w-full">
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
+              <input 
+                type="text" 
+                placeholder="Search matrix..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-16 pl-16 pr-6 bg-slate-50 border border-slate-100 rounded-[2rem] text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
+              />
             </div>
-          </div>
-        </div>
 
-        {/* Product Grid */}
-        <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" : "flex flex-col gap-6"}>
+            {/* Filter Group */}
+            <div className="p-6 md:p-8 bg-slate-50 border border-slate-100 rounded-[2rem] space-y-6">
+              
+              <div>
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 px-2">Category</h3>
+                <div className="relative">
+                  <select 
+                    value={categorySlug || 'all'}
+                    onChange={(e) => {
+                      if (e.target.value === 'all') {
+                        searchParams.delete('category');
+                        searchParams.delete('subcategory');
+                        navigate(`/products?${searchParams.toString()}`);
+                      } else {
+                        searchParams.set('category', e.target.value);
+                        searchParams.delete('subcategory');
+                        navigate(`/products?${searchParams.toString()}`);
+                      }
+                    }}
+                    className="w-full h-14 pl-4 pr-10 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none shadow-sm text-slate-700"
+                  >
+                    <option value="all">All Categories</option>
+                    {categories.map(c => (
+                      <option key={c.id} value={c.slug}>{c.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 px-2">Subcategory</h3>
+                <div className="relative">
+                  <select 
+                    value={subcategorySlug || 'all'}
+                    onChange={(e) => {
+                      if (e.target.value === 'all') {
+                        searchParams.delete('subcategory');
+                        navigate(`/products?${searchParams.toString()}`);
+                      } else {
+                        searchParams.set('subcategory', e.target.value);
+                        // Also auto-select parent category
+                        const selectedSubCat = subCategories.find(s => s.slug === e.target.value);
+                        if (selectedSubCat) {
+                          const parentCat = categories.find(c => c.id === selectedSubCat.category_id);
+                          if (parentCat) {
+                            searchParams.set('category', parentCat.slug);
+                          }
+                        }
+                        navigate(`/products?${searchParams.toString()}`);
+                      }
+                    }}
+                    className="w-full h-14 pl-4 pr-10 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none shadow-sm text-slate-700"
+                  >
+                    <option value="all">All Subcategories</option>
+                    {(categorySlug && currentCategory 
+                      ? subCategories.filter(s => s.category_id === currentCategory.id)
+                      : subCategories
+                    ).map(s => (
+                      <option key={s.id} value={s.slug}>{s.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 px-2">Brand</h3>
+                <div className="relative">
+                  <select 
+                    value={selectedBrandId}
+                    onChange={(e) => setSelectedBrandId(e.target.value)}
+                    className="w-full h-14 pl-4 pr-10 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none shadow-sm text-slate-700"
+                  >
+                    <option value="all">All Brands</option>
+                    {brands.map(b => (
+                      <option key={b.id} value={b.id}>{b.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 px-2">Sort By</h3>
+                <div className="relative">
+                  <select 
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className="w-full h-14 pl-4 pr-10 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none shadow-sm text-slate-700"
+                  >
+                    <option value="newest">Newest First</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="name-asc">Name: A-Z</option>
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                </div>
+              </div>
+
+            </div>
+          </aside>
+
+          {/* Product Listing Area (Right) */}
+          <div className="flex-1 w-full min-w-0">
+            
+            {/* Controls Bar */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-8 items-center justify-between pb-6 border-b border-slate-100">
+              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                Showing {filteredProducts.length} Items
+              </span>
+
+              <div className="flex items-center gap-4">
+                <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+                  <button 
+                    onClick={() => setViewMode('grid')}
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-blue-500' : 'text-slate-400 hover:text-slate-600'}`}
+                  >
+                    <LayoutGrid size={16} />
+                  </button>
+                  <button 
+                    onClick={() => setViewMode('list')}
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-blue-500' : 'text-slate-400 hover:text-slate-600'}`}
+                  >
+                    <List size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Product Grid */}
+            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8" : "flex flex-col gap-6"}>
           <AnimatePresence mode="popLayout">
             {filteredProducts.map((product) => (
               <motion.div 
@@ -371,6 +472,8 @@ const ProductListing: React.FC = () => {
             <p className="text-xs font-bold uppercase tracking-widest mt-4">Adjust your search or filter parameters</p>
           </div>
         )}
+        </div>
+        </div>
       </main>
 
       {/* Cart Slider */}
@@ -428,7 +531,7 @@ const ProductListing: React.FC = () => {
               </div>
               {cart.length > 0 && (
                 <div className="mt-auto pt-14 border-t border-slate-50">
-                   <button onClick={() => navigate('/checkout')} className="w-full py-7 bg-slate-900 text-white font-black rounded-3xl hover:bg-black transition-all shadow-2xl uppercase tracking-[0.3em] text-xs">Initialize Purchase</button>
+                   <button onClick={() => navigate('/checkout-light')} className="w-full py-7 bg-slate-900 text-white font-black rounded-3xl hover:bg-black transition-all shadow-2xl uppercase tracking-[0.3em] text-xs">Initialize Purchase</button>
                 </div>
               )}
             </motion.div>
