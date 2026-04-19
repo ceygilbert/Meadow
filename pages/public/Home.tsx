@@ -768,7 +768,7 @@ const Home: React.FC = () => {
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
           <div className="flex items-center justify-between mb-8">
              <div className="flex flex-col">
-                <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-3">Top Seller</h2>
+                <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-3">Top Seller</h2>
                 <p className="text-sm text-slate-500 font-medium">Essentials that pair perfectly with your favourite devices.</p>
              </div>
              <div className="hidden md:flex gap-4">
@@ -821,7 +821,7 @@ const Home: React.FC = () => {
       <section className="py-10 md:py-16 bg-slate-50">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">New Arrival</h2>
+            <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">Promotion</h2>
             <div className="hidden md:flex gap-4">
                 <button 
                   onClick={() => scrollPromo('left')}
@@ -871,7 +871,7 @@ const Home: React.FC = () => {
       <section className="py-10 md:py-16 bg-white">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">New Arrival</h2>
+            <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">New Arrival</h2>
             <div className="hidden md:flex gap-4">
                 <button 
                   onClick={() => scrollNewArrival('left')}

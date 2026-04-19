@@ -41,6 +41,7 @@ import {
 } from 'lucide-react';
 import StudioNavbar from '../../components/StudioNavbar';
 import WaveGradient from '../../components/WaveGradient';
+import { supabase } from '../../lib/supabase';
 
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/White%20Full%20Logo.png";
 
@@ -59,6 +60,7 @@ const PCBuilder: React.FC = () => {
   const [activePopup, setActivePopup] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('ALL');
+  const [cpuData, setCpuData] = useState<{filters: string[], items: BuildItem[]} | null>(null);
 
   const [selections, setSelections] = useState<Record<string, any>>(() => {
     const saved = localStorage.getItem('meadow_pc_build');
@@ -92,6 +94,56 @@ const PCBuilder: React.FC = () => {
     localStorage.setItem('meadow_pc_build', JSON.stringify(selections));
   }, [selections]);
 
+  useEffect(() => {
+    const fetchCPUs = async () => {
+      try {
+        // First get subcategories and brands
+        const [subcatRes, brandRes, prodRes] = await Promise.all([
+          supabase.from('subcategories').select('id, name'),
+          supabase.from('brands').select('id, name'),
+          supabase.from('products').select('id, name, price, stock, specs, subcategory_id, brand_id')
+        ]);
+
+        if (subcatRes.error) throw subcatRes.error;
+        if (brandRes.error) throw brandRes.error;
+        if (prodRes.error) throw prodRes.error;
+
+        if (prodRes.data && subcatRes.data && brandRes.data) {
+          const processorSubcategories = subcatRes.data.filter(c => c.name.toLowerCase().includes('processor') || c.name.toLowerCase().includes('cpu')).map(c => c.id);
+          const intelBrand = brandRes.data.find(b => b.name.toLowerCase() === 'intel');
+          const amdBrand = brandRes.data.find(b => b.name.toLowerCase() === 'amd');
+          const validBrandIds = [intelBrand?.id, amdBrand?.id].filter(Boolean);
+
+          const cpuProducts = prodRes.data.filter((p: any) => {
+            const isProcessorCategory = processorSubcategories.includes(p.subcategory_id);
+            const isTargetBrand = validBrandIds.includes(p.brand_id);
+            return isProcessorCategory && isTargetBrand;
+          });
+
+          const items: BuildItem[] = cpuProducts.map((p: any) => {
+            const brandInfo = brandRes.data.find(b => b.id === p.brand_id);
+            return {
+              name: p.name,
+              desc: p.specs?.description || `${brandInfo?.name || 'Processor'} - ${p.specs?.cores || 'Multi-core'}`,
+              price: p.price,
+              status: p.stock > 0 ? 'Available' : 'Sold Out',
+              perfWeight: brandInfo?.name.toLowerCase() === 'intel' ? 95 : 90 
+            };
+          });
+
+          setCpuData({
+            filters: ['ALL', 'INTEL', 'AMD'],
+            items
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch CPUs from database:', err);
+      }
+    };
+
+    fetchCPUs();
+  }, []);
+
   const metricMapping: Record<string, string[]> = {
     cpu: ['procPower'],
     'cpu cooler': ['procPower', 'stability'],
@@ -121,7 +173,7 @@ const PCBuilder: React.FC = () => {
         { name: "New Build Starter Pack", desc: "Free Windows 11 Key with full build", price: 0, status: "Available" },
       ]
     },
-    cpu: {
+    cpu: cpuData ? cpuData : {
       filters: ['ALL', 'INTEL', 'AMD'],
       items: [
         { name: "Intel Core i9-14900K", desc: "24 Cores, up to 6.0 GHz", price: 2899, status: "Available", perfWeight: 100 },
