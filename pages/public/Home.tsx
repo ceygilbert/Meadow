@@ -764,7 +764,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* THE COLLECTION Section */}
-      <section className="bg-[#FAF9FB] pt-16 md:pt-24 pb-20 md:pb-32 overflow-hidden border-t border-slate-50">
+      <section className="bg-[#FAF9FB] pt-16 md:pt-24 pb-8 md:pb-12 overflow-hidden border-t border-slate-50">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
           <div className="flex items-center justify-between mb-8">
              <div className="flex flex-col">
@@ -818,7 +818,7 @@ const Home: React.FC = () => {
 
 
       {/* Promo Products Section */}
-      <section className="py-10 md:py-16 bg-slate-50">
+      <section className="py-6 md:py-10 bg-slate-50">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">Promotion</h2>
@@ -868,7 +868,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* New Arrival Section */}
-      <section className="py-10 md:py-16 bg-white">
+      <section className="py-6 md:py-10 bg-white">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">New Arrival</h2>
