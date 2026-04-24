@@ -128,6 +128,8 @@ const Home: React.FC = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [promoProducts, setPromoProducts] = useState<Product[]>([]);
   const [newArrivalProducts, setNewArrivalProducts] = useState<Product[]>([]);
+  const [laptopProducts, setLaptopProducts] = useState<Product[]>([]);
+  const [pcComponentProducts, setPcComponentProducts] = useState<Product[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -163,6 +165,8 @@ const Home: React.FC = () => {
   const collectionRef = useRef<HTMLDivElement>(null);
   const promoRef = useRef<HTMLDivElement>(null);
   const newArrivalRef = useRef<HTMLDivElement>(null);
+  const laptopRef = useRef<HTMLDivElement>(null);
+  const pcComponentRef = useRef<HTMLDivElement>(null);
 
   const scrollCollection = (direction: 'left' | 'right') => {
     if (collectionRef.current) {
@@ -194,6 +198,26 @@ const Home: React.FC = () => {
     }
   };
 
+  const scrollLaptop = (direction: 'left' | 'right') => {
+    if (laptopRef.current) {
+      const scrollAmount = 400;
+      laptopRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollPcComponent = (direction: 'left' | 'right') => {
+    if (pcComponentRef.current) {
+      const scrollAmount = 400;
+      pcComponentRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
@@ -211,6 +235,17 @@ const Home: React.FC = () => {
   };
 
   useEffect(() => {
+    // Safety timeout to prevent getting stuck on loading screen
+    const safetyTimeout = setTimeout(() => {
+      setLoading(current => {
+        if (current) {
+          console.warn("Home data fetch timed out, showing page with cached or empty data.");
+          return false;
+        }
+        return false;
+      });
+    }, 10000);
+
     fetchData();
     checkUser();
     
@@ -223,7 +258,10 @@ const Home: React.FC = () => {
       else setProfile(null);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(safetyTimeout);
+    };
   }, []);
 
   // Auto-slide effect for hero banner (7 seconds)
@@ -306,26 +344,43 @@ const Home: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const [prodRes, brandRes] = await Promise.all([
-        supabase.from('products').select('*').order('created_at', { ascending: false }),
-        supabase.from('brands').select('*')
+      const [prodRes, brandRes, catRes] = await Promise.all([
+        supabase.from('products').select('*, categories(*)').order('created_at', { ascending: false }),
+        supabase.from('brands').select('*'),
+        supabase.from('categories').select('*')
       ]);
 
       if (prodRes.error) throw prodRes.error;
       if (brandRes.error) throw brandRes.error;
+      if (catRes.error) throw catRes.error;
 
       if (prodRes.data) {
-        setTrendingProducts(prodRes.data);
-        const featured = prodRes.data.filter(p => p.is_featured === true);
-        setFeaturedProducts(featured.length > 0 ? featured : prodRes.data.slice(0, 12));
-        const promo = prodRes.data.filter(p => p.is_Promo === true);
+        const allProducts = prodRes.data as (Product & { categories?: any })[];
+        setTrendingProducts(allProducts);
+        const featured = allProducts.filter(p => p.is_featured === true);
+        setFeaturedProducts(featured.length > 0 ? featured : allProducts.slice(0, 12));
+        const promo = allProducts.filter(p => p.is_Promo === true);
         setPromoProducts(promo);
-        setNewArrivalProducts(prodRes.data.slice(0, 12));
+        setNewArrivalProducts(allProducts.slice(0, 12));
+
+        // Filter by categories for Laptop and PC Component
+        const laptops = allProducts.filter(p => 
+          p.categories?.name?.toLowerCase().includes('laptop') || 
+          p.categories?.slug === 'laptop'
+        );
+        setLaptopProducts(laptops);
+
+        const pcComponents = allProducts.filter(p => 
+          p.categories?.name?.toLowerCase().includes('pc component') || 
+          p.categories?.slug === 'pc-component'
+        );
+        setPcComponentProducts(pcComponents);
       }
       if (brandRes.data) setBrands(brandRes.data);
     } catch (err: any) {
-      console.error("Data fetch error:", err);
-      setError("Unable to connect to the terminal. Please check your connection.");
+      console.error("Data fetch error detail:", err);
+      const msg = err.message || "Unknown error";
+      setError(`Unable to connect to the terminal (${msg}). Please check your connection or Supabase settings.`);
     } finally {
       setLoading(false);
     }
@@ -735,7 +790,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Specialized Infinite Ticker Section */}
-      <section className="py-10 md:py-16 bg-white overflow-hidden relative">
+      <section className="py-6 md:py-10 bg-white overflow-hidden relative">
          <div className="absolute top-0 inset-x-0 h-px bg-slate-100"></div>
          <div className="absolute bottom-0 inset-x-0 h-px bg-slate-100"></div>
          
@@ -764,7 +819,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* THE COLLECTION Section */}
-      <section className="bg-[#FAF9FB] pt-16 md:pt-24 pb-8 md:pb-12 overflow-hidden border-t border-slate-50">
+      <section className="bg-[#FAF9FB] pt-8 md:pt-12 pb-4 md:pb-6 overflow-hidden border-t border-slate-50">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
           <div className="flex items-center justify-between mb-8">
              <div className="flex flex-col">
@@ -818,7 +873,7 @@ const Home: React.FC = () => {
 
 
       {/* Promo Products Section */}
-      <section className="py-6 md:py-10 bg-slate-50">
+      <section className="py-2 md:py-4 bg-slate-50">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">Promotion</h2>
@@ -915,6 +970,112 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Laptop Section */}
+      {laptopProducts.length > 0 && (
+        <section className="py-6 md:py-10 bg-slate-50 border-t border-slate-100">
+          <div className="max-w-[1440px] mx-auto px-4 md:px-10">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex flex-col">
+                <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-2">Laptops</h2>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Master of Portability</p>
+              </div>
+              <div className="hidden md:flex gap-4">
+                  <button 
+                    onClick={() => scrollLaptop('left')}
+                    className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all bg-white"
+                  >
+                    <ChevronLeft size={22} />
+                  </button>
+                  <button 
+                    onClick={() => scrollLaptop('right')}
+                    className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all bg-white"
+                  >
+                    <ChevronRight size={22} />
+                  </button>
+               </div>
+            </div>
+            <div 
+              ref={laptopRef}
+              className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10"
+            >
+              {laptopProducts.map((p) => (
+                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+                   <button 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                      className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
+                   >
+                      <Heart size={14} />
+                   </button>
+                   <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-3 relative flex items-center justify-center">
+                       <img src={p.image_url || undefined} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
+                   </div>
+                   <div className="mb-1">
+                       <h3 className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 truncate">{p.name}</h3>
+                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Meadow Tech</p>
+                   </div>
+                   <div>
+                       <span className="text-xs font-black text-slate-900">RM{p.price.toLocaleString()}</span>
+                   </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* PC Components Section */}
+      {pcComponentProducts.length > 0 && (
+        <section className="py-6 md:py-10 bg-white border-t border-slate-100">
+          <div className="max-w-[1440px] mx-auto px-4 md:px-10">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex flex-col">
+                <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-2">PC Components</h2>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">The Core Elements</p>
+              </div>
+              <div className="hidden md:flex gap-4">
+                  <button 
+                    onClick={() => scrollPcComponent('left')}
+                    className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all"
+                  >
+                    <ChevronLeft size={22} />
+                  </button>
+                  <button 
+                    onClick={() => scrollPcComponent('right')}
+                    className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all"
+                  >
+                    <ChevronRight size={22} />
+                  </button>
+               </div>
+            </div>
+            <div 
+              ref={pcComponentRef}
+              className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10"
+            >
+              {pcComponentProducts.map((p) => (
+                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-slate-50 rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+                   <button 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                      className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
+                   >
+                      <Heart size={14} />
+                   </button>
+                   <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-3 relative flex items-center justify-center">
+                       <img src={p.image_url || undefined} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
+                   </div>
+                   <div className="mb-1">
+                       <h3 className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 truncate">{p.name}</h3>
+                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Meadow Tech</p>
+                   </div>
+                   <div>
+                       <span className="text-xs font-black text-slate-900">RM{p.price.toLocaleString()}</span>
+                   </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* VISIT OUR STORE Section */}
       <section className="bg-white py-20 md:py-32 overflow-hidden border-t border-slate-50">

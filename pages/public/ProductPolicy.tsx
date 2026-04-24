@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Facebook, Instagram } from 'lucide-react';
 import PublicNavbar from '../../components/PublicNavbar';
 
@@ -27,10 +27,17 @@ const TABS: Tab[] = [
 
 const ProductPolicy: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>('categories');
+  const location = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    const hash = location.hash.replace('#', '');
+    if (hash && TABS.some(t => t.id === hash)) {
+      setActiveTab(hash as TabId);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (!hash && location.pathname === '/product-policy') {
+      setActiveTab('categories');
+    }
+  }, [location.hash, location.key, location.pathname]);
 
   const renderContent = () => {
     switch (activeTab) {

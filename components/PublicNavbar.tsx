@@ -20,7 +20,8 @@ import {
   Gamepad2,
   Keyboard,
   Speaker,
-  Laptop
+  Laptop,
+  ShieldCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
@@ -207,6 +208,15 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
           </div>
 
           <div className="flex items-center gap-3 md:gap-6 pointer-events-auto">
+            {!user && (
+              <Link 
+                to="/admin/login" 
+                className="hidden md:flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-all border border-slate-100 rounded-full hover:bg-slate-50"
+              >
+                <ShieldCheck size={14} className="text-slate-400" />
+                Admin
+              </Link>
+            )}
             {!user ? (
                <button onClick={onOpenAuth} className={`bg-slate-100 text-slate-500 rounded-full flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-xl hover:scale-105 ${scrolled ? 'w-12 h-12 md:w-14 md:h-14' : 'w-14 h-14 md:w-16 md:h-16'}`}>
                  <UserIcon size={scrolled ? 18 : 22} />

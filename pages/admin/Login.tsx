@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Lock, Mail, LogIn, Eye, EyeOff, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 
 interface LoginProps {
@@ -13,6 +14,7 @@ const AdminLogin: React.FC<LoginProps> = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,19 +22,58 @@ const AdminLogin: React.FC<LoginProps> = ({ onLogin }) => {
     setError('');
 
     try {
+      console.log("Attempting sign in for:", email);
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        console.error("Auth error:", authError);
+        throw authError;
+      }
+
+      console.log("Auth success, checking profile for session:", data.session?.user?.id);
 
       if (data.session) {
+        // Double check profile role before redirecting from Login page
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.session.user.id)
+          .single();
+
+        if (profileError || !profile) {
+          console.error("Profile check error:", profileError || "No profile found");
+          await supabase.auth.signOut();
+          setError(`Profile not found for ${email}. Please ensure you have an account.`);
+          return;
+        }
+
+        console.log("Profile role check:", profile.role);
+
+        if (profile.role !== 'admin') {
+          console.warn("Unauthorized access attempt by non-admin:", email);
+          await supabase.auth.signOut();
+          setError('Access Denied: You do not have administrative privileges.');
+          return;
+        }
+
         onLogin(true);
+        // We still call navigate, but App.tsx will also react to the session change.
+        // If navigate happens while App.tsx is still loading/fetching, it might redirect back,
+        // but App.tsx now has better loading resilience.
+        console.log("Navigating to dashboard...");
+        navigate('/admin/dashboard');
+      } else {
+        console.warn("No session returned from Supabase sign in");
+        setError("Sign in succeeded but no session was created. Please try again.");
       }
     } catch (err: any) {
+      console.error("Catch block in login:", err);
       setError(err.message || 'An error occurred during sign in.');
     } finally {
+      console.log("Login process finished, setting loading to false");
       setLoading(false);
     }
   };

@@ -39,58 +39,116 @@ const App: React.FC = () => {
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string, retryCount = 0): Promise<any> => {
+    console.log(`Fetching profile for user: ${userId} (Attempt: ${retryCount + 1})`);
+    
+    // Safety check: if supabase is not initialized properly
+    if (!supabase) {
+      console.error("Supabase client is not initialized.");
+      return null;
+    }
+
     try {
-      const { data, error } = await supabase
+      // Use a race to implement a more reliable timeout for the query
+      const profilePromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
       
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('TIMEOUT')), 20000) // Increased to 20s
+      );
+
+      console.log(`Starting Supabase query for userId: ${userId}`);
+      const { data, error } = await Promise.race([profilePromise, timeoutPromise]) as any;
+      console.log(`Query finished for userId: ${userId}`, { hasData: !!data, hasError: !!error });
+      
       if (error) {
-        console.warn('Profile record not found for user:', userId);
+        console.warn('Profile fetch error:', userId, error);
+        // If it's a network error or a specifically retriable error
+        if (retryCount < 1 && (error.message?.includes('FetchError') || error.code === 'PGRST116')) {
+          console.log("Retrying profile fetch due to network/transient error...");
+          return fetchProfile(userId, retryCount + 1);
+        }
         setUserProfile(null);
         return null;
       }
+      
+      if (!data) {
+        console.warn("No profile data returned for user:", userId);
+        setUserProfile(null);
+        return null;
+      }
+
+      console.log("Profile fetched successfully for role:", data.role);
       setUserProfile(data);
       return data;
-    } catch (err) {
-      console.error('Error fetching profile:', err);
+    } catch (err: any) {
+      if (err.message === 'TIMEOUT') {
+        console.error("Profile fetch TIMEOUT for user:", userId);
+        if (retryCount < 1) {
+          console.log("Retrying profile fetch after timeout...");
+          return fetchProfile(userId, retryCount + 1);
+        }
+      } else {
+        console.error('Error fetching profile in catch:', err);
+      }
+      
       setUserProfile(null);
+      // Ensure we don't stay in loading state forever
+      setLoading(false);
       return null;
     }
   };
 
   useEffect(() => {
-    const safetyTimeout = setTimeout(() => {
-      if (loading) {
-        console.warn("Auth check timed out, proceeding as guest.");
-        setLoading(false);
-      }
-    }, 5000);
+    console.log("App mounted, initializing auth check and connection health check...");
+    
+    // Quick health check to see if we can reach Supabase at all
+    fetch(`${supabase.supabaseUrl}/rest/v1/`, {
+      method: 'GET',
+      headers: { 'apikey': supabase.supabaseKey }
+    })
+    .then(res => console.log("Supabase REST Connection Check:", res.status === 200 ? "OK" : `Failed (${res.status})`))
+    .catch(err => console.error("Supabase REST Connection Check ERROR:", err));
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    const safetyTimeout = setTimeout(() => {
+      setLoading(currentLoading => {
+        if (currentLoading) {
+          console.warn("Global auth check safety timeout triggered.");
+          return false;
+        }
+        return false;
+      });
+    }, 10000);
+
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
+      if (error) {
+        console.error("Supabase getSession error:", error);
+      }
+      console.log("Initial Supabase session check result:", session?.user?.email || "No session");
       setSession(session);
       if (session?.user) {
         await fetchProfile(session.user.id);
       }
       setLoading(false);
-      clearTimeout(safetyTimeout);
+      // We don't clear safetyTimeout here to be safe, or we can clear it
     }).catch(err => {
-      console.error("Initial session check failed:", err);
+      console.error("Initial session check failed catch:", err);
       setLoading(false);
-      clearTimeout(safetyTimeout);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state change event:", event, session?.user?.email || "No session");
       setSession(session);
       if (session?.user) {
         await fetchProfile(session.user.id);
+        setLoading(false); // MUST clear loading after fetching profile
       } else {
         setUserProfile(null);
+        setLoading(false);
       }
-      setLoading(false);
-      clearTimeout(safetyTimeout);
     });
 
     return () => {
@@ -126,58 +184,55 @@ const App: React.FC = () => {
   const isCustomer = userProfile?.role === 'customer';
 
   return (
-    <HashRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/categories" element={<Categories />} />
-        <Route path="/brands" element={<AllBrands />} />
-        <Route path="/products" element={<ProductListing />} />
-        <Route path="/product/:slug" element={<ProductDetails />} />
-        <Route path="/stores" element={<StoreLocator />} />
-        <Route path="/customised" element={<Customised />} />
-        <Route path="/prebuilt" element={<Prebuilt />} />
-        <Route path="/prebuilt/:slug" element={<PrebuiltProduct />} />
-        <Route path="/track-order" element={<TrackOrder />} />
-        <Route path="/buildpc" element={<PCBuilder />} />
-        <Route path="/workstation" element={<Workstation />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/checkout-light" element={<LightCheckout />} />
-        <Route path="/terms" element={<TermsOfUse />} />
-        <Route path="/product-policy" element={<ProductPolicy />} />
-        
-        <Route 
-          path="/admin/login" 
-          element={isAdmin ? <Navigate to="/admin/dashboard" /> : <AdminLogin onLogin={() => {}} />} 
-        />
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/categories" element={<Categories />} />
+      <Route path="/brands" element={<AllBrands />} />
+      <Route path="/products" element={<ProductListing />} />
+      <Route path="/product/:slug" element={<ProductDetails />} />
+      <Route path="/stores" element={<StoreLocator />} />
+      <Route path="/customised" element={<Customised />} />
+      <Route path="/prebuilt" element={<Prebuilt />} />
+      <Route path="/prebuilt/:slug" element={<PrebuiltProduct />} />
+      <Route path="/track-order" element={<TrackOrder />} />
+      <Route path="/buildpc" element={<PCBuilder />} />
+      <Route path="/workstation" element={<Workstation />} />
+      <Route path="/checkout" element={<Checkout />} />
+      <Route path="/checkout-light" element={<LightCheckout />} />
+      <Route path="/terms" element={<TermsOfUse />} />
+      <Route path="/product-policy" element={<ProductPolicy />} />
+      
+      <Route 
+        path="/admin/login" 
+        element={isAdmin ? <Navigate to="/admin/dashboard" /> : <AdminLogin onLogin={() => {}} />} 
+      />
 
-        <Route 
-          path="/admin/*" 
-          element={isAdmin ? <AdminLayout onLogout={handleLogout} /> : <Navigate to="/admin/login" />}
-        >
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="products" element={<ProductManagement />} />
-          <Route path="stock-take" element={<StockTake />} />
-          <Route path="orders" element={<Orders />} />
-          <Route path="customers" element={<Customers />} />
-          <Route path="categories" element={<CategoryManagement />} />
-          <Route path="subcategories" element={<SubCategoryManagement />} />
-          <Route path="brands" element={<BrandManagement />} />
-          <Route path="units" element={<UnitManagement />} />
-          <Route path="*" element={<Navigate to="dashboard" />} />
-        </Route>
+      <Route 
+        path="/admin/*" 
+        element={isAdmin ? <AdminLayout onLogout={handleLogout} /> : <Navigate to="/admin/login" />}
+      >
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="products" element={<ProductManagement />} />
+        <Route path="stock-take" element={<StockTake />} />
+        <Route path="orders" element={<Orders />} />
+        <Route path="customers" element={<Customers />} />
+        <Route path="categories" element={<CategoryManagement />} />
+        <Route path="subcategories" element={<SubCategoryManagement />} />
+        <Route path="brands" element={<BrandManagement />} />
+        <Route path="units" element={<UnitManagement />} />
+        <Route path="*" element={<Navigate to="dashboard" />} />
+      </Route>
 
-        <Route 
-          path="/customer/*" 
-          element={isCustomer ? <CustomerLayout onLogout={handleLogout} /> : <Navigate to="/" />}
-        >
-          <Route path="dashboard" element={<CustomerDashboard />} />
-          <Route path="*" element={<Navigate to="dashboard" />} />
-        </Route>
+      <Route 
+        path="/customer/*" 
+        element={isCustomer ? <CustomerLayout onLogout={handleLogout} /> : <Navigate to="/" />}
+      >
+        <Route path="dashboard" element={<CustomerDashboard />} />
+        <Route path="*" element={<Navigate to="dashboard" />} />
+      </Route>
 
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-      <FloatingWhatsApp />
-    </HashRouter>
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
   );
 };
 

@@ -324,7 +324,7 @@ const Customised: React.FC = () => {
       </section>
 
       {/* Our Portfolio Section */}
-      <section className="px-8 md:px-20 py-24 max-w-[1600px] mx-auto relative z-10">
+      <section className="px-8 md:px-20 py-16 max-w-[1600px] mx-auto relative z-10">
         <div className="text-center mb-20">
           <h2 className="font-black text-5xl md:text-7xl lg:text-[8rem] uppercase tracking-tighter text-white leading-[0.9] mb-16">Our Portfolio</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
@@ -370,16 +370,14 @@ const Customised: React.FC = () => {
         </div>
       </section>
 
-      {/* We Care for You Section */}
-      <section className="px-8 md:px-20 py-24 max-w-[1600px] mx-auto relative z-10">
-
       {/* Cinematic Video Section */}
+      <section className="px-8 md:px-20 py-4 max-w-[1600px] mx-auto relative z-10">
         <div className="relative w-full aspect-video rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl group">
           <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all duration-700 z-10 pointer-events-none flex flex-col items-center justify-center">
              <div className="w-24 h-24 rounded-full bg-rose-600/80 backdrop-blur-md flex items-center justify-center text-white shadow-2xl group-hover:scale-110 transition-transform duration-500">
                 <div className="w-0 h-0 border-t-[12px] border-t-transparent border-l-[20px] border-l-white border-b-[12px] border-b-transparent ml-2"></div>
              </div>
-             <p className="mt-8 text-[12px] font-black uppercase tracking-[0.6em] text-white opacity-0 group-hover:opacity-100 transition-opacity duration-500">Watch Our Craft</p>
+             <p className="mt-8 text-[12px] font-black uppercase tracking-[0.6em] text-white/60 transition-opacity duration-500">Watch Our Craft</p>
           </div>
           <iframe 
             className="absolute inset-0 w-full h-full"
@@ -390,10 +388,12 @@ const Customised: React.FC = () => {
             allowFullScreen
           ></iframe>
         </div>
+      </section>
 
-        {/* Explore Our Range Section */}
-        <div className="mt-40 mb-40">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+      {/* Explore Our Range Section */}
+      <section className="px-8 md:px-20 pt-20 pb-12 max-w-[1600px] mx-auto relative z-10 border-t border-white/5">
+        <div className="mt-4 mb-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-4">
             <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter">Explore <br /> Our Range</h2>
             
             <div className="flex flex-wrap gap-x-8 gap-y-4 border-b border-white/5 pb-4">
@@ -437,7 +437,7 @@ const Customised: React.FC = () => {
                       <img 
                         src={product.image} 
                         alt={product.name}
-                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                        className="w-full h-full object-cover"
                         referrerPolicy="no-referrer"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
@@ -448,16 +448,19 @@ const Customised: React.FC = () => {
             </AnimatePresence>
           </div>
         </div>
+      </section>
 
-        <div className="text-center mb-24 pt-12">
-          <span className="text-[12px] font-black uppercase tracking-[0.6em] text-rose-500 mb-6 block">Our Commitment</span>
-          <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase mb-8">We Care for You.</h2>
+      {/* We Care for You Section */}
+      <section className="px-8 md:px-20 pt-20 pb-24 max-w-[1600px] mx-auto relative z-10 border-t border-white/5">
+        <div className="text-center mb-16 pt-2">
+          <span className="text-[12px] font-black uppercase tracking-[0.6em] text-rose-500 mb-2 block">Our Commitment</span>
+          <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase mb-2">We Care for You.</h2>
           <p className="text-slate-400 max-w-2xl mx-auto text-lg font-light leading-relaxed">
             Securing a lifetime of professional after-sale services, ready on-call to ensure your computational performance remains absolute.
           </p>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-8 gap-y-16 mb-32">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-8 gap-y-12 mb-2">
           {[
             { icon: <ShieldCheck size={32} />, label: "Lifetime Free Labor" },
             { icon: <RefreshCw size={32} />, label: "90 Days 1-to-1 Exchange" },
@@ -482,57 +485,70 @@ const Customised: React.FC = () => {
             </div>
           ))}
         </div>
-
       </section>
 
-      {/* Financing */}
-      <section className="px-8 md:px-20 py-40 max-w-[1600px] mx-auto z-10">
-        <div className="bg-[#0a0b0c] border border-white/10 p-12 md:p-28 overflow-hidden relative group">
-           <div className="absolute top-0 right-0 w-[3px] h-full bg-gradient-to-b from-rose-600 via-rose-600/20 to-transparent shadow-[0_0_20px_rgba(225,29,72,0.6)] transition-all duration-1000 group-hover:h-full"></div>
-           
-           <div className="grid lg:grid-cols-2 gap-40 items-center relative z-10">
-              <div className="space-y-20">
-                 <div className="space-y-10">
-                    <h2 className="font-black text-6xl md:text-8xl uppercase tracking-tighter text-white leading-tight">Elite <br /> Ownership.</h2>
-                    <p className="text-slate-300 text-xl md:text-2xl font-light leading-relaxed max-w-xl">
-                       Acquire your masterwork through our executive partnership programs. Priority 0% interest terms available for established residents.
-                    </p>
-                 </div>
-                 
-                 <div className="space-y-10 border-l border-white/10 pl-14">
-                    <div className="flex items-center gap-10 group/item">
-                       <Diamond size={32} className="text-rose-500 group-hover/item:scale-110 transition-transform" />
-                       <div>
-                          <p className="text-sm font-black uppercase tracking-widest text-white">Privilege Club</p>
-                          <p className="text-[11px] text-slate-400 uppercase tracking-widest mt-2">Exclusive for MY Premier Residents</p>
-                       </div>
-                    </div>
-                    <div className="flex items-center gap-10 group/item">
-                       <ShieldCheck size={32} className="text-rose-500 group-hover/item:scale-110 transition-transform" />
-                       <div>
-                          <p className="text-sm font-black uppercase tracking-widest text-white">Lifetime Support</p>
-                          <p className="text-[11px] text-slate-400 uppercase tracking-widest mt-2">Direct Master Engineer Link</p>
-                       </div>
-                    </div>
-                 </div>
-              </div>
+      {/* Customer Reviews Section */}
+      <section className="px-8 md:px-20 pt-4 pb-16 max-w-[1600px] mx-auto z-10">
+        <div className="text-center mb-4">
+          <span className="text-[12px] font-black uppercase tracking-[0.6em] text-rose-500 mb-6 block">Elite Feedback</span>
+          <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase mb-8">What Our Clients Say.</h2>
+        </div>
 
-              <div className="relative aspect-square max-w-[500px] mx-auto w-full">
-                 <div className="absolute inset-0 bg-rose-600/10 blur-[120px] rounded-full animate-pulse"></div>
-                 <div className="w-full h-full border border-white/20 p-8 relative">
-                    <div className="w-full h-full bg-[#050607] flex items-center justify-center p-16 overflow-hidden">
-                        <Cpu size={160} strokeWidth={0.1} className="text-white/20 animate-spin duration-[40s]" />
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                           <Layers size={64} className="text-rose-600 mb-8" />
-                           <p className="text-[11px] font-black text-white/70 tracking-[1em] uppercase">Phase_Ready</p>
-                        </div>
-                    </div>
-                    <div className="absolute -top-5 -right-5 h-10 px-6 bg-white text-black text-[10px] font-black flex items-center justify-center uppercase tracking-[0.2em] shadow-xl">
-                       0.00% INT
-                    </div>
-                 </div>
-              </div>
-           </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+             {[
+               {
+                 productName: "RAPID Battlestation",
+                 productImage: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=800&auto=format&fit=crop",
+                 customerName: "Alex Johnson",
+                 rating: 5,
+                 feedback: "The performance is absolutely mind-blowing. Best investment for my gaming setup."
+               },
+               {
+                 productName: "ZEAL-M Showcase",
+                 productImage: "https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=800&auto=format&fit=crop",
+                 customerName: "Sarah Wong",
+                 rating: 5,
+                 feedback: "Stunning aesthetics and incredibly quiet. The cable management is perfection."
+               },
+               {
+                 productName: "FOCUS Workstation",
+                 productImage: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?q=80&w=800&auto=format&fit=crop",
+                 customerName: "Michael Chen",
+                 rating: 5,
+                 feedback: "A workstation that actually keeps up with my workflow. Handled 4K video editing like a breeze."
+               }
+             ].map((review, i) => (
+               <div key={i} className="bg-[#111214] border border-white/10 rounded-[2.5rem] overflow-hidden group transition-all duration-500 hover:border-rose-600/30 flex flex-col min-h-[450px]">
+                  <div className="w-full aspect-video relative overflow-hidden bg-slate-900 flex-shrink-0">
+                     <img 
+                       src={review.productImage} 
+                       alt={review.productName} 
+                       className="absolute inset-0 w-full h-full object-cover z-20" 
+                       loading="eager"
+                       referrerPolicy="no-referrer"
+                     />
+                  </div>
+                  <div className="p-10 flex flex-col flex-1 space-y-6">
+                   <div className="flex justify-between items-start">
+                      <div>
+                         <h4 className="text-white font-black text-sm uppercase tracking-widest mb-1">{review.productName}</h4>
+                         <p className="text-slate-400 text-[10px] uppercase tracking-widest">Verified Proprietor: {review.customerName}</p>
+                      </div>
+                      <div className="flex gap-1">
+                         {[...Array(review.rating)].map((_, idx) => (
+                            <Star key={idx} size={12} className="fill-rose-600 text-rose-600" />
+                         ))}
+                      </div>
+                   </div>
+                   <div className="relative">
+                      <Quote size={24} className="text-rose-600/20 absolute -top-2 -left-2" />
+                      <p className="text-slate-300 text-sm font-light leading-relaxed italic pl-6">
+                        {review.feedback}
+                      </p>
+                   </div>
+                </div>
+             </div>
+           ))}
         </div>
       </section>
 

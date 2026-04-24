@@ -37,8 +37,15 @@ const supabaseAnonKey = getEnvVar('SUPABASE_ANON_KEY') || FALLBACK_KEY;
 export const isSupabaseConfigured = !!(supabaseUrl && supabaseUrl.startsWith('https://'));
 
 if (!isSupabaseConfigured) {
-  console.error("Supabase URL is invalid or missing.");
+  console.error("Supabase URL is invalid or missing. Please check your environment variables (SUPABASE_URL).");
+} else {
+  console.log(`Supabase initialized with URL: ${supabaseUrl.substring(0, 15)}...`);
 }
 
 // Initialize the client with the detected or fallback values
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});

@@ -1,7 +1,9 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { HashRouter } from 'react-router-dom';
 import App from './App';
+import FloatingWhatsApp from './components/FloatingWhatsApp';
 
 const mountApp = () => {
   const rootElement = document.getElementById('root');
@@ -13,7 +15,10 @@ const mountApp = () => {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <React.StrictMode>
-      <App />
+      <HashRouter>
+        <App />
+        <FloatingWhatsApp />
+      </HashRouter>
     </React.StrictMode>
   );
 };

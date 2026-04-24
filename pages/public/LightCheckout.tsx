@@ -33,6 +33,7 @@ const LightCheckout: React.FC = () => {
   const [deliveryMethod, setDeliveryMethod] = useState('Shipping');
   const [paymentMethod, setPaymentMethod] = useState('Credit Card');
   const [cartItems, setCartItems] = useState<any[]>([]);
+  const [postalCode, setPostalCode] = useState('');
 
   const filteredHubs = useMemo(() => {
     if (deliveryMethod === 'Shipping') {
@@ -74,7 +75,25 @@ const LightCheckout: React.FC = () => {
     return cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   }, [cartItems]);
 
-  const deliveryFee = deliveryMethod === 'Shipping' ? 45 : 0;
+  const onsiteSurcharge = useMemo(() => {
+    if (deliveryMethod !== 'Onsite') return 0;
+    if (!postalCode.startsWith('8')) return 0;
+    return subtotal >= 1500 ? 0 : 100;
+  }, [deliveryMethod, postalCode, subtotal]);
+
+  const isOnsiteDeliveryUnsupported = useMemo(() => {
+    return deliveryMethod === 'Onsite' && postalCode.length >= 1 && !postalCode.startsWith('8');
+  }, [deliveryMethod, postalCode]);
+
+  const deliveryFee = useMemo(() => {
+    if (deliveryMethod === 'Shipping') return 45;
+    if (deliveryMethod === 'Onsite') {
+      if (isOnsiteDeliveryUnsupported) return 0;
+      return onsiteSurcharge;
+    }
+    return 0;
+  }, [deliveryMethod, onsiteSurcharge, isOnsiteDeliveryUnsupported]);
+
   const grandTotal = subtotal + deliveryFee;
 
   const deliveryOptions = [
@@ -145,7 +164,20 @@ const LightCheckout: React.FC = () => {
 
                 <div className="md:col-span-2 space-y-4">
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block">Deployment Address</label>
-                   <textarea rows={4} className="w-full p-6 bg-slate-50 border border-slate-200 rounded-3xl outline-none focus:border-rose-600/50 font-bold transition-all text-slate-900 placeholder:text-slate-300 shadow-inner" placeholder="STREET, UNIT, POSTCODE, CITY" />
+                   <textarea rows={4} className="w-full p-6 bg-slate-50 border border-slate-200 rounded-3xl outline-none focus:border-rose-600/50 font-bold transition-all text-slate-900 placeholder:text-slate-300 shadow-inner" placeholder="STREET, UNIT, CITY" />
+                </div>
+
+                 <div className="md:col-span-2 space-y-4">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block">Postal Code</label>
+                   <input 
+                     type="text"
+                     value={postalCode}
+                     onChange={(e) => setPostalCode(e.target.value)}
+                     className={`w-full h-16 px-6 bg-slate-50 border rounded-2xl outline-none font-bold transition-all text-slate-900 placeholder:text-slate-300 shadow-inner ${
+                       isOnsiteDeliveryUnsupported ? 'border-rose-500 bg-rose-50' : 'border-slate-200 focus:border-rose-600/50'
+                     }`} 
+                     placeholder="POSTCODE" 
+                   />
                 </div>
 
                 <div className="md:col-span-2 space-y-4">
@@ -182,6 +214,16 @@ const LightCheckout: React.FC = () => {
                         </button>
                       ))}
                    </div>
+                   {isOnsiteDeliveryUnsupported && (
+                      <div className="mt-4 bg-rose-50 border border-rose-100 p-4 rounded-2xl flex items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
+                        <div className="w-10 h-10 rounded-full bg-rose-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-rose-200">
+                          <Info size={18} />
+                        </div>
+                        <p className="text-xs font-black text-rose-600 uppercase tracking-widest">
+                          Currently only provide JB area onsite delivery. Please update your postal code or select a different method.
+                        </p>
+                      </div>
+                    )}
                 </div>
 
                 <div className="space-y-6">
@@ -328,8 +370,13 @@ const LightCheckout: React.FC = () => {
                               <Truck size={24} className="text-slate-400" />
                           </div>
                           <div className="flex-1 min-w-0">
-                              <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-tight leading-tight mb-2">Logistics / Delivery</h4>
+                              <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-tight leading-tight mb-2">
+                                {deliveryMethod === 'Onsite' ? 'Onsite Surcharge' : 'Logistics / Delivery'}
+                              </h4>
                               <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">RM {deliveryFee.toLocaleString()}.00</p>
+                              {deliveryMethod === 'Onsite' && subtotal < 1500 && postalCode.startsWith('8') && (
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight mt-1">Free for orders above RM1,500</p>
+                              )}
                           </div>
                         </div>
                       )}
@@ -357,7 +404,14 @@ const LightCheckout: React.FC = () => {
                       </div>
 
                       <div className="mt-12 space-y-4">
-                         <button className="w-full h-16 bg-slate-900 text-white rounded-[2rem] font-black text-[13px] uppercase tracking-[0.5em] hover:bg-rose-600 hover:text-white transition-all duration-300 flex items-center justify-center gap-6 group shadow-xl shadow-slate-900/20 active:scale-95">
+                         <button 
+                           disabled={isOnsiteDeliveryUnsupported}
+                           className={`w-full h-16 rounded-[2rem] font-black text-[13px] uppercase tracking-[0.5em] transition-all duration-300 flex items-center justify-center gap-6 group shadow-xl active:scale-95 ${
+                             isOnsiteDeliveryUnsupported 
+                               ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
+                               : 'bg-slate-900 text-white hover:bg-rose-600 hover:text-white shadow-slate-900/20'
+                           }`}
+                         >
                             Pay Now
                          </button>
                          <button className="w-full h-16 bg-white border border-slate-200 text-slate-500 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.4em] hover:bg-slate-50 hover:text-slate-900 transition-all flex items-center justify-center gap-4">
