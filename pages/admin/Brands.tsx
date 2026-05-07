@@ -289,7 +289,7 @@ const BrandManagement: React.FC = () => {
                   <input 
                     className="w-full px-5 py-4 bg-slate-100/50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 font-bold text-slate-900" 
                     required
-                    value={formData.name}
+                    value={formData.name || ''}
                     onChange={e => setFormData({...formData, name: e.target.value})}
                     placeholder="e.g. Corsair"
                   />
@@ -335,7 +335,7 @@ const BrandManagement: React.FC = () => {
                   <textarea 
                     rows={3}
                     className="w-full px-5 py-4 bg-slate-100/50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 font-medium text-slate-600"
-                    value={formData.description}
+                    value={formData.description || ''}
                     onChange={e => setFormData({...formData, description: e.target.value})}
                     placeholder="Industry-leading components for gaming enthusiasts..."
                   ></textarea>

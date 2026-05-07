@@ -16,6 +16,8 @@ import ProductPolicy from './pages/public/ProductPolicy';
 import ProductDetails from './pages/public/ProductDetails';
 import ProductListing from './pages/public/ProductListing';
 import Categories from './pages/public/Categories';
+import OurStores from './pages/public/OurStores';
+import OurStory from './pages/public/OurStory';
 import AllBrands from './pages/public/AllBrands';
 import AdminLogin from './pages/admin/Login';
 import AdminDashboard from './pages/admin/Dashboard';
@@ -42,19 +44,17 @@ const App: React.FC = () => {
   const fetchProfile = async (userId: string, retryCount = 0): Promise<any> => {
     console.log(`Fetching profile for user: ${userId} (Attempt: ${retryCount + 1})`);
     
-    // Safety check: if supabase is not initialized properly
     if (!supabase) {
       console.error("Supabase client is not initialized.");
       return null;
     }
 
     try {
-      // Use a race to implement a more reliable timeout for the query
       const profilePromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
       
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('TIMEOUT')), 30000) // Increased to 30s
@@ -66,36 +66,36 @@ const App: React.FC = () => {
       
       if (error) {
         console.warn('Profile fetch error:', userId, error);
-        // If it's a network error or a specifically retriable error
-        if (retryCount < 2 && (error.message?.includes('FetchError') || error.code === 'PGRST116')) {
+        
+        // Retry logic for transient errors
+        if (retryCount < 2 && (error.message?.includes('FetchError') || error.status === 502 || error.status === 504 || error.status === 0)) {
           console.log(`Retrying profile fetch (attempt ${retryCount + 2}) due to network/transient error...`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
           return fetchProfile(userId, retryCount + 1);
         }
+        
         setUserProfile(null);
+        setLoading(false);
         return null;
       }
       
       if (!data) {
-        console.warn("No profile data returned for user:", userId);
-        // If data is null, maybe the profile hasn't been created yet? 
-        // We can retry once more just in case it's a replication delay
-        if (retryCount < 1) {
-          console.log("No data returned, retrying once more...");
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          return fetchProfile(userId, retryCount + 1);
-        }
+        console.log("No profile found for user - normal if new signup.");
         setUserProfile(null);
+        setLoading(false);
         return null;
       }
 
       console.log("Profile fetched successfully for role:", data.role);
       setUserProfile(data);
+      setLoading(false);
       return data;
     } catch (err: any) {
       if (err.message === 'TIMEOUT') {
         console.error("Profile fetch TIMEOUT for user:", userId);
         if (retryCount < 2) {
           console.log(`Retrying profile fetch (attempt ${retryCount + 2}) after timeout...`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
           return fetchProfile(userId, retryCount + 1);
         }
       } else {
@@ -103,55 +103,37 @@ const App: React.FC = () => {
       }
       
       setUserProfile(null);
-      // Ensure we don't stay in loading state forever
       setLoading(false);
       return null;
     }
   };
 
   useEffect(() => {
-    console.log("App mounted, initializing auth check and connection health check...");
+    let mounted = true;
+    console.log("App mounted, initializing auth check...");
     
-    // Quick health check to see if we can reach Supabase at all
-    fetch(`${supabaseUrl}/rest/v1/`, {
-      method: 'GET',
-      headers: { 'apikey': supabaseAnonKey }
-    })
-    .then(res => console.log("Supabase REST Connection Check:", res.status === 200 ? "OK" : `Failed (${res.status})`))
-    .catch(err => console.error("Supabase REST Connection Check ERROR:", err));
-
-    const safetyTimeout = setTimeout(() => {
-      setLoading(currentLoading => {
-        if (currentLoading) {
-          console.warn("Global auth check safety timeout triggered.");
+    const globalSafetyTimeout = setTimeout(() => {
+      if (mounted) {
+        setLoading(currentLoading => {
+          if (currentLoading) {
+            console.warn("Global auth check safety timeout triggered at 45s.");
+            return false;
+          }
           return false;
-        }
-        return false;
-      });
-    }, 10000);
-
-    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
-      if (error) {
-        console.error("Supabase getSession error:", error);
+        });
       }
-      console.log("Initial Supabase session check result:", session?.user?.email || "No session");
-      setSession(session);
-      if (session?.user) {
-        await fetchProfile(session.user.id);
-      }
-      setLoading(false);
-      // We don't clear safetyTimeout here to be safe, or we can clear it
-    }).catch(err => {
-      console.error("Initial session check failed catch:", err);
-      setLoading(false);
-    });
+    }, 45000); // Extended significantly to account for longer fetch timeouts + retries
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
       console.log("Auth state change event:", event, session?.user?.email || "No session");
+      
       setSession(session);
       if (session?.user) {
-        await fetchProfile(session.user.id);
-        setLoading(false); // MUST clear loading after fetching profile
+        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+          await fetchProfile(session.user.id);
+        }
+        setLoading(false);
       } else {
         setUserProfile(null);
         setLoading(false);
@@ -159,8 +141,9 @@ const App: React.FC = () => {
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
-      clearTimeout(safetyTimeout);
+      clearTimeout(globalSafetyTimeout);
     };
   }, []);
 
@@ -198,6 +181,8 @@ const App: React.FC = () => {
       <Route path="/products" element={<ProductListing />} />
       <Route path="/product/:slug" element={<ProductDetails />} />
       <Route path="/stores" element={<StoreLocator />} />
+      <Route path="/our-stores" element={<OurStores />} />
+      <Route path="/our-story" element={<OurStory />} />
       <Route path="/customised" element={<Customised />} />
       <Route path="/prebuilt" element={<Prebuilt />} />
       <Route path="/prebuilt/:slug" element={<PrebuiltProduct />} />

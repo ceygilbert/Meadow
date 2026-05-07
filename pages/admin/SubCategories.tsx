@@ -265,13 +265,13 @@ const SubCategoryManagement: React.FC = () => {
             <form onSubmit={handleSubmit} className="p-8 space-y-6">
               <div>
                 <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Parent Category</label>
-                <select className="w-full px-5 py-4 bg-slate-100/50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-900" value={formData.category_id} onChange={e => setFormData({...formData, category_id: e.target.value})} required>
+                <select className="w-full px-5 py-4 bg-slate-100/50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-900" value={formData.category_id || ''} onChange={e => setFormData({...formData, category_id: e.target.value})} required>
                   {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Sub-category Name</label>
-                <input className="w-full px-5 py-4 bg-slate-100/50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-900" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                <input className="w-full px-5 py-4 bg-slate-100/50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-900" required value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} />
               </div>
               
               <div>
@@ -311,7 +311,7 @@ const SubCategoryManagement: React.FC = () => {
 
               <div className="pt-2">
                 <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Description</label>
-                <textarea rows={3} className="w-full px-5 py-4 bg-slate-100/50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-600" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Describe this technical niche..."></textarea>
+                <textarea rows={3} className="w-full px-5 py-4 bg-slate-100/50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-600" value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Describe this technical niche..."></textarea>
               </div>
               <button type="submit" className="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 uppercase tracking-widest text-[10px]">Save Sub-category</button>
             </form>

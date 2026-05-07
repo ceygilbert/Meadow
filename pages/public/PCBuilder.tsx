@@ -53,6 +53,7 @@ const LOGO_URL =
   "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/White%20Full%20Logo.png";
 
 interface BuildItem {
+  id: string;
   name: string;
   desc: string;
   price: number;
@@ -60,6 +61,7 @@ interface BuildItem {
   image_url?: string;
   perfWeight?: number;
   quantity?: number;
+  ddr_type?: string;
 }
 
 const PCBuilder: React.FC = () => {
@@ -135,7 +137,7 @@ const PCBuilder: React.FC = () => {
           supabase
             .from("products")
             .select(
-              "id, name, price, stock, specs, subcategory_id, brand_id, image_url",
+              "id, name, price, stock, specs, subcategory_id, brand_id, image_url, ddr_type",
             ),
         ]);
 
@@ -179,6 +181,7 @@ const PCBuilder: React.FC = () => {
                   (b) => b.id === p.brand_id,
                 );
                 return {
+                  id: p.id,
                   name: p.name,
                   desc:
                     p.specs?.description ||
@@ -187,6 +190,7 @@ const PCBuilder: React.FC = () => {
                   status: p.stock > 0 ? "Available" : "Sold Out",
                   image_url: p.image_url,
                   perfWeight: p.specs?.perf_weight || 80,
+                  ddr_type: p.ddr_type,
                 };
               });
           };
@@ -262,12 +266,14 @@ const PCBuilder: React.FC = () => {
       filters: ["ALL", "BUNDLE", "SEASONAL"],
       items: [
         {
+          id: "bundle-1",
           name: "Year-End Ultimate Bundle",
           desc: "Free RGB Mousepad + 5% off GPU",
           price: 0,
           status: "Available",
         },
         {
+          id: "bundle-2",
           name: "New Build Starter Pack",
           desc: "Free Windows 11 Key with full build",
           price: 0,
@@ -281,6 +287,7 @@ const PCBuilder: React.FC = () => {
           filters: ["ALL", "INTEL", "AMD"],
           items: [
             {
+              id: "cpu-1",
               name: "Intel Core i9-14900K",
               desc: "24 Cores, up to 6.0 GHz",
               price: 2899,
@@ -288,6 +295,7 @@ const PCBuilder: React.FC = () => {
               perfWeight: 100,
             },
             {
+              id: "cpu-2",
               name: "AMD Ryzen 9 7950X3D",
               desc: "16 Cores, 144MB Cache",
               price: 3259,
@@ -295,6 +303,7 @@ const PCBuilder: React.FC = () => {
               perfWeight: 98,
             },
             {
+              id: "cpu-3",
               name: "Intel Core i7-14700K",
               desc: "20 Cores, up to 5.6 GHz",
               price: 1959,
@@ -302,6 +311,7 @@ const PCBuilder: React.FC = () => {
               perfWeight: 85,
             },
             {
+              id: "cpu-4",
               name: "AMD Ryzen 7 7800X3D",
               desc: "8 Cores, Gaming Champion",
               price: 1759,
@@ -314,6 +324,7 @@ const PCBuilder: React.FC = () => {
       filters: ["ALL", "AIR", "LIQUID"],
       items: [
         {
+          id: "cooler-1",
           name: "Valkyrie C360 Liquid Cooler",
           desc: "ARGB, 360mm Radiator",
           price: 459,
@@ -321,6 +332,7 @@ const PCBuilder: React.FC = () => {
           perfWeight: 95,
         },
         {
+          id: "cooler-2",
           name: "DeepCool AK620 Digital",
           desc: "Dual Tower Air Cooler",
           price: 299,
@@ -328,6 +340,7 @@ const PCBuilder: React.FC = () => {
           perfWeight: 75,
         },
         {
+          id: "cooler-3",
           name: "Noctua NH-D15 chromax.black",
           desc: "Silent King Air Cooler",
           price: 499,
@@ -340,6 +353,7 @@ const PCBuilder: React.FC = () => {
       filters: ["ALL", "Z790", "B760", "X670", "B650"],
       items: [
         {
+          id: "mb-1",
           name: "ASUS ROG Maximus Z790 Hero",
           desc: "WiFi 6E, DDR5 Support",
           price: 2699,
@@ -347,6 +361,7 @@ const PCBuilder: React.FC = () => {
           perfWeight: 98,
         },
         {
+          id: "mb-2",
           name: "MSI MAG B650 Tomahawk WiFi",
           desc: "AM5, Robust VRM",
           price: 1159,
@@ -354,6 +369,7 @@ const PCBuilder: React.FC = () => {
           perfWeight: 70,
         },
         {
+          id: "mb-3",
           name: "GIGABYTE Z790 AORUS ELITE AX",
           desc: "ATX, Premium Audio",
           price: 1399,
@@ -366,6 +382,7 @@ const PCBuilder: React.FC = () => {
       filters: ["ALL", "DDR5", "DDR4"],
       items: [
         {
+          id: "ram-1",
           name: "Corsair Vengeance RGB 32GB",
           desc: "DDR5 6000MT/s CL30",
           price: 559,
@@ -373,6 +390,7 @@ const PCBuilder: React.FC = () => {
           perfWeight: 80,
         },
         {
+          id: "ram-2",
           name: "G.Skill Trident Z5 RGB 64GB",
           desc: "DDR5 6400MT/s",
           price: 1059,
@@ -380,6 +398,7 @@ const PCBuilder: React.FC = () => {
           perfWeight: 95,
         },
         {
+          id: "ram-3",
           name: "Kingston FURY Renegade 16GB",
           desc: "DDR4 3600MT/s",
           price: 259,
@@ -392,6 +411,7 @@ const PCBuilder: React.FC = () => {
       filters: ["ALL", "NVME", "SATA", "HDD"],
       items: [
         {
+          id: "storage-1",
           name: "Samsung 990 Pro 2TB",
           desc: "Gen4 NVMe, 7450MB/s",
           price: 899,
@@ -399,6 +419,7 @@ const PCBuilder: React.FC = () => {
           perfWeight: 98,
         },
         {
+          id: "storage-2",
           name: "Western Digital Black SN850X 1TB",
           desc: "Gen4 Gaming Drive",
           price: 459,
@@ -411,6 +432,7 @@ const PCBuilder: React.FC = () => {
       filters: ["ALL", "NVIDIA", "AMD"],
       items: [
         {
+          id: "gpu-1",
           name: "NVIDIA GeForce RTX 4090",
           desc: "24GB GDDR6X",
           price: 8999,
@@ -418,6 +440,7 @@ const PCBuilder: React.FC = () => {
           perfWeight: 100,
         },
         {
+          id: "gpu-2",
           name: "ASUS ROG Strix RTX 4080 Super",
           desc: "16GB",
           price: 5299,
@@ -430,6 +453,7 @@ const PCBuilder: React.FC = () => {
       filters: ["ALL", "850W+", "750W", "SFF"],
       items: [
         {
+          id: "psu-1",
           name: "Corsair RM850x (2021)",
           desc: "850W, 80+ Gold",
           price: 599,
@@ -437,6 +461,7 @@ const PCBuilder: React.FC = () => {
           perfWeight: 85,
         },
         {
+          id: "psu-2",
           name: "ASUS ROG Thor 1200P2",
           desc: "1200W, 80+ Platinum",
           price: 1459,
@@ -449,6 +474,7 @@ const PCBuilder: React.FC = () => {
       filters: ["ALL", "MID TOWER", "FULL TOWER", "ITX"],
       items: [
         {
+          id: "case-1",
           name: "Lian Li O11 Dynamic EVO",
           desc: "Panoramic View",
           price: 759,
@@ -456,6 +482,7 @@ const PCBuilder: React.FC = () => {
           perfWeight: 90,
         },
         {
+          id: "case-2",
           name: "NZXT H9 Flow",
           desc: "Mid-Tower Airflow",
           price: 799,
@@ -468,6 +495,7 @@ const PCBuilder: React.FC = () => {
       filters: ["ALL", "120MM", "PACKS"],
       items: [
         {
+          id: "fan-1",
           name: "Lian Li UNI Fan SL-Infinity",
           desc: "3-Pack, ARGB",
           price: 429,
@@ -480,6 +508,7 @@ const PCBuilder: React.FC = () => {
       filters: ["ALL", "WIFI 7", "WIFI 6E"],
       items: [
         {
+          id: "net-1",
           name: "ASUS PCE-AXE59BT",
           desc: "WiFi 6E + Bluetooth 5.2",
           price: 259,
@@ -492,6 +521,7 @@ const PCBuilder: React.FC = () => {
       filters: ["ALL", "HOME", "PRO"],
       items: [
         {
+          id: "os-1",
           name: "Windows 11 Home",
           desc: "Retail USB",
           price: 499,
@@ -499,6 +529,7 @@ const PCBuilder: React.FC = () => {
           perfWeight: 100,
         },
         {
+          id: "os-2",
           name: "Windows 11 Pro",
           desc: "Retail USB",
           price: 699,
@@ -511,6 +542,7 @@ const PCBuilder: React.FC = () => {
       filters: ["ALL", "MOUSE", "KEYBOARD"],
       items: [
         {
+          id: "acc-1",
           name: "Logitech G Pro X Superlight 2",
           desc: "Wireless",
           price: 699,
@@ -518,6 +550,7 @@ const PCBuilder: React.FC = () => {
           perfWeight: 100,
         },
         {
+          id: "acc-2",
           name: "Razer Huntsman V3 Pro",
           desc: "Analog Optical",
           price: 999,
@@ -530,6 +563,7 @@ const PCBuilder: React.FC = () => {
       filters: ["ALL"],
       items: [
         {
+          id: "argb-1",
           name: "ARGB Fan",
           desc: "High-performance ARGB cooling fan",
           price: 59,
@@ -541,6 +575,7 @@ const PCBuilder: React.FC = () => {
       filters: ["ALL"],
       items: [
         {
+          id: "led-1",
           name: "LED Strip",
           desc: "Vibrant RGB lighting strip",
           price: 39,
@@ -768,15 +803,47 @@ const PCBuilder: React.FC = () => {
   const currentPopupData = activePopup
     ? COMPONENT_DATA[activePopup] || { filters: ["ALL"], items: [] }
     : { filters: [], items: [] };
+
   const filteredItems = currentPopupData.items.filter((item) => {
+    // Search Filter
     const matchesSearch = item.name
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
+    
+    // Category/Subgroup Filter
     const matchesFilter =
       activeFilter === "ALL" ||
       item.name.toUpperCase().includes(activeFilter) ||
       item.desc.toUpperCase().includes(activeFilter);
-    return matchesSearch && matchesFilter;
+
+    if (!matchesSearch || !matchesFilter) return false;
+
+    // DDR TYPE Compatibility Logic
+    // Only apply for CPU, Motherboard, and RAM
+    const ddrSensitiveCategories = ['cpu', 'motherboard', 'ram'];
+    if (activePopup && ddrSensitiveCategories.includes(activePopup)) {
+      // Find what DDR type is already "locked in" by other selections
+      // Priority for determining the "truth": CPU > Motherboard > RAM
+      let lockedDdrType: string | null = null;
+      
+      const sourcePriority = ['cpu', 'motherboard', 'ram'];
+      for (const cat of sourcePriority) {
+        if (cat !== activePopup && selections[cat]?.ddr_type) {
+          lockedDdrType = selections[cat].ddr_type;
+          break; // Use the first found type in priority order
+        }
+      }
+
+      // If a DDR type is locked, enforcing same type strictly.
+      // If item has NO DDR type, hide it if a lock exists (safety first)
+      if (lockedDdrType) {
+        if (!item.ddr_type || item.ddr_type !== lockedDdrType) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   });
 
   return (
@@ -1258,8 +1325,13 @@ const PCBuilder: React.FC = () => {
                     />
                   </div>
                   <div className="flex-1 flex flex-col gap-1 pr-4">
-                    <h4 className="font-sans text-sm font-bold text-white/90 group-hover:text-white transition-all uppercase">
+                    <h4 className="font-sans text-sm font-bold text-white/90 group-hover:text-white transition-all uppercase flex items-center gap-2">
                       {item.name}
+                      {item.ddr_type && (
+                        <span className="px-2 py-0.5 bg-blue-600/20 text-blue-400 border border-blue-600/30 rounded text-[8px] font-black uppercase tracking-widest">
+                          {item.ddr_type}
+                        </span>
+                      )}
                     </h4>
                     <p className="text-[9px] text-white/40 uppercase tracking-[0.1em] line-clamp-1">
                       {item.desc}

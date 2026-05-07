@@ -463,7 +463,7 @@ const ProductManagement: React.FC = () => {
                     <input 
                       className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-900 placeholder:text-slate-300 transition-all" 
                       required 
-                      value={formData.name} 
+                      value={formData.name || ''} 
                       onChange={e => setFormData({...formData, name: e.target.value})}
                       placeholder="e.g. ASUS ROG Strix Laptop"
                     />
@@ -571,7 +571,7 @@ const ProductManagement: React.FC = () => {
                             type="number" 
                             className="w-full pl-10 pr-4 py-3 bg-white border border-slate-100 rounded-xl font-bold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20" 
                             required 
-                            value={formData.price} 
+                            value={formData.price || 0} 
                             onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})} 
                           />
                         </div>
@@ -585,7 +585,7 @@ const ProductManagement: React.FC = () => {
                             disabled={!!editingId}
                             className={`w-full pl-10 pr-4 py-3 bg-white border border-slate-100 rounded-xl font-bold outline-none focus:ring-2 focus:ring-blue-500/20 transition-all ${editingId ? 'text-slate-400 bg-slate-50/50 cursor-not-allowed border-slate-200' : 'text-slate-900'}`} 
                             required 
-                            value={formData.stock} 
+                            value={formData.stock || 0} 
                             onChange={e => setFormData({...formData, stock: parseInt(e.target.value)})} 
                           />
                         </div>
@@ -625,7 +625,7 @@ const ProductManagement: React.FC = () => {
                             type="number" 
                             disabled={formData.discount_type === 'none'}
                             className="w-full pl-10 pr-4 py-3 bg-white border border-slate-100 rounded-xl font-bold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50" 
-                            value={formData.discount_value} 
+                            value={formData.discount_value || 0} 
                             onChange={e => setFormData({...formData, discount_value: parseFloat(e.target.value)})} 
                           />
                         </div>
@@ -701,7 +701,7 @@ const ProductManagement: React.FC = () => {
                       rows={8}
                       className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-600 text-sm leading-relaxed"
                       placeholder="Hardware specs, capabilities, and highlights..."
-                      value={formData.description}
+                      value={formData.description || ''}
                       onChange={e => setFormData({...formData, description: e.target.value})}
                     />
                   </div>

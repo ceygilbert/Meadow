@@ -248,8 +248,8 @@ const StoreLocator: React.FC = () => {
                            <a href="#" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
                               Inquiry Form <ArrowUpRight size={16} className="opacity-0 group-hover:opacity-100" />
                            </a>
-                           <Link to="/stores" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-blue-500 hover:text-blue-700 transition-colors flex items-center gap-2">
-                              Store Locator <ArrowUpRight size={16} />
+                           <Link to="/our-stores" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-blue-500 hover:text-blue-700 transition-colors flex items-center gap-2">
+                              Our Store <ArrowUpRight size={16} />
                            </Link>
                         </div>
                      </div>
@@ -313,7 +313,7 @@ const StoreLocator: React.FC = () => {
             </div>
 
             <select 
-              value={selectedType}
+              value={selectedType || ''}
               onChange={(e) => setSelectedType(e.target.value)}
               className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none font-bold text-sm text-slate-900 appearance-none cursor-pointer"
             >

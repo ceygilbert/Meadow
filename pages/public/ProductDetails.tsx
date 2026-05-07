@@ -209,8 +209,8 @@ const ProductDetails: React.FC = () => {
                       <span className="text-4xl md:text-7xl font-nav uppercase tracking-tighter text-rose-600 group-hover:italic transition-all">Build Your Own PC</span>
                       <Zap className="text-rose-500 animate-pulse" size={32} />
                    </Link>
-                   <Link to="/stores" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6">
-                      <span className="text-4xl md:text-7xl font-nav uppercase tracking-tighter text-slate-900">Stores</span>
+                   <Link to="/our-stores" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6">
+                      <span className="text-4xl md:text-7xl font-nav uppercase tracking-tighter text-slate-900">Our Store</span>
                       <ArrowUpRight className="text-slate-200 group-hover:text-slate-900 transition-colors" size={32} />
                    </Link>
                 </nav>
@@ -323,39 +323,54 @@ const ProductDetails: React.FC = () => {
                 <div className="flex items-end gap-4">
                    <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Retail Price</span>
-                      <span className="text-3xl lg:text-3xl font-black text-slate-900 tracking-tight">RM{finalPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                      <span className="text-2xl lg:text-2xl font-black text-slate-900 tracking-tight">RM{finalPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                    </div>
                    {product.discount_type !== 'none' && (
                      <span className="text-lg font-bold text-slate-300 line-through mb-1">RM{product.price.toLocaleString()}</span>
                    )}
                 </div>
                 
-                <p className="text-lg text-slate-500 font-medium leading-relaxed">
+                <p className="text-sm text-slate-500 font-medium leading-relaxed">
                    {product.description || "Unparalleled performance meets precise engineering. Engineered for the modern professional seeking reliability and power in every deployment."}
                 </p>
              </div>
 
-             <div className="space-y-10">
-                <div className="flex items-center gap-6">
-                   <div className="flex items-center bg-slate-50 rounded-2xl px-6 py-4 gap-10 border border-slate-100">
-                      <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-slate-400 hover:text-slate-900 transition-colors"><Minus size={20} /></button>
-                      <span className="font-black text-xl min-w-[30px] text-center">{quantity}</span>
-                      <button onClick={() => setQuantity(Math.min(product.stock, quantity + 1))} className="text-slate-400 hover:text-slate-900 transition-colors"><Plus size={20} /></button>
+             <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                   <div className="flex items-center bg-slate-50 rounded-xl px-3 py-2 gap-4 border border-slate-100 shrink-0">
+                      <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-slate-400 hover:text-slate-900 transition-colors"><Minus size={16} /></button>
+                      <span className="font-black text-base min-w-[20px] text-center">{quantity}</span>
+                      <button onClick={() => setQuantity(Math.min(product.stock, quantity + 1))} className="text-slate-400 hover:text-slate-900 transition-colors"><Plus size={16} /></button>
                    </div>
                    <button 
                      onClick={addToCart}
                      disabled={product.stock <= 0}
-                     className="flex-1 h-20 bg-slate-900 text-white rounded-[2rem] font-black text-xs md:text-sm uppercase tracking-widest flex items-center justify-center gap-6 hover:bg-blue-600 transition-all shadow-2xl group active:scale-95"
+                     className="flex-1 h-11 bg-slate-900 text-white rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-slate-800 transition-all shadow-xl group active:scale-95"
                    >
                      {isAdded ? (
-                       <><CheckCircle size={20} /> Added to cart</>
+                       <><CheckCircle size={16} /> Added</>
                      ) : (
-                       <>Add to cart <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white group-hover:text-blue-600 transition-all"><ShoppingCart size={18} /></div></>
+                       <>Add to cart <div className="w-7 h-7 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white group-hover:text-slate-900 transition-all"><ShoppingCart size={14} /></div></>
                      )}
                    </button>
                 </div>
+                
+                <button 
+                  onClick={() => {
+                    if (!product || product.stock <= 0) return;
+                    const alreadyInCart = cart.find(item => item.id === product.id);
+                    if (!alreadyInCart) {
+                       setCart(prev => [...prev, { ...product, quantity }]);
+                    }
+                    navigate('/checkout-light');
+                  }}
+                  disabled={product.stock <= 0}
+                  className="w-full h-11 bg-blue-600 text-white rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center hover:bg-blue-700 transition-all shadow-xl active:scale-95"
+                >
+                  Buy it now
+                </button>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 pt-4">
                    <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col gap-4">
                       <ShieldCheck className="text-blue-600" size={24} />
                       <div>
@@ -418,21 +433,24 @@ const ProductDetails: React.FC = () => {
               </div>
            </div>
 
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+           <div className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10">
               {relatedProducts.map((p) => (
-                <Link to={`/product/${p.slug}`} key={p.id} className="group flex flex-col bg-[#F9FAFB] rounded-[2.5rem] p-10 hover:bg-white hover:shadow-2xl transition-all duration-500 border border-transparent hover:border-slate-100">
-                   <div className="aspect-[4/5] mb-8 overflow-hidden rounded-[2rem] flex items-center justify-center p-6">
-                      <img src={p.image_url || undefined} className="w-full h-full object-contain transition-transform duration-1000 group-hover:scale-110" alt={p.name} />
+                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+                   <button 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                      className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
+                   >
+                      <Heart size={14} />
+                   </button>
+                   <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-3 relative flex items-center justify-center">
+                       <img src={p.image_url || undefined} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                    </div>
-                   <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                         <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Indexed HW</span>
-                         <span className="text-sm font-black text-slate-900">RM{p.price.toLocaleString()}</span>
-                      </div>
-                      <h3 className="text-lg font-black text-slate-900 tracking-tight leading-tight uppercase line-clamp-2 min-h-[44px]">{p.name}</h3>
-                      <div className="flex items-center gap-2 pt-2 text-blue-600 font-black text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all">
-                         Analyze Details <ChevronRight size={14} />
-                      </div>
+                   <div className="mb-1">
+                       <h3 className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 truncate">{p.name}</h3>
+                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Meadow Tech</p>
+                   </div>
+                   <div>
+                       <span className="text-xs font-black text-slate-900">RM{p.price.toLocaleString()}</span>
                    </div>
                 </Link>
               ))}
@@ -492,27 +510,60 @@ const ProductDetails: React.FC = () => {
       {/* Editorial Footer */}
       <footer className="bg-[#F9FAFB] pt-24 pb-12 border-t border-slate-100">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
-            <div className="col-span-1 md:col-span-1">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-12 mb-20">
+            <div className="col-span-1 lg:col-span-1">
               <img src={LOGO_URL} className="h-16 w-auto mb-8 grayscale opacity-50" alt="Meadow" />
-              <p className="text-xs text-slate-400 font-medium leading-relaxed max-w-xs">
+              <p className="text-xs text-slate-400 font-medium leading-relaxed max-w-xs mb-8">
                 Premium hardware distribution and bespoke computational engineering. Built for the elite.
               </p>
+              
+              <div className="space-y-8">
+                <div>
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-4 text-left">Payment Method</h4>
+                  <div className="flex flex-wrap gap-2">
+                    <img src="https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/fpx.svg" className="h-8 w-auto px-2 py-1 bg-white rounded border border-slate-100 object-contain" alt="FPX" />
+                    <img src="https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/master.svg" className="h-8 w-auto px-2 py-1 bg-white rounded border border-slate-100 object-contain" alt="Mastercard" />
+                    <img src="https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/visa.svg" className="h-8 w-auto px-2 py-1 bg-white rounded border border-slate-100 object-contain" alt="VISA" />
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-4 text-left">Logistic Services</h4>
+                  <div className="flex flex-wrap gap-2">
+                    <img src="https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/gdex.svg" className="h-8 w-auto px-2 py-1 bg-white rounded border border-slate-100 object-contain" alt="GDEX" />
+                  </div>
+                </div>
+              </div>
             </div>
             <div>
               <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Company</h4>
               <ul className="space-y-4">
-                <li><Link to="/" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Our Story</Link></li>
-                <li><Link to="/" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Contact Us</Link></li>
-                <li><Link to="/stores" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Store Locator</Link></li>
+                <li><Link to="/our-story" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Our Story</Link></li>
+                <li><Link to="/our-stores" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Our Store</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Legal</h4>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Shop With Us</h4>
               <ul className="space-y-4">
+                <li><Link to="/buildpc" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">BUILD YOUR OWN PC</Link></li>
+                <li><Link to="/products?category=Desktop" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Desktop</Link></li>
+                <li><Link to="/products?category=Display" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Display</Link></li>
+                <li><Link to="/products?category=Home+%26+Office" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Home & Office</Link></li>
+                <li><Link to="/products?category=Laptop" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Laptop</Link></li>
+                <li><Link to="/products?category=Networking" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Networking</Link></li>
+                <li><Link to="/products?category=PC+Components" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">PC Component</Link></li>
+                <li><Link to="/products?category=Peripherals" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Peripherals</Link></li>
+                <li><Link to="/products?category=Smart+Home" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Smart Home</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Support</h4>
+              <ul className="space-y-4">
+                <li><span className="text-[11px] font-nav text-slate-400 uppercase tracking-widest cursor-default opacity-50">Track Your Order</span></li>
+                <li><span className="text-[11px] font-nav text-slate-400 uppercase tracking-widest cursor-default opacity-50">Warranty</span></li>
                 <li><Link to="/terms" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Terms & Conditions</Link></li>
                 <li><Link to="/product-policy" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Product Policy</Link></li>
-                <li><Link to="/product-policy" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Refund Policy</Link></li>
+                <li><button onClick={() => openMenu('contact')} className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Contact Us</button></li>
               </ul>
             </div>
             <div>
