@@ -43,6 +43,7 @@ const ProductManagement: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
   
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -59,6 +60,7 @@ const ProductManagement: React.FC = () => {
     stock: 0,
     description: '',
     image_url: '',
+    ddr_type: '',
     is_custom_build: false,
     is_customised: false
   });
@@ -155,17 +157,20 @@ const ProductManagement: React.FC = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name) return;
+    setModalError(null);
     const slug = formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 
     const payload = {
       ...formData,
       slug,
-      specs: formData.specs || {}
+      specs: formData.specs || {},
+      // Ensure ddr_type is never null/undefined when sending to DB if it's optional
+      ddr_type: formData.ddr_type || ''
     };
 
     try {
       if (editingId) {
-        const { stock, ...updatePayload } = payload;
+        const { stock, id, created_at, ...updatePayload } = payload as any;
         const { error: updateError } = await supabase
           .from('products')
           .update(updatePayload)
@@ -183,11 +188,13 @@ const ProductManagement: React.FC = () => {
       resetForm();
       fetchData();
     } catch (err: any) {
-      alert("Error saving product: " + err.message);
+      console.error("Error saving product:", err);
+      setModalError(err.message || "Failed to save product. Please check connection or database schema.");
     }
   };
 
   const resetForm = () => {
+    setModalError(null);
     setFormData({
       name: '',
       category_id: categories[0]?.id || '',
@@ -200,12 +207,14 @@ const ProductManagement: React.FC = () => {
       stock: 0,
       description: '',
       image_url: '',
+      ddr_type: '',
       is_custom_build: false,
       is_customised: false
     });
   };
 
   const handleEdit = (product: Product) => {
+    setModalError(null);
     setFormData({
       name: product.name,
       category_id: product.category_id,
@@ -218,6 +227,7 @@ const ProductManagement: React.FC = () => {
       stock: product.stock,
       description: product.description,
       image_url: product.image_url,
+      ddr_type: product.ddr_type || '',
       is_custom_build: product.is_custom_build,
       is_customised: product.is_customised
     });
@@ -253,6 +263,8 @@ const ProductManagement: React.FC = () => {
   );
 
   const availableSubCategories = subCategories.filter(s => s.category_id === formData.category_id);
+  const selectedSubCategory = subCategories.find(s => s.id === formData.subcategory_id);
+  const showDDRDropdown = selectedSubCategory && ['ram', 'motherboard', 'processor'].includes(selectedSubCategory.name.toLowerCase());
 
   return (
     <div className="space-y-6">
@@ -347,7 +359,7 @@ const ProductManagement: React.FC = () => {
                           <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md self-start uppercase tracking-wider">{cat?.name || 'Uncategorized'}</span>
                           {sub && (
                             <span className="text-[9px] font-bold text-slate-400 px-2 flex items-center gap-1 italic">
-                              <ArrowRight size={8} /> {sub.name}
+                              <ArrowRight size={8} /> {sub.name} {p.ddr_type && <span className="ml-1 text-blue-500 font-black not-italic">[{p.ddr_type}]</span>}
                             </span>
                           )}
                         </div>
@@ -431,6 +443,18 @@ const ProductManagement: React.FC = () => {
             </div>
             
             <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-8 md:p-10 space-y-10">
+              {modalError && (
+                <div className="p-6 bg-rose-50 border border-rose-100 rounded-3xl flex items-center gap-4 text-rose-600 animate-in fade-in slide-in-from-top-4 duration-300">
+                  <AlertCircle size={24} className="shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-bold text-sm uppercase tracking-wider">Critical Fault Detected</p>
+                    <p className="text-xs opacity-80 font-medium">{modalError}</p>
+                    {modalError.includes('column') && (
+                      <p className="text-[10px] mt-2 font-black uppercase text-rose-400">Action Required: Add 'ddr_type' column to 'products' table in Supabase.</p>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-14">
                 {/* Basic Info */}
                 <div className="space-y-8">
@@ -455,7 +479,7 @@ const ProductManagement: React.FC = () => {
                         <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Main Category</label>
                         <select 
                           className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-900 transition-all"
-                          value={formData.category_id}
+                          value={formData.category_id || ''}
                           onChange={e => setFormData({...formData, category_id: e.target.value, subcategory_id: ''})}
                           required
                         >
@@ -467,8 +491,17 @@ const ProductManagement: React.FC = () => {
                         <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Sub-category</label>
                         <select 
                           className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-900 transition-all disabled:opacity-50"
-                          value={formData.subcategory_id}
-                          onChange={e => setFormData({...formData, subcategory_id: e.target.value})}
+                          value={formData.subcategory_id || ''}
+                          onChange={e => {
+                            const subId = e.target.value;
+                            const sub = subCategories.find(s => s.id === subId);
+                            const isDDRCategory = sub && ['ram', 'motherboard', 'processor'].includes(sub.name.toLowerCase());
+                            setFormData({
+                              ...formData, 
+                              subcategory_id: subId,
+                              ddr_type: isDDRCategory ? formData.ddr_type : ''
+                            });
+                          }}
                           disabled={!formData.category_id || availableSubCategories.length === 0}
                         >
                           <option value="">No Sub-category</option>
@@ -482,12 +515,28 @@ const ProductManagement: React.FC = () => {
                       </div>
                     </div>
 
+                    {showDDRDropdown && (
+                      <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Memory Standard (DDR)</label>
+                        <select 
+                          className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-900 transition-all"
+                          value={formData.ddr_type || ''}
+                          onChange={e => setFormData({...formData, ddr_type: e.target.value as any})}
+                          required
+                        >
+                          <option value="">Select DDR Type</option>
+                          <option value="DDR4">DDR4</option>
+                          <option value="DDR5">DDR5</option>
+                        </select>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Manufacturer</label>
                         <select 
                           className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-900 transition-all"
-                          value={formData.brand_id}
+                          value={formData.brand_id || ''}
                           onChange={e => setFormData({...formData, brand_id: e.target.value})}
                           required
                         >
@@ -499,7 +548,7 @@ const ProductManagement: React.FC = () => {
                         <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Stock Unit</label>
                         <select 
                           className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-900 transition-all"
-                          value={formData.unit_id}
+                          value={formData.unit_id || ''}
                           onChange={e => setFormData({...formData, unit_id: e.target.value})}
                           required
                         >
@@ -556,7 +605,7 @@ const ProductManagement: React.FC = () => {
                         <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Discount Type</label>
                         <select 
                           className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl font-bold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20"
-                          value={formData.discount_type}
+                          value={formData.discount_type || 'none'}
                           onChange={e => setFormData({...formData, discount_type: e.target.value as any})}
                         >
                           <option value="none">No Discount</option>

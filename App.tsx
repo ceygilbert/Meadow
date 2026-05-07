@@ -31,7 +31,7 @@ import AdminLayout from './components/AdminLayout';
 import CustomerLayout from './components/CustomerLayout';
 import CustomerDashboard from './pages/customer/Dashboard';
 import FloatingWhatsApp from './components/FloatingWhatsApp';
-import { supabase } from './lib/supabase';
+import { supabase, supabaseUrl, supabaseAnonKey } from './lib/supabase';
 import { Profile } from './types';
 
 const App: React.FC = () => {
@@ -57,7 +57,7 @@ const App: React.FC = () => {
         .single();
       
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('TIMEOUT')), 20000) // Increased to 20s
+        setTimeout(() => reject(new Error('TIMEOUT')), 30000) // Increased to 30s
       );
 
       console.log(`Starting Supabase query for userId: ${userId}`);
@@ -67,8 +67,8 @@ const App: React.FC = () => {
       if (error) {
         console.warn('Profile fetch error:', userId, error);
         // If it's a network error or a specifically retriable error
-        if (retryCount < 1 && (error.message?.includes('FetchError') || error.code === 'PGRST116')) {
-          console.log("Retrying profile fetch due to network/transient error...");
+        if (retryCount < 2 && (error.message?.includes('FetchError') || error.code === 'PGRST116')) {
+          console.log(`Retrying profile fetch (attempt ${retryCount + 2}) due to network/transient error...`);
           return fetchProfile(userId, retryCount + 1);
         }
         setUserProfile(null);
@@ -77,6 +77,13 @@ const App: React.FC = () => {
       
       if (!data) {
         console.warn("No profile data returned for user:", userId);
+        // If data is null, maybe the profile hasn't been created yet? 
+        // We can retry once more just in case it's a replication delay
+        if (retryCount < 1) {
+          console.log("No data returned, retrying once more...");
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return fetchProfile(userId, retryCount + 1);
+        }
         setUserProfile(null);
         return null;
       }
@@ -87,8 +94,8 @@ const App: React.FC = () => {
     } catch (err: any) {
       if (err.message === 'TIMEOUT') {
         console.error("Profile fetch TIMEOUT for user:", userId);
-        if (retryCount < 1) {
-          console.log("Retrying profile fetch after timeout...");
+        if (retryCount < 2) {
+          console.log(`Retrying profile fetch (attempt ${retryCount + 2}) after timeout...`);
           return fetchProfile(userId, retryCount + 1);
         }
       } else {
@@ -106,9 +113,9 @@ const App: React.FC = () => {
     console.log("App mounted, initializing auth check and connection health check...");
     
     // Quick health check to see if we can reach Supabase at all
-    fetch(`${supabase.supabaseUrl}/rest/v1/`, {
+    fetch(`${supabaseUrl}/rest/v1/`, {
       method: 'GET',
-      headers: { 'apikey': supabase.supabaseKey }
+      headers: { 'apikey': supabaseAnonKey }
     })
     .then(res => console.log("Supabase REST Connection Check:", res.status === 200 ? "OK" : `Failed (${res.status})`))
     .catch(err => console.error("Supabase REST Connection Check ERROR:", err));
