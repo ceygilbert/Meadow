@@ -1187,7 +1187,7 @@ const Home: React.FC = () => {
               <div className="flex flex-col gap-6">
                 <Link 
                   to="/our-stores" 
-                  className="block w-full px-8 py-4 bg-white border-2 border-black rounded-xl text-sm font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm text-center"
+                  className="block w-[40%] px-8 py-4 bg-white border-2 border-black rounded-xl text-sm font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm text-left"
                 >
                   Our Store
                 </Link>
