@@ -875,7 +875,7 @@ const PCBuilder: React.FC = () => {
 
       <main className="relative pt-48 md:pt-64 px-8 md:px-16 max-w-[1800px] mx-auto z-10 pb-64">
         <div className="mb-8">
-          <Breadcrumbs currentPage="PC Builder" />
+          <Breadcrumbs items={[{ label: 'BUILD YOUR OWN PC' }]} />
         </div>
         <div className="grid lg:grid-cols-12 gap-16 items-start">
           {/* Schematic Grid */}

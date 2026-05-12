@@ -178,7 +178,12 @@ const PrebuiltProduct: React.FC = () => {
       <StudioNavbar />
       
       <div className="max-w-7xl mx-auto px-8 pt-32">
-        <Breadcrumbs currentPage="PC Package" />
+        <Breadcrumbs 
+          items={[
+            { label: 'PRE-BUILT SYSTEMS', path: '/prebuilt' },
+            { label: slug?.replace(/-/g, ' ').toUpperCase() || "PC Package" }
+          ]} 
+        />
       </div>
 
       <AnimatePresence>

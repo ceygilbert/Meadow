@@ -115,7 +115,7 @@ const Workstation: React.FC = () => {
       <StudioNavbar />
       
       <div className="max-w-7xl mx-auto px-8 pt-32">
-        <Breadcrumbs currentPage="Workstation" />
+        <Breadcrumbs items={[{ label: 'WORKSTATION' }]} />
       </div>
 
       {/* Hero Section */}

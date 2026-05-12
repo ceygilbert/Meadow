@@ -46,6 +46,7 @@ const ProductDetails: React.FC = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [brand, setBrand] = useState<Brand | null>(null);
   const [category, setCategory] = useState<Category | null>(null);
+  const [subcategory, setSubcategory] = useState<any | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,14 +95,16 @@ const ProductDetails: React.FC = () => {
 
       setProduct(data);
 
-      const [brandRes, catRes, relatedRes] = await Promise.all([
+      const [brandRes, catRes, subCatRes, relatedRes] = await Promise.all([
         supabase.from('brands').select('*').eq('id', data.brand_id).single(),
         supabase.from('categories').select('*').eq('id', data.category_id).single(),
+        data.subcategory_id ? supabase.from('subcategories').select('*').eq('id', data.subcategory_id).single() : Promise.resolve({ data: null }),
         supabase.from('products').select('*').eq('category_id', data.category_id).neq('id', data.id).limit(4)
       ]);
 
       if (brandRes.data) setBrand(brandRes.data);
       if (catRes.data) setCategory(catRes.data);
+      if (subCatRes.data) setSubcategory(subCatRes.data);
       if (relatedRes.data) setRelatedProducts(relatedRes.data);
     } catch (err: any) {
       setError(err.message);
@@ -252,9 +255,9 @@ const ProductDetails: React.FC = () => {
       <main className="pt-24 md:pt-36 pb-20 px-4 md:px-10 max-w-[1440px] mx-auto">
         <Breadcrumbs 
           items={[
-            { label: 'All Products', path: '/products' },
             ...(category ? [{ label: category.name, path: `/products?category=${category.slug}` }] : []),
-            { label: product.name, active: true }
+            ...(subcategory ? [{ label: subcategory.name, path: `/products?category=${category?.slug}&subcategory=${subcategory.slug}` }] : []),
+            { label: product.name }
           ]}
         />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-20 items-start">

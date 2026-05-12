@@ -216,9 +216,8 @@ const ProductListing: React.FC = () => {
         <div className="mb-12">
           <Breadcrumbs 
             items={[
-              { label: 'All Products', path: '/products' },
               ...(currentCategory ? [{ label: currentCategory.name, path: `/products?category=${currentCategory.slug}` }] : []),
-              ...(currentSubCategory ? [{ label: currentSubCategory.name, active: true }] : [])
+              ...(currentSubCategory ? [{ label: currentSubCategory.name }] : [])
             ]}
           />
           <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter uppercase leading-none">

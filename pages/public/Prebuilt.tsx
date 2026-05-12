@@ -99,7 +99,7 @@ const Prebuilt: React.FC = () => {
       <StudioNavbar />
 
       <div className="max-w-[1600px] mx-auto px-8 md:px-16 pt-32">
-        <Breadcrumbs currentPage="Pre-Built Systems" />
+        <Breadcrumbs items={[{ label: 'PRE-BUILT SYSTEMS' }]} />
       </div>
 
       {/* Hero Section */}
