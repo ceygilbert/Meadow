@@ -374,7 +374,7 @@ const ProductPolicy: React.FC = () => {
 
       <main className="max-w-[1440px] mx-auto px-6 pt-32 pb-20 min-h-screen">
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 uppercase tracking-tighter mb-4">Product Policy</h1>
+          <h1 className="text-4xl md:text-5xl font-black text-slate-900 uppercase tracking-tighter mb-4">Terms & Conditions</h1>
           <p className="text-slate-500 max-w-2xl mx-auto text-sm leading-relaxed">
             This Product Policy applies to all products displayed, promoted, sold, or otherwise made available through the Meadow website and related online sales channels.
           </p>
@@ -460,10 +460,9 @@ const ProductPolicy: React.FC = () => {
             <div>
               <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Support</h4>
               <ul className="space-y-4">
-                <li><span className="text-[11px] font-nav text-slate-400 uppercase tracking-widest cursor-default opacity-50">Track Your Order</span></li>
-                <li><span className="text-[11px] font-nav text-slate-400 uppercase tracking-widest cursor-default opacity-50">Warranty</span></li>
-                <li><Link to="/terms" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Terms & Conditions</Link></li>
-                <li><Link to="/product-policy" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Product Policy</Link></li>
+                <li><Link to="/track-order" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Track Your Order</Link></li>
+                <li><Link to="/warranty" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Warranty</Link></li>
+                <li><Link to="/product-policy" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Terms & Conditions</Link></li>
                 <li><Link to="/" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Contact Us</Link></li>
               </ul>
             </div>

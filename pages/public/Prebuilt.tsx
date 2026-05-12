@@ -13,6 +13,7 @@ import {
   Wifi
 } from 'lucide-react';
 import StudioNavbar from '../../components/StudioNavbar';
+import Breadcrumbs from '../../components/Breadcrumbs';
 import WaveGradient from '../../components/WaveGradient';
 
 const Prebuilt: React.FC = () => {
@@ -96,6 +97,10 @@ const Prebuilt: React.FC = () => {
       
       {/* Header */}
       <StudioNavbar />
+
+      <div className="max-w-[1600px] mx-auto px-8 md:px-16 pt-32">
+        <Breadcrumbs currentPage="Pre-Built Systems" />
+      </div>
 
       {/* Hero Section */}
       <section className="pt-40 pb-20 px-8 md:px-16">

@@ -12,20 +12,18 @@ import PublicNavbar from '../../components/PublicNavbar';
 import { supabase } from '../../lib/supabase';
 import { Brand, Profile } from '../../types';
 
+import { useAuth } from '../../lib/AuthContext';
+
 const AllBrands: React.FC = () => {
+  const { user, profile } = useAuth();
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  
-  // Auth & Profile States
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     fetchBrands();
-    checkUser();
 
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
@@ -33,55 +31,6 @@ const AllBrands: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const checkUser = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      }
-    } catch (err) {
-      console.error("Auth check failed", err);
-    }
-  };
-
-  const fetchProfile = async (userId: string, retryCount = 0) => {
-    try {
-      const profilePromise = supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-      
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('TIMEOUT')), 20000)
-      );
-
-      const { data, error } = await Promise.race([profilePromise, timeoutPromise]) as any;
-
-      if (error) {
-        if (retryCount < 1 && (error.status === 502 || error.status === 504 || error.status === 0)) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          return fetchProfile(userId, retryCount + 1);
-        }
-        console.error("Profile fetch failed", error);
-        return;
-      }
-
-      if (data) setProfile(data);
-    } catch (err: any) {
-      if (err.message === 'TIMEOUT') {
-        if (retryCount < 1) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          return fetchProfile(userId, retryCount + 1);
-        }
-        console.error("Profile fetch timed out in AllBrands.tsx");
-      } else {
-        console.error("Profile fetch failed in AllBrands.tsx", err);
-      }
-    }
-  };
 
   const fetchBrands = async () => {
     setLoading(true);

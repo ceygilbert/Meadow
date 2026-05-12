@@ -46,6 +46,7 @@ import {
   ScanText,
 } from "lucide-react";
 import StudioNavbar from "../../components/StudioNavbar";
+import Breadcrumbs from "../../components/Breadcrumbs";
 import WaveGradient from "../../components/WaveGradient";
 import { supabase } from "../../lib/supabase";
 
@@ -873,6 +874,9 @@ const PCBuilder: React.FC = () => {
       />
 
       <main className="relative pt-48 md:pt-64 px-8 md:px-16 max-w-[1800px] mx-auto z-10 pb-64">
+        <div className="mb-8">
+          <Breadcrumbs currentPage="PC Builder" />
+        </div>
         <div className="grid lg:grid-cols-12 gap-16 items-start">
           {/* Schematic Grid */}
           <div className="lg:col-span-8 grid md:grid-cols-1 gap-10">

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { 
   ArrowRight,
   MapPin,
@@ -114,13 +114,14 @@ interface CartItem extends Product {
   quantity: number;
 }
 
+import { useAuth } from '../../lib/AuthContext';
+
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/Red%20Full%20Logo.png";
 
 const OurStores: React.FC = () => {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
   const [scrolled, setScrolled] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [filterType, setFilterType] = useState('All');
@@ -132,29 +133,9 @@ const OurStores: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    checkUser();
     const savedCart = localStorage.getItem('meadow_cart');
     if (savedCart) setCart(JSON.parse(savedCart));
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-      if (session?.user) fetchProfile(session.user.id);
-      else setProfile(null);
-    });
-
-    return () => subscription.unsubscribe();
   }, []);
-
-  const checkUser = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    setUser(session?.user || null);
-    if (session?.user) fetchProfile(session.user.id);
-  };
-
-  const fetchProfile = async (userId: string) => {
-    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
-    if (data) setProfile(data);
-  };
 
   const filteredBranches = filterType === 'All' 
     ? BRANCHES 
@@ -311,10 +292,9 @@ const OurStores: React.FC = () => {
             <div>
               <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Support</h4>
               <ul className="space-y-4">
-                <li><span className="text-[11px] font-nav text-slate-400 uppercase tracking-widest cursor-default opacity-50">Track Your Order</span></li>
-                <li><span className="text-[11px] font-nav text-slate-400 uppercase tracking-widest cursor-default opacity-50">Warranty</span></li>
-                <li><Link to="/terms" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Terms & Conditions</Link></li>
-                <li><Link to="/product-policy" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Product Policy</Link></li>
+                <li><Link to="/track-order" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Track Your Order</Link></li>
+                <li><Link to="/warranty" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Warranty</Link></li>
+                <li><Link to="/product-policy" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Terms & Conditions</Link></li>
                 <li><Link to="/" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Contact Us</Link></li>
               </ul>
             </div>

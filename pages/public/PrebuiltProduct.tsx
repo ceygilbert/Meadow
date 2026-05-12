@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Share2, RefreshCw, Copy, List, Calculator, MessageCircle, ArrowRight, X, Check, ChevronDown } from 'lucide-react';
 import StudioNavbar from '../../components/StudioNavbar';
-import { motion, AnimatePresence } from 'framer-motion';
+import Breadcrumbs from '../../components/Breadcrumbs';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface Option {
   id: string;
@@ -176,6 +177,10 @@ const PrebuiltProduct: React.FC = () => {
     <div className="min-h-screen bg-[#050607] text-white">
       <StudioNavbar />
       
+      <div className="max-w-7xl mx-auto px-8 pt-32">
+        <Breadcrumbs currentPage="PC Package" />
+      </div>
+
       <AnimatePresence>
         {renderModal()}
       </AnimatePresence>

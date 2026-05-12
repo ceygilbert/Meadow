@@ -27,6 +27,7 @@ import {
   Instagram
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import Breadcrumbs from '../../components/Breadcrumbs';
 import { Product, Brand, Category, Profile } from '../../types';
 
 interface CartItem extends Product {
@@ -36,9 +37,12 @@ interface CartItem extends Product {
 type MenuMode = 'all' | 'story' | 'contact' | 'products';
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/Red%20Full%20Logo.png";
 
+import { useAuth } from '../../lib/AuthContext';
+
 const ProductDetails: React.FC = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
   const [product, setProduct] = useState<Product | null>(null);
   const [brand, setBrand] = useState<Brand | null>(null);
   const [category, setCategory] = useState<Category | null>(null);
@@ -54,8 +58,6 @@ const ProductDetails: React.FC = () => {
   const [headerSearch, setHeaderSearch] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -68,33 +70,13 @@ const ProductDetails: React.FC = () => {
 
   useEffect(() => {
     fetchProductData();
-    checkUser();
     const savedCart = localStorage.getItem('meadow_cart');
     if (savedCart) setCart(JSON.parse(savedCart));
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-      if (session?.user) fetchProfile(session.user.id);
-      else setProfile(null);
-    });
-
-    return () => subscription.unsubscribe();
   }, [slug]);
 
   useEffect(() => {
     localStorage.setItem('meadow_cart', JSON.stringify(cart));
   }, [cart]);
-
-  const checkUser = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    setUser(session?.user || null);
-    if (session?.user) fetchProfile(session.user.id);
-  };
-
-  const fetchProfile = async (userId: string) => {
-    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
-    if (data) setProfile(data);
-  };
 
   const fetchProductData = async () => {
     if (!slug) return;
@@ -268,6 +250,13 @@ const ProductDetails: React.FC = () => {
 
       {/* Product Content */}
       <main className="pt-24 md:pt-36 pb-20 px-4 md:px-10 max-w-[1440px] mx-auto">
+        <Breadcrumbs 
+          items={[
+            { label: 'All Products', path: '/products' },
+            ...(category ? [{ label: category.name, path: `/products?category=${category.slug}` }] : []),
+            { label: product.name, active: true }
+          ]}
+        />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-20 items-start">
           
           {/* Visual Showcase (Left - 6 Columns) */}
@@ -559,10 +548,9 @@ const ProductDetails: React.FC = () => {
             <div>
               <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Support</h4>
               <ul className="space-y-4">
-                <li><span className="text-[11px] font-nav text-slate-400 uppercase tracking-widest cursor-default opacity-50">Track Your Order</span></li>
-                <li><span className="text-[11px] font-nav text-slate-400 uppercase tracking-widest cursor-default opacity-50">Warranty</span></li>
-                <li><Link to="/terms" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Terms & Conditions</Link></li>
-                <li><Link to="/product-policy" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Product Policy</Link></li>
+                <li><Link to="/track-order" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Track Your Order</Link></li>
+                <li><Link to="/warranty" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Warranty</Link></li>
+                <li><Link to="/product-policy" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Terms & Conditions</Link></li>
                 <li><button onClick={() => openMenu('contact')} className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Contact Us</button></li>
               </ul>
             </div>

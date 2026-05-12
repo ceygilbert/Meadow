@@ -33,6 +33,7 @@ import {
   Instagram
 } from 'lucide-react';
 import PublicNavbar from '../../components/PublicNavbar';
+import Footer from '../../components/Footer';
 import { supabase } from '../../lib/supabase';
 import { Product, Profile, Brand } from '../../types';
 
@@ -41,6 +42,8 @@ interface CartItem extends Product {
 }
 
 type MenuMode = 'all' | 'story' | 'contact' | 'products';
+
+import { useAuth } from '../../lib/AuthContext';
 
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/Red%20Full%20Logo.png";
 const BANNERS = [
@@ -124,6 +127,7 @@ const TICKER_ITEMS = [
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [promoProducts, setPromoProducts] = useState<Product[]>([]);
@@ -141,8 +145,6 @@ const Home: React.FC = () => {
   const [menuBranchIndex, setMenuBranchIndex] = useState(0);
   
   // Auth & Profile States
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [authLoading, setAuthLoading] = useState(false);
@@ -247,22 +249,21 @@ const Home: React.FC = () => {
     }, 10000);
 
     fetchData();
-    checkUser();
     
+    if (user) {
+      setCustomerInfo({ 
+        name: user.user_metadata?.full_name || '', 
+        email: user.email || '' 
+      });
+    }
+
     const savedCart = localStorage.getItem('meadow_cart');
     if (savedCart) setCart(JSON.parse(savedCart));
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-      if (session?.user) fetchProfile(session.user.id);
-      else setProfile(null);
-    });
-
     return () => {
-      subscription.unsubscribe();
       clearTimeout(safetyTimeout);
     };
-  }, []);
+  }, [user]);
 
   // Auto-slide effect for hero banner (7 seconds)
   useEffect(() => {
@@ -285,59 +286,6 @@ const Home: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('meadow_cart', JSON.stringify(cart));
   }, [cart]);
-
-  const checkUser = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-        setCustomerInfo({ 
-          name: session.user.user_metadata?.full_name || '', 
-          email: session.user.email || '' 
-        });
-      }
-    } catch (err) {
-      console.error("Auth check failed", err);
-    }
-  };
-
-  const fetchProfile = async (userId: string, retryCount = 0) => {
-    try {
-      const profilePromise = supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-      
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('TIMEOUT')), 20000)
-      );
-
-      const { data, error } = await Promise.race([profilePromise, timeoutPromise]) as any;
-
-      if (error) {
-        if (retryCount < 1 && (error.status === 502 || error.status === 504 || error.status === 0)) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          return fetchProfile(userId, retryCount + 1);
-        }
-        console.error("Profile fetch failed", error);
-        return;
-      }
-
-      if (data) setProfile(data);
-    } catch (err: any) {
-      if (err.message === 'TIMEOUT') {
-        if (retryCount < 1) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          return fetchProfile(userId, retryCount + 1);
-        }
-        console.error("Profile fetch timed out in Home.tsx");
-      } else {
-        console.error("Profile fetch failed in Home.tsx", err);
-      }
-    }
-  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -574,9 +522,9 @@ const Home: React.FC = () => {
                           <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-slate-900">Contact Us</span>
                         </div>
                         <div className="flex flex-col items-start gap-3 pl-2 md:pl-4 border-l-2 border-slate-100">
-                           <a href="#" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
+                           <Link to="/contact" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
                               Inquiry Form <ArrowUpRight size={16} className="opacity-0 group-hover:opacity-100" />
-                           </a>
+                           </Link>
                            <Link to="/our-stores" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-blue-500 hover:text-blue-700 transition-colors flex items-center gap-2">
                               Our Store <ArrowUpRight size={16} />
                            </Link>
@@ -999,6 +947,124 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* PRE-BUILT SYSTEMS Section */}
+      <section className="bg-slate-50 py-20 md:py-32 overflow-hidden border-t border-slate-100">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-10">
+          <div className="flex flex-col lg:flex-row gap-16 items-start">
+            {/* Left Content */}
+            <div className="lg:w-1/4 flex flex-col items-start pt-10">
+              <span className="text-xl font-bold text-rose-600 mb-6 uppercase tracking-tight">Ready to Run</span>
+              <h2 className="text-6xl md:text-[5rem] font-black text-slate-900 leading-[0.85] tracking-tightest uppercase mb-8">
+                PRE-BUILT <br /> SYSTEMS
+              </h2>
+              <p className="text-slate-500 font-bold mb-12 uppercase tracking-widest text-sm">Professional Packages</p>
+              <Link 
+                to="/prebuilt" 
+                className="px-10 py-4 bg-white border border-slate-200 text-slate-900 rounded-full font-black text-xs uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-lg"
+              >
+                View all
+              </Link>
+            </div>
+
+            {/* Right Slider */}
+            <div className="lg:w-3/4 w-full">
+              <div id="prebuilt-container" className="flex gap-6 md:gap-10 overflow-x-auto pb-12 scrollbar-hide snap-x snap-mandatory">
+                {[
+                  {
+                    id: "unbeatable-rtx-combo",
+                    title: "UNBEATABLE RTX COMBO",
+                    cpu: "RYZEN 5 7500F",
+                    gpu: "GEFORCE RTX 3050",
+                    image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80",
+                    specs: ["AMD Ryzen 5 7500F", "NVIDIA RTX 3050", "16GB DDR5 RAM", "1TB Gen4 SSD"]
+                  },
+                  {
+                    id: "level-0-amd",
+                    title: "LEVEL 0 AMD",
+                    cpu: "RYZEN 5 7500F",
+                    gpu: "GEFORCE RTX 5050",
+                    image: "https://images.unsplash.com/photo-1591488320449-011701bb6704?auto=format&fit=crop&q=80",
+                    specs: ["AMD Ryzen 5 7500F", "NVIDIA RTX 5050", "16GB DDR5 RAM", "1TB Gen4 SSD"]
+                  },
+                  {
+                    id: "level-1-amd",
+                    title: "LEVEL 1 AMD",
+                    cpu: "RYZEN 5 7500F",
+                    gpu: "GEFORCE RTX 5060",
+                    image: "https://images.unsplash.com/photo-1547082299-de196ea013d6?auto=format&fit=crop&q=80",
+                    specs: ["AMD Ryzen 5 7500F", "NVIDIA RTX 5060", "16GB DDR5 RAM", "1TB Gen4 SSD"]
+                  },
+                  {
+                    id: "level-1-intel",
+                    title: "LEVEL 1 INTEL",
+                    cpu: "I5 14400F",
+                    gpu: "GEFORCE RTX 5060",
+                    image: "https://images.unsplash.com/photo-1593640408182-31c70c8268f5?auto=format&fit=crop&q=80",
+                    specs: ["Intel Core i5 14400F", "NVIDIA RTX 5060", "16GB DDR5 RAM", "1TB Gen4 SSD"]
+                  }
+                ].map((item, i) => (
+                  <Link 
+                    key={i} 
+                    to="/prebuilt"
+                    className="flex-shrink-0 !w-[18.4117647059rem] h-[480px] rounded-[2rem] md:rounded-[2.5rem] bg-white overflow-hidden shadow-2xl border border-slate-100 flex flex-col snap-start group"
+                  >
+                    <div className="p-6 pt-8 text-center shrink-0">
+                       <h3 className="text-lg font-black text-slate-900 tracking-tighter uppercase mb-2 group-hover:text-rose-600 transition-colors">{item.title}</h3>
+                       <p className="text-[9px] font-black tracking-[0.2em] text-slate-400">
+                         <span className="text-rose-600">{item.cpu}</span> <span className="mx-2 opacity-50">+</span> <span className="text-emerald-500">{item.gpu}</span>
+                       </p>
+                    </div>
+                    <div className="flex-1 min-h-0 relative overflow-hidden mx-4 rounded-[1.5rem] border border-slate-50">
+                      <img src={item.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s]" alt={item.title} />
+                      <div className="absolute top-4 right-4">
+                        <span className="px-2 py-1 bg-blue-600 backdrop-blur-md rounded-lg text-[8px] font-black text-white uppercase tracking-widest flex items-center gap-1.5">
+                          <Zap size={8} fill="currentColor" /> WIFI 7
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-6 flex flex-col gap-4 bg-white shrink-0 mt-auto">
+                      <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">View all</span>
+                         <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center group-hover:bg-rose-600 transition-colors">
+                            <ArrowRight size={16} />
+                         </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Navigation and Progress */}
+              <div className="flex items-center justify-between pt-8 border-t border-slate-200">
+                <div className="flex-1 max-w-[70%] h-px bg-slate-200 relative">
+                   <div className="absolute inset-y-0 left-0 w-1/4 bg-slate-900 h-px"></div>
+                </div>
+                <div className="flex gap-4 ml-8">
+                  <button 
+                    onClick={() => {
+                        const container = document.getElementById('prebuilt-container');
+                        if (container) container.scrollBy({ left: -400, behavior: 'smooth' });
+                    }}
+                    className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all bg-white shadow-sm"
+                  >
+                    <ChevronLeft size={24} />
+                  </button>
+                  <button 
+                    onClick={() => {
+                        const container = document.getElementById('prebuilt-container');
+                        if (container) container.scrollBy({ left: 400, behavior: 'smooth' });
+                    }}
+                    className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all bg-white shadow-sm"
+                  >
+                    <ChevronRight size={24} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Laptop Section */}
       {laptopProducts.length > 0 && (
         <section className="py-6 md:py-10 bg-slate-50 border-t border-slate-100">
@@ -1236,96 +1302,7 @@ const Home: React.FC = () => {
         </div>
       )}
 
-      {/* Editorial Footer */}
-      <footer className="bg-[#F9FAFB] pt-24 pb-12 border-t border-slate-100">
-        <div className="max-w-[1440px] mx-auto px-4 md:px-10">
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-12 mb-20">
-            <div className="col-span-1 lg:col-span-1">
-              <img src={LOGO_URL} className="h-16 w-auto mb-8 grayscale opacity-50" alt="Meadow" />
-              <p className="text-xs text-slate-400 font-medium leading-relaxed max-w-xs mb-8">
-                Premium hardware distribution and bespoke computational engineering. Built for the elite.
-              </p>
-              
-              <div className="space-y-8">
-                <div>
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-4 text-left">Payment Method</h4>
-                  <div className="flex flex-wrap gap-2">
-                    <img src="https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/fpx.svg" className="h-8 w-auto px-2 py-1 bg-white rounded border border-slate-100 object-contain" alt="FPX" />
-                    <img src="https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/master.svg" className="h-8 w-auto px-2 py-1 bg-white rounded border border-slate-100 object-contain" alt="Mastercard" />
-                    <img src="https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/visa.svg" className="h-8 w-auto px-2 py-1 bg-white rounded border border-slate-100 object-contain" alt="VISA" />
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-4 text-left">Logistic Services</h4>
-                  <div className="flex flex-wrap gap-2">
-                    <img src="https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/gdex.svg" className="h-8 w-auto px-2 py-1 bg-white rounded border border-slate-100 object-contain" alt="GDEX" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div>
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Company</h4>
-              <ul className="space-y-4">
-                <li><Link to="/our-story" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Our Story</Link></li>
-                <li><Link to="/our-stores" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Our Store</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Shop With Us</h4>
-              <ul className="space-y-4">
-                <li><Link to="/buildpc" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">BUILD YOUR OWN PC</Link></li>
-                <li><Link to="/products?category=Desktop" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Desktop</Link></li>
-                <li><Link to="/products?category=Display" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Display</Link></li>
-                <li><Link to="/products?category=Home+%26+Office" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Home & Office</Link></li>
-                <li><Link to="/products?category=Laptop" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Laptop</Link></li>
-                <li><Link to="/products?category=Networking" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Networking</Link></li>
-                <li><Link to="/products?category=PC+Components" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">PC Component</Link></li>
-                <li><Link to="/products?category=Peripherals" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Peripherals</Link></li>
-                <li><Link to="/products?category=Smart+Home" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Smart Home</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Support</h4>
-              <ul className="space-y-4">
-                <li><span className="text-[11px] font-nav text-slate-400 uppercase tracking-widest cursor-default opacity-50">Track Your Order</span></li>
-                <li><span className="text-[11px] font-nav text-slate-400 uppercase tracking-widest cursor-default opacity-50">Warranty</span></li>
-                <li><Link to="/terms" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Terms & Conditions</Link></li>
-                <li><Link to="/product-policy" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Product Policy</Link></li>
-                <li><button onClick={() => openMenu('contact')} className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Contact Us</button></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Newsletter</h4>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6">Join the Registry for updates.</p>
-              <form className="flex gap-2 mb-8">
-                <input type="email" placeholder="Email" className="flex-1 bg-white border border-slate-100 rounded-xl px-4 py-3 text-xs outline-none focus:border-slate-900 transition-colors" />
-                <button className="bg-slate-900 text-white p-3 rounded-xl hover:bg-black transition-colors"><ArrowRight size={16} /></button>
-              </form>
-              <div className="flex items-center gap-4">
-                <a href="#" className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm">
-                  <Facebook size={18} />
-                </a>
-                <a href="#" className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm">
-                  <Instagram size={18} />
-                </a>
-                <a href="#" className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm">
-                  <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-                    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.13-1.47V18.77a6.738 6.738 0 0 1-6.76 6.76 6.738 6.738 0 0 1-6.76-6.76 6.738 6.738 0 0 1 6.76-6.76c.42-.02.84.03 1.25.12v4.03a2.71 2.71 0 0 0-1.25-.12 2.728 2.728 0 0 0-2.72 2.73 2.728 2.728 0 0 0 2.72 2.73 2.728 2.728 0 0 0 2.73-2.73V.02z"/>
-                  </svg>
-                </a>
-                <a href="#" className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm">
-                  <img src="https://illuminatelabs.space/assets/xhs_logo.png" className="w-5 h-5 object-contain" referrerPolicy="no-referrer" alt="Xiaohongshu" />
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8 pt-12 border-t border-slate-200/50">
-             <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300 text-center">© {new Date().getFullYear()} Meadow SDN BHD — ALL RIGHTS RESERVED</p>
-             <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300 italic">Core Operational Status: Nominal</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

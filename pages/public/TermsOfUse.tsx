@@ -42,7 +42,7 @@ const TermsOfUse: React.FC = () => {
                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">Legal Framework</span>
               </div>
               <h1 className="text-5xl md:text-8xl font-black text-slate-900 tracking-tighter uppercase leading-[0.85] mb-8">
-                Terms of <br /> Use.
+                Warranty.
               </h1>
               <p className="text-sm md:text-lg text-slate-500 font-medium leading-relaxed">
                 Last Updated: October 1, 2024. Please read these terms carefully before using our services.

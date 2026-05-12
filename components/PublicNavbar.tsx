@@ -23,13 +23,15 @@ import {
   Laptop,
   ShieldCheck
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { Category, SubCategory, Brand, Profile } from '../types';
 
+import { useAuth } from '../lib/AuthContext';
+
 interface PublicNavbarProps {
-  user: any;
-  profile: Profile | null;
+  user?: any;
+  profile?: Profile | null;
   cartCount: number;
   onOpenAuth: () => void;
   onOpenCart: () => void;
@@ -65,43 +67,29 @@ const getIcon = (name: string) => {
 };
 
 const PublicNavbar: React.FC<PublicNavbarProps> = ({ 
-  user, 
-  profile, 
+  user: userProp, 
+  profile: profileProp, 
   cartCount, 
   onOpenAuth, 
   onOpenCart,
   scrolled 
 }) => {
   const navigate = useNavigate();
+  const { user: authUser, profile: authProfile } = useAuth();
+  
+  const user = userProp || authUser;
+  const profile = profileProp || authProfile;
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [activeMenu, setActiveMenu] = useState<'category' | 'brand' | null>(null);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [headerSearch, setHeaderSearch] = useState('');
-  const [closeTimeout, setCloseTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  const handleMouseEnter = (menu: 'category' | 'brand') => {
-    if (closeTimeout) {
-      clearTimeout(closeTimeout);
-      setCloseTimeout(null);
-    }
-    setActiveMenu(menu);
-  };
-
-  const handleMouseLeave = () => {
-    const timeout = setTimeout(() => {
-      setActiveMenu(null);
-      setHoveredCategory(null);
-    }, 500); // Increased to 500ms for better stability
-    setCloseTimeout(timeout);
-  };
-
-  const handleMenuMouseEnter = () => {
-    if (closeTimeout) {
-      clearTimeout(closeTimeout);
-      setCloseTimeout(null);
-    }
+  const toggleMenu = (menu: 'category' | 'brand') => {
+    setActiveMenu(prev => prev === menu ? null : menu);
+    if (activeMenu === menu) setHoveredCategory(null);
   };
 
   useEffect(() => {
@@ -154,8 +142,6 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
         className={`fixed left-0 right-0 z-[100] px-4 md:px-10 transition-all duration-500 top-0 pointer-events-none 
           ${scrolled ? 'py-3' : 'py-5'} 
           ${scrolled || activeMenu ? 'bg-white/95 backdrop-blur-2xl border-b border-slate-100 shadow-lg pointer-events-auto' : ''}`}
-        onMouseEnter={handleMenuMouseEnter}
-        onMouseLeave={handleMouseLeave}
       >
         <div className="max-w-[1440px] mx-auto flex items-center justify-between pointer-events-auto">
           <Link to="/" className="flex items-center group">
@@ -174,28 +160,22 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
               />
             </form>
             
-            <div 
-              className="relative py-2 group/trigger"
-              onMouseEnter={() => handleMouseEnter('category')}
-              onMouseLeave={handleMouseLeave}
-            >
-              <button className={`text-sm font-nav uppercase tracking-[0.25em] transition-all ${activeMenu === 'category' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-900'}`}>
+            <div className="relative py-2 group/trigger">
+              <button 
+                onClick={() => toggleMenu('category')}
+                className={`text-sm font-nav uppercase tracking-[0.25em] transition-all ${activeMenu === 'category' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-900'}`}
+              >
                 Category
               </button>
-              {/* Hover Bridge - Wider and taller for better hit area */}
-              <div className="absolute top-full -left-4 -right-4 h-12 pointer-events-auto" />
             </div>
 
-            <div 
-              className="relative py-2 group/trigger"
-              onMouseEnter={() => handleMouseEnter('brand')}
-              onMouseLeave={handleMouseLeave}
-            >
-              <button className={`text-sm font-nav uppercase tracking-[0.25em] transition-all ${activeMenu === 'brand' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-900'}`}>
+            <div className="relative py-2 group/trigger">
+              <button 
+                onClick={() => toggleMenu('brand')}
+                className={`text-sm font-nav uppercase tracking-[0.25em] transition-all ${activeMenu === 'brand' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-900'}`}
+              >
                 Brand
               </button>
-              {/* Hover Bridge - Wider and taller for better hit area */}
-              <div className="absolute top-full -left-4 -right-4 h-12 pointer-events-auto" />
             </div>
 
             <Link 
@@ -241,8 +221,6 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               className="absolute left-0 right-0 top-full bg-white/95 backdrop-blur-3xl border-b border-slate-100 shadow-2xl pointer-events-auto overflow-hidden"
-              onMouseEnter={handleMenuMouseEnter}
-              onMouseLeave={handleMouseLeave}
             >
               <div className="max-w-[1440px] mx-auto">
                 {activeMenu === 'category' && (
@@ -254,7 +232,7 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
                         {categories.map((cat) => (
                           <div 
                             key={cat.id}
-                            onMouseEnter={() => setHoveredCategory(cat.id)}
+                            onClick={() => setHoveredCategory(prev => prev === cat.id ? null : cat.id)}
                             className={`group flex items-center justify-between p-3 rounded-xl transition-all cursor-pointer ${hoveredCategory === cat.id ? 'bg-slate-900 text-white' : 'hover:bg-slate-50 text-slate-600'}`}
                           >
                             <div className="flex items-center gap-3">

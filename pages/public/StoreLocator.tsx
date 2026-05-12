@@ -101,8 +101,11 @@ const STORES: ITStore[] = [
   }
 ];
 
+import { useAuth } from '../../lib/AuthContext';
+
 const StoreLocator: React.FC = () => {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('All Types');
   const [selectedStore, setSelectedStore] = useState<ITStore>(STORES[0]);
@@ -112,8 +115,6 @@ const StoreLocator: React.FC = () => {
   const [isFullMenuOpen, setIsFullMenuOpen] = useState(false);
   const [menuMode, setMenuMode] = useState<MenuMode>('all');
   const [headerSearch, setHeaderSearch] = useState('');
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -127,38 +128,13 @@ const StoreLocator: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    checkUser();
     const savedCart = localStorage.getItem('meadow_cart');
     if (savedCart) setCart(JSON.parse(savedCart));
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-      if (session?.user) fetchProfile(session.user.id);
-      else setProfile(null);
-    });
-
-    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
     localStorage.setItem('meadow_cart', JSON.stringify(cart));
   }, [cart]);
-
-  const checkUser = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    setUser(session?.user || null);
-    if (session?.user) fetchProfile(session.user.id);
-  };
-
-  const fetchProfile = async (userId: string) => {
-    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
-    if (data) setProfile(data);
-  };
-
-  const openMenu = (mode: MenuMode) => {
-    setMenuMode(mode);
-    setIsFullMenuOpen(true);
-  };
 
   const handleHeaderSearch = (e: React.FormEvent) => {
     e.preventDefault();

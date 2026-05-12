@@ -69,8 +69,11 @@ const getIcon = (name: string) => {
   return <Layers size={24} />; // Default icon
 };
 
+import { useAuth } from '../../lib/AuthContext';
+
 const Categories: React.FC = () => {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,8 +86,6 @@ const Categories: React.FC = () => {
   const [headerSearch, setHeaderSearch] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -97,33 +98,13 @@ const Categories: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-    checkUser();
     const savedCart = localStorage.getItem('meadow_cart');
     if (savedCart) setCart(JSON.parse(savedCart));
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-      if (session?.user) fetchProfile(session.user.id);
-      else setProfile(null);
-    });
-
-    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
     localStorage.setItem('meadow_cart', JSON.stringify(cart));
   }, [cart]);
-
-  const checkUser = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    setUser(session?.user || null);
-    if (session?.user) fetchProfile(session.user.id);
-  };
-
-  const fetchProfile = async (userId: string) => {
-    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
-    if (data) setProfile(data);
-  };
 
   const fetchData = async () => {
     setLoading(true);

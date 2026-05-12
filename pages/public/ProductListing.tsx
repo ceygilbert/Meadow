@@ -22,8 +22,9 @@ import {
   Instagram,
   ArrowRight
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import PublicNavbar from '../../components/PublicNavbar';
+import Breadcrumbs from '../../components/Breadcrumbs';
 import { supabase } from '../../lib/supabase';
 import { Product, Category, SubCategory, Brand, Profile } from '../../types';
 
@@ -33,9 +34,12 @@ interface CartItem extends Product {
   quantity: number;
 }
 
+import { useAuth } from '../../lib/AuthContext';
+
 const ProductListing: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
   
   const categorySlug = searchParams.get('category');
   const subcategorySlug = searchParams.get('subcategory');
@@ -59,8 +63,6 @@ const ProductListing: React.FC = () => {
   const [headerSearch, setHeaderSearch] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -73,21 +75,12 @@ const ProductListing: React.FC = () => {
 
   useEffect(() => {
     fetchInitialData();
-    checkUser();
     const savedCart = localStorage.getItem('meadow_cart');
     if (savedCart) setCart(JSON.parse(savedCart));
     
     // Update search query if it changes in URL
     const searchFromUrl = searchParams.get('search');
     if (searchFromUrl) setSearchQuery(searchFromUrl);
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-      if (session?.user) fetchProfile(session.user.id);
-      else setProfile(null);
-    });
-
-    return () => subscription.unsubscribe();
   }, [searchParams]);
 
   useEffect(() => {
@@ -115,53 +108,6 @@ const ProductListing: React.FC = () => {
       if (brandRes.data) setBrands(brandRes.data);
     } catch (err) {
       console.error('Error fetching initial data:', err);
-    }
-  };
-
-  const checkUser = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-      if (session?.user) fetchProfile(session.user.id);
-    } catch (err) {
-      console.error("Auth check failed", err);
-    }
-  };
-
-  const fetchProfile = async (userId: string, retryCount = 0) => {
-    try {
-      const profilePromise = supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-      
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('TIMEOUT')), 20000)
-      );
-
-      const { data, error } = await Promise.race([profilePromise, timeoutPromise]) as any;
-
-      if (error) {
-        if (retryCount < 1 && (error.status === 502 || error.status === 504 || error.status === 0)) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          return fetchProfile(userId, retryCount + 1);
-        }
-        console.error("Profile fetch failed", error);
-        return;
-      }
-
-      if (data) setProfile(data);
-    } catch (err: any) {
-      if (err.message === 'TIMEOUT') {
-        if (retryCount < 1) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          return fetchProfile(userId, retryCount + 1);
-        }
-        console.error("Profile fetch timed out in ProductListing.tsx");
-      } else {
-        console.error("Profile fetch failed in ProductListing.tsx", err);
-      }
     }
   };
 
@@ -268,17 +214,13 @@ const ProductListing: React.FC = () => {
       <main className="pt-24 md:pt-32 pb-20 px-4 md:px-10 max-w-[1440px] mx-auto">
         {/* Breadcrumbs & Title */}
         <div className="mb-12">
-          <div className="flex items-center gap-3 text-xs md:text-sm font-black uppercase tracking-[0.3em] text-slate-300 mb-6">
-            <Link to="/categories" className="hover:text-slate-900 transition-colors">All Categories</Link>
-            <ChevronDown className="-rotate-90" size={12} />
-            <span className="text-slate-900">{currentCategory?.name}</span>
-            {currentSubCategory && (
-              <>
-                <ChevronDown className="-rotate-90" size={12} />
-                <span className="text-blue-500">{currentSubCategory.name}</span>
-              </>
-            )}
-          </div>
+          <Breadcrumbs 
+            items={[
+              { label: 'All Products', path: '/products' },
+              ...(currentCategory ? [{ label: currentCategory.name, path: `/products?category=${currentCategory.slug}` }] : []),
+              ...(currentSubCategory ? [{ label: currentSubCategory.name, active: true }] : [])
+            ]}
+          />
           <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter uppercase leading-none">
             {currentSubCategory?.name || currentCategory?.name || 'All Products'}
           </h1>
@@ -620,10 +562,9 @@ const ProductListing: React.FC = () => {
             <div>
               <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Support</h4>
               <ul className="space-y-4">
-                <li><span className="text-[11px] font-nav text-slate-400 uppercase tracking-widest cursor-default opacity-50">Track Your Order</span></li>
-                <li><span className="text-[11px] font-nav text-slate-400 uppercase tracking-widest cursor-default opacity-50">Warranty</span></li>
-                <li><Link to="/terms" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Terms & Conditions</Link></li>
-                <li><Link to="/product-policy" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Product Policy</Link></li>
+                <li><Link to="/track-order" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Track Your Order</Link></li>
+                <li><Link to="/warranty" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Warranty</Link></li>
+                <li><Link to="/product-policy" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Terms & Conditions</Link></li>
                 <li><Link to="/" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Contact Us</Link></li>
               </ul>
             </div>

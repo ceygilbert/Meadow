@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { 
   Cpu, 
   Zap, 
@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import StudioNavbar from '../../components/StudioNavbar';
+import Breadcrumbs from '../../components/Breadcrumbs';
 
 const Workstation: React.FC = () => {
   const components = [
@@ -112,6 +113,10 @@ const Workstation: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#050607] text-white">
       <StudioNavbar />
+      
+      <div className="max-w-7xl mx-auto px-8 pt-32">
+        <Breadcrumbs currentPage="Workstation" />
+      </div>
 
       {/* Hero Section */}
       <section className="relative h-screen flex items-center overflow-hidden">
