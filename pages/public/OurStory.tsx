@@ -61,10 +61,12 @@ const OurStory: React.FC = () => {
               >
                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#666] mb-8 block">Our Story</span>
                  <h1 className="text-4xl md:text-6xl font-light text-[#333] leading-tight mb-12">
-                   A pursuit of excellence in computational architecture.
-                 </h1>
+                    30 Years as Johor Leading Retailers and Distributors                 </h1>
+                 <p className="text-md md:text-lg text-[#666] leading-relaxed font-light mb-6">
+                   Founded in 1995, Meadow has been serving customers across Johor for more than 30 years through IT distribution, wholesale and multi-brand retail. Over the years, we have grown alongside the industry while building trusted relationships with leading technology brands and the customers we serve.
+                 </p>
                  <p className="text-md md:text-lg text-[#666] leading-relaxed font-light mb-8">
-                   Established in Johor, Meadow was born from a singular vision: to bridge the gap between premium raw hardware and the sophisticated needs of specialized engineering.
+                   Today, that foundation continues to shape our growth as we expand our retail presence, strengthen our customer support services, and make technology products more accessible, reliable and easier to shop with confidence for our customers.
                  </p>
               </motion.div>
            </div>

@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { 
   ShoppingCart, 
@@ -24,7 +24,9 @@ import {
   Search,
   User as UserIcon,
   Facebook,
-  Instagram
+  Instagram,
+  Eye,
+  Package
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import Breadcrumbs from '../../components/Breadcrumbs';
@@ -52,6 +54,41 @@ const ProductDetails: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
+  const [selectedColor, setSelectedColor] = useState('');
+  const [viewingCount, setViewingCount] = useState(() => Math.floor(Math.random() * 21) + 12);
+
+  const availableColors = useMemo(() => {
+    if (!product) return [];
+    const pAny = product as any;
+    if (Array.isArray(pAny.colors) && pAny.colors.length > 0) return pAny.colors;
+    const colorSpec = product.specs?.Color || product.specs?.color || product.specs?.Colors || product.specs?.colors;
+    if (colorSpec && typeof colorSpec === 'string' && colorSpec.trim()) {
+      return colorSpec.split(',').map((c: string) => c.trim()).filter(Boolean);
+    }
+    return [];
+  }, [product]);
+
+  useEffect(() => {
+    if (availableColors.length > 0) {
+      setSelectedColor(availableColors[0]);
+    } else {
+      setSelectedColor('');
+    }
+  }, [availableColors]);
+
+  useEffect(() => {
+    setViewingCount(Math.floor(Math.random() * 21) + 12);
+  }, [slug]);
+
+  const getEstimatedDelivery = () => {
+    const start = new Date();
+    start.setDate(start.getDate() + 4);
+    const end = new Date();
+    end.setDate(end.getDate() + 7);
+    const startStr = start.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
+    const endStr = end.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
+    return `${startStr} - ${endStr}`;
+  };
 
   // Shared UI States (Synced with Home)
   const [isFullMenuOpen, setIsFullMenuOpen] = useState(false);
@@ -169,7 +206,7 @@ const ProductDetails: React.FC = () => {
   const finalPrice = calculateDiscountedPrice(product.price, product.discount_type, product.discount_value);
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden">
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-red-100 selection:text-red-900 overflow-x-hidden">
       
       {/* Full-Screen Navigation Menu Overlay (Synced with Home) */}
       <div className={`fixed inset-0 z-[500] bg-white transition-all duration-700 ease-[cubic-bezier(0.85,0,0.15,1)] ${isFullMenuOpen ? 'translate-y-0' : '-translate-y-full'}`}>
@@ -191,8 +228,8 @@ const ProductDetails: React.FC = () => {
                       <ArrowUpRight className="text-slate-200 group-hover:text-slate-900 transition-colors" size={32} />
                    </Link>
                    <Link to="/customised" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6">
-                      <span className="text-4xl md:text-7xl font-nav uppercase tracking-tighter text-rose-600 group-hover:italic transition-all">Build Your Own PC</span>
-                      <Zap className="text-rose-500 animate-pulse" size={32} />
+                      <span className="text-4xl md:text-7xl font-nav uppercase tracking-tighter text-red-600 group-hover:italic transition-all">Build Your Own PC</span>
+                      <Zap className="text-red-600 animate-pulse" size={32} />
                    </Link>
                    <Link to="/our-stores" onClick={() => setIsFullMenuOpen(false)} className="group flex items-center gap-6">
                       <span className="text-4xl md:text-7xl font-nav uppercase tracking-tighter text-slate-900">Our Store</span>
@@ -226,9 +263,9 @@ const ProductDetails: React.FC = () => {
             <Link to="/categories" className="text-sm font-nav uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors">Brand</Link>
             <Link 
               to="/customised" 
-              className="px-8 py-4 bg-slate-900 text-white text-xs font-nav uppercase tracking-[0.3em] rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-slate-900/20 hover:shadow-rose-600/30 flex items-center gap-2"
+              className="px-8 py-4 bg-slate-900 text-white text-xs font-nav uppercase tracking-[0.3em] rounded-full hover:bg-red-600 transition-all shadow-lg shadow-slate-900/20 hover:shadow-red-600/30 flex items-center gap-2"
             >
-              <Zap size={18} className="text-rose-400" />
+              <Zap size={18} className="text-red-500" />
               Build Your Own PC
             </Link>
           </div>
@@ -245,7 +282,7 @@ const ProductDetails: React.FC = () => {
             )}
             <button onClick={() => setIsCartOpen(true)} className="w-14 h-14 md:w-16 md:h-16 bg-slate-900 text-white rounded-full flex items-center justify-center relative shadow-xl hover:scale-105 transition-all">
               <ShoppingCart size={22} />
-              {cart.length > 0 && <span className="absolute -top-1 -right-1 w-6 h-6 md:w-7 md:h-7 bg-blue-500 text-white text-[10px] md:text-xs font-black flex items-center justify-center rounded-full border-2 border-white">{cart.length}</span>}
+              {cart.length > 0 && <span className="absolute -top-1 -right-1 w-6 h-6 md:w-7 md:h-7 bg-red-600 text-white text-[10px] md:text-xs font-black flex items-center justify-center rounded-full border-2 border-white">{cart.length}</span>}
             </button>
           </div>
         </div>
@@ -278,7 +315,7 @@ const ProductDetails: React.FC = () => {
                 </div>
                 {product.discount_type !== 'none' && (
                   <div className="absolute top-6 right-6 md:top-8 md:right-8">
-                     <div className="w-12 h-12 md:w-14 md:h-14 bg-blue-600 text-white rounded-full flex items-center justify-center font-black text-[10px] uppercase tracking-widest shadow-xl rotate-12">
+                     <div className="w-12 h-12 md:w-14 md:h-14 bg-red-600 text-white rounded-full flex items-center justify-center font-black text-[10px] uppercase tracking-widest shadow-xl rotate-12">
                         Sale
                      </div>
                   </div>
@@ -295,55 +332,84 @@ const ProductDetails: React.FC = () => {
           </div>
 
           {/* Product Info (Right - 6 Columns) */}
-          <div className="lg:col-span-6 space-y-12 md:sticky md:top-48 animate-in fade-in slide-in-from-right duration-700">
-             <div className="space-y-4">
+          <div className="lg:col-span-6 space-y-6 md:sticky md:top-36 animate-in fade-in slide-in-from-right duration-700">
+             
+             {/* Currently viewing banner */}
+             <div className="flex items-center gap-2.5 text-sm font-semibold text-slate-800">
+                <Eye size={20} className="text-slate-900 shrink-0" />
+                <span>Currently {viewingCount} people are viewing this product.</span>
+             </div>
+
+             {/* Title, Category & Price */}
+             <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                   <span className="text-[11px] font-black uppercase tracking-[0.4em] text-blue-600">{category?.name || 'Hardware'}</span>
+                   <span className="text-[11px] font-black uppercase tracking-[0.3em] text-red-600">{category?.name || 'Hardware'}</span>
                    <div className="w-1 h-1 bg-slate-200 rounded-full"></div>
-                   <span className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-400">{brand?.name || 'Meadow IT'}</span>
+                   <span className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400">{brand?.name || 'Meadow IT'}</span>
                 </div>
-                <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight uppercase leading-[1.2]">
+                <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase leading-[1.2]">
                    {product.name}
                 </h1>
-                <div className="flex items-center gap-2 pt-2">
-                   {[...Array(5)].map((_, i) => <Star key={i} size={14} className="fill-blue-500 text-blue-500" />)}
-                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-2">24 Verified Reviews</span>
-                </div>
-             </div>
-
-             <div className="space-y-8 pb-12 border-b border-slate-100">
-                <div className="flex items-end gap-4">
-                   <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Retail Price</span>
-                      <span className="text-2xl lg:text-2xl font-black text-slate-900 tracking-tight">RM{finalPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                   </div>
+                <div className="flex items-baseline gap-4 pt-1">
+                   <span className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">RM{finalPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                    {product.discount_type !== 'none' && (
-                     <span className="text-lg font-bold text-slate-300 line-through mb-1">RM{product.price.toLocaleString()}</span>
+                     <span className="text-lg font-bold text-slate-300 line-through">RM{product.price.toLocaleString()}</span>
                    )}
                 </div>
-                
-                <p className="text-sm text-slate-500 font-medium leading-relaxed">
-                   {product.description || "Unparalleled performance meets precise engineering. Engineered for the modern professional seeking reliability and power in every deployment."}
-                </p>
              </div>
 
-             <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                   <div className="flex items-center bg-slate-50 rounded-xl px-3 py-2 gap-4 border border-slate-100 shrink-0">
-                      <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-slate-400 hover:text-slate-900 transition-colors"><Minus size={16} /></button>
-                      <span className="font-black text-base min-w-[20px] text-center">{quantity}</span>
-                      <button onClick={() => setQuantity(Math.min(product.stock, quantity + 1))} className="text-slate-400 hover:text-slate-900 transition-colors"><Plus size={16} /></button>
+             {/* Description summary */}
+             <p className="text-sm text-slate-600 font-medium leading-relaxed">
+                {product.description || `${product.name} features high-performance components, optimized thermal cooling, and precision engineering. Ideal for gaming, professional workstations, and high-performance custom desktop systems.`}
+             </p>
+
+             {/* Rating */}
+             <div className="flex items-center gap-2 pt-1">
+                <div className="flex text-amber-400 gap-0.5">
+                   {[...Array(5)].map((_, i) => (
+                     <Star key={i} size={16} className="text-amber-400 fill-amber-400/20" />
+                   ))}
+                </div>
+                <span className="text-sm font-semibold text-slate-700 ml-1">No reviews</span>
+             </div>
+
+             {/* Color options - only shown if product has color variants */}
+             {availableColors.length > 0 && (
+                <div className="space-y-2.5 pt-2">
+                   <label className="text-sm font-bold text-slate-900 block">Color:</label>
+                   <div className="flex items-center gap-3">
+                      {availableColors.map((color: string) => (
+                         <button
+                           key={color}
+                           onClick={() => setSelectedColor(color)}
+                           className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all border-2 ${
+                             selectedColor === color 
+                               ? 'border-slate-900 bg-white text-slate-900 shadow-sm' 
+                               : 'border-slate-200/80 bg-white text-slate-600 hover:border-slate-400'
+                           }`}
+                         >
+                            {color}
+                         </button>
+                      ))}
+                   </div>
+                </div>
+             )}
+
+             {/* Quantity & Action Buttons */}
+             <div className="space-y-3 pt-2">
+                <label className="text-sm font-bold text-slate-900 block">Quantity</label>
+                <div className="flex items-center gap-3">
+                   <div className="flex items-center bg-slate-100 rounded-xl px-4 py-3 justify-between w-32 border border-slate-200/60 shrink-0">
+                      <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-slate-500 hover:text-slate-900 transition-colors font-bold"><Minus size={16} /></button>
+                      <span className="font-extrabold text-base text-slate-900">{quantity}</span>
+                      <button onClick={() => setQuantity(Math.min(product.stock, quantity + 1))} className="text-slate-500 hover:text-slate-900 transition-colors font-bold"><Plus size={16} /></button>
                    </div>
                    <button 
                      onClick={addToCart}
                      disabled={product.stock <= 0}
-                     className="flex-1 h-11 bg-slate-900 text-white rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-slate-800 transition-all shadow-xl group active:scale-95"
+                     className="flex-1 py-3.5 px-6 border-2 border-slate-900 bg-white rounded-xl font-black text-xs uppercase tracking-widest text-slate-900 hover:bg-slate-900 hover:text-white transition-all shadow-sm active:scale-[0.98] disabled:opacity-50"
                    >
-                     {isAdded ? (
-                       <><CheckCircle size={16} /> Added</>
-                     ) : (
-                       <>Add to cart <div className="w-7 h-7 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white group-hover:text-slate-900 transition-all"><ShoppingCart size={14} /></div></>
-                     )}
+                     {isAdded ? 'ADDED TO CART' : 'ADD TO CART'}
                    </button>
                 </div>
                 
@@ -357,26 +423,37 @@ const ProductDetails: React.FC = () => {
                     navigate('/checkout-light');
                   }}
                   disabled={product.stock <= 0}
-                  className="w-full h-11 bg-blue-600 text-white rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center hover:bg-blue-700 transition-all shadow-xl active:scale-95"
+                  className="w-full py-3.5 px-6 bg-slate-300 text-slate-800 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm active:scale-[0.98] disabled:opacity-50"
                 >
-                  Buy it now
+                  BUY IT NOW
                 </button>
+             </div>
 
-                <div className="grid grid-cols-2 gap-4 pt-4">
-                   <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col gap-4">
-                      <ShieldCheck className="text-blue-600" size={24} />
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Technical Warranty</p>
-                        <p className="text-xs font-bold text-slate-900 mt-1 uppercase">24-Month Logic Protection</p>
-                      </div>
-                   </div>
-                   <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col gap-4">
-                      <Truck className="text-blue-600" size={24} />
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Global Logistics</p>
-                        <p className="text-xs font-bold text-slate-900 mt-1 uppercase">48-Hour Rapid Deploy</p>
-                      </div>
-                   </div>
+             {/* Product Specs Box */}
+             <div className="p-6 bg-slate-100/80 rounded-2xl space-y-3">
+                <div className="grid grid-cols-12 text-sm">
+                   <span className="col-span-4 font-bold text-slate-900">Product Type</span>
+                   <span className="col-span-8 font-bold text-slate-900">{subcategory?.name || category?.name || 'Desktop Chassis'}</span>
+                </div>
+                <div className="grid grid-cols-12 text-sm">
+                   <span className="col-span-4 font-bold text-slate-900">Availability</span>
+                   <span className="col-span-8 font-bold text-emerald-600">{product.stock > 0 ? 'Available' : 'Out of Stock'}</span>
+                </div>
+                <div className="grid grid-cols-12 text-sm">
+                   <span className="col-span-4 font-bold text-slate-900">SKU</span>
+                   <span className="col-span-8 font-bold text-slate-900">{product.specs?.sku || product.specs?.SKU || `CAS-${brand?.name ? brand.name.substring(0,4).toUpperCase() : 'MEAD'}-${product.id.substring(0,8).toUpperCase()}`}</span>
+                </div>
+             </div>
+
+             {/* Logistics & Shipping Info */}
+             <div className="space-y-3 pt-1 text-sm font-bold text-slate-900">
+                <div className="flex items-center gap-3">
+                   <Truck className="w-5 h-5 text-slate-800 shrink-0" />
+                   <span>Estimated Delivery: <span className="font-extrabold text-slate-900">{getEstimatedDelivery()}</span></span>
+                </div>
+                <div className="flex items-center gap-3">
+                   <Package className="w-5 h-5 text-slate-800 shrink-0" />
+                   <span>Free Shipping on West Malaysia for above RM2,500*</span>
                 </div>
              </div>
           </div>
@@ -401,7 +478,7 @@ const ProductDetails: React.FC = () => {
                     { label: 'Acoustic Level', val: 'Zero-Decibel Static', icon: Zap }
                   ].map((spec, i) => (
                     <div key={i} className="flex gap-8 group">
-                       <div className="w-16 h-16 bg-white rounded-2xl shadow-lg border border-slate-100 flex items-center justify-center text-blue-600 group-hover:bg-slate-900 group-hover:text-white transition-all shrink-0">
+                       <div className="w-16 h-16 bg-white rounded-2xl shadow-lg border border-slate-100 flex items-center justify-center text-red-600 group-hover:bg-slate-900 group-hover:text-white transition-all shrink-0">
                           <spec.icon size={28} />
                        </div>
                        <div className="space-y-2">

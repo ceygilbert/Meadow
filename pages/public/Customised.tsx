@@ -9,6 +9,10 @@ import {
   Zap, 
   Monitor, 
   ChevronRight, 
+  ChevronLeft,
+  MapPin,
+  Building2,
+  Sparkles,
   Layers, 
   Diamond, 
   Microchip, 
@@ -29,7 +33,9 @@ import {
   Headphones,
   Settings,
   Download,
-  BadgeCheck
+  BadgeCheck,
+  X,
+  Maximize2
 } from 'lucide-react';
 import StudioNavbar from '../../components/StudioNavbar';
 import WaveGradient from '../../components/WaveGradient';
@@ -39,6 +45,59 @@ const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/pub
 const Customised: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [activeRangeTab, setActiveRangeTab] = useState('originals');
+  const [activeStoreIndex, setActiveStoreIndex] = useState(0);
+  const [selectedPortfolio, setSelectedPortfolio] = useState<{
+    title: string;
+    subtitle: string;
+    description: string;
+    image: string;
+  } | null>(null);
+
+  const signatureStores = [
+    {
+      name: "Larkin Junction Store",
+      shortName: "Larkin Junction",
+      title: "Over 200 Dedicated PC Enthusiasts",
+      subtitle: "Exclusive Custom Build Bay & Testing Hub",
+      address: "Larkin Junction, Jalan Larkin, 80350 Johor Bahru, Johor, Malaysia",
+      phone: "+60 12-789 3321",
+      hours: "10:00 AM - 10:00 PM Daily",
+      image: "https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1400&auto=format&fit=crop",
+      description: "Visit our BRAND NEW Experiential Centre at Larkin Junction for the ULTIMATE custom PC experience. Our experience centre features the unique ability to get a hands-on experience with games, creator applications and AI software on a wide range of hardware, allowing you to learn about and decide on your perfect PC configuration for your needs. Our aim at the experience centre is to take the guesswork out of choosing your ideal components for your PC, by allowing you to try - so you know exactly what to expect from the hardware you select. From testing stations for different graphics cards to processors and even gaming gear, our experience centre is a PC heaven like no other."
+    },
+    {
+      name: "Pelangi Plaza Store",
+      shortName: "Pelangi Plaza",
+      title: "Flagship Custom PC Experience Hub",
+      subtitle: "Precision Assembly Bay & Component Showcase",
+      address: "Plaza Pelangi, Jalan Pelangi, Taman Pelangi, 80400 Johor Bahru, Johor, Malaysia",
+      phone: "+60 12-789 3322",
+      hours: "10:00 AM - 10:00 PM Daily",
+      image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1400&auto=format&fit=crop",
+      description: "Visit our flagship Experiential Centre at Pelangi Plaza for a comprehensive custom PC building lounge. Featuring live stress-testing bays, custom liquid loop displays, and direct 1-on-1 consultations with our senior hardware technicians. Test processors, graphics cards, and high-refresh monitors on-site to build your personalized gaming or workstation system with absolute confidence."
+    }
+  ];
+
+  const portfolioItems = [
+    {
+      title: "Mod-3 PC",
+      subtitle: "Alien-inspired",
+      image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1200&auto=format&fit=crop",
+      description: "This case is an impressively ornate piece of computing equipment for consumers seeking out a decidedly otherworldly option for their setup. The case boasts a custom-made GPU that's crafted to absorb light, while the refractions on the CPU create an RGB backlighting effect to give the unit the appearance of being quite out of this world. The angular design with sharp angles to boot helps to further enhance the ethereal nature of the alienist computer setup. This case was built on the request of a customer and features a cable-free appearance thanks to the use of an open loop system. The system thus appears quite complex, but hides its various internals in a decidedly stylish way for onlookers to admire."
+    },
+    {
+      title: "Cyberpunk Edition",
+      subtitle: "Neon-Infused Water Loop",
+      image: "https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1200&auto=format&fit=crop",
+      description: "Designed for high-load Ray Tracing and futuristic aesthetics, this custom rig features dual distro plates with custom nickel-plated brass tubing. The neon-infused coolant flows seamlessly through high-grade acrylic blocks, delivering exceptional thermal performance while maintaining a strikingly vibrant cyberpunk ambiance. Hand-sleeved modular cables and precision-machined aluminum accents complete this bespoke masterpiece created for an enthusiast client."
+    },
+    {
+      title: "Zeal-M Masterpiece",
+      subtitle: "Bespoke Glass Showcase",
+      image: "https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=1200&auto=format&fit=crop",
+      description: "A minimalist yet extreme custom workstation engineered for silent 3D rendering and computational physics. Featuring a dual 360mm copper radiator arrangement and ultra-quiet MagLev fans, this build operates with zero thermal throttling under full synthetic load. The panoramic tempered glass enclosure highlights the mirror-finish water blocks and clean geometric layout, demonstrating absolute precision craftsmanship."
+    }
+  ];
 
   const rangeCategories = [
     { id: 'originals', label: 'Meadow original' },
@@ -343,32 +402,92 @@ const Customised: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[400px] md:h-[500px]">
-          <div className="relative group overflow-hidden rounded-[2rem] border border-white/10">
-            <img 
-              src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=800&auto=format&fit=crop" 
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
-              alt="Portfolio 1"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-          <div className="relative group overflow-hidden rounded-[2rem] border border-white/10">
-            <img 
-              src="https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=800&auto=format&fit=crop" 
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
-              alt="Portfolio 2"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-          <div className="relative group overflow-hidden rounded-[2rem] border border-white/10">
-            <img 
-              src="https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=800&auto=format&fit=crop" 
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
-              alt="Portfolio 3"
-              referrerPolicy="no-referrer"
-            />
-          </div>
+          {portfolioItems.map((item, index) => (
+            <div 
+              key={index} 
+              onClick={() => setSelectedPortfolio(item)}
+              className="relative group overflow-hidden rounded-[2rem] border border-white/10 cursor-pointer shadow-2xl"
+            >
+              <img 
+                src={item.image} 
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
+                alt={item.title}
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-8">
+                <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-2xl font-bold text-white tracking-tight">{item.title}</h3>
+                    <div className="w-8 h-8 rounded-full bg-white/10 group-hover:bg-rose-600 text-white flex items-center justify-center transition-all">
+                      <Maximize2 size={14} />
+                    </div>
+                  </div>
+                  <p className="text-xs text-rose-400 font-bold uppercase tracking-wider mt-1">{item.subtitle}</p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
+
+      {/* Portfolio Item Popup Modal */}
+      <AnimatePresence>
+        {selectedPortfolio && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-8">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedPortfolio(null)}
+              className="absolute inset-0 bg-black/85 backdrop-blur-md cursor-pointer"
+            />
+
+            {/* Modal Box */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="relative w-full max-w-5xl bg-[#0a0b0c] border border-white/15 rounded-3xl overflow-hidden shadow-2xl z-10 grid grid-cols-1 md:grid-cols-2 max-h-[90vh] my-auto"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setSelectedPortfolio(null)}
+                className="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer border border-white/10"
+              >
+                <X size={20} />
+              </button>
+
+              {/* Left Column - Image */}
+              <div className="relative min-h-[280px] md:min-h-[480px] w-full bg-black overflow-hidden flex items-center justify-center">
+                <img
+                  src={selectedPortfolio.image}
+                  alt={selectedPortfolio.title}
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+
+              {/* Right Column - Information */}
+              <div className="p-8 md:p-12 flex flex-col justify-center overflow-y-auto space-y-6 bg-[#0a0b0c] text-left">
+                <div>
+                  <h3 className="text-3xl md:text-5xl font-bold text-white tracking-tight leading-none mb-3">
+                    {selectedPortfolio.title}
+                  </h3>
+                  <h4 className="text-base md:text-lg font-bold text-slate-300">
+                    {selectedPortfolio.subtitle}
+                  </h4>
+                </div>
+
+                <p className="text-slate-300 text-xs md:text-sm leading-relaxed font-normal">
+                  {selectedPortfolio.description}
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Cinematic Video Section */}
       <section className="px-8 md:px-20 py-4 max-w-[1600px] mx-auto relative z-10">
@@ -484,6 +603,156 @@ const Customised: React.FC = () => {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Signature Stores - Build Your Own PC Services */}
+      <section className="px-8 md:px-20 pt-16 pb-20 max-w-[1600px] mx-auto relative z-10 border-t border-white/5">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-600/10 border border-rose-500/20 text-rose-400 text-xs font-black uppercase tracking-[0.25em] mb-4">
+              <Sparkles size={14} className="text-rose-500" />
+              <span>Exclusive Retail Services</span>
+            </div>
+            <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter">
+              Signature Stores
+            </h2>
+            <p className="text-slate-400 text-sm max-w-xl mt-3 font-normal leading-relaxed">
+              Only our <span className="text-white font-bold">Larkin Junction Store</span> and <span className="text-white font-bold">Pelangi Plaza</span> retail outlets provide full <span className="text-rose-400 font-bold">Build Your Own PC</span> services and live testing bays.
+            </p>
+          </div>
+
+          {/* Slider Controls / Store Selector Tabs */}
+          <div className="flex items-center gap-3">
+            {signatureStores.map((store, index) => (
+              <button
+                key={index}
+                onClick={() => setActiveStoreIndex(index)}
+                className={`px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 border cursor-pointer ${
+                  activeStoreIndex === index
+                    ? 'bg-rose-600 border-rose-500 text-white shadow-lg shadow-rose-600/30'
+                    : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <Building2 size={14} />
+                <span>{store.shortName}</span>
+              </button>
+            ))}
+
+            <div className="flex items-center gap-2 border-l border-white/10 pl-3 ml-1">
+              <button
+                onClick={() => setActiveStoreIndex((prev) => (prev === 0 ? signatureStores.length - 1 : prev - 1))}
+                className="w-10 h-10 rounded-full bg-white/5 border border-white/10 hover:bg-white/15 text-white flex items-center justify-center transition-all cursor-pointer"
+                title="Previous Store"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                onClick={() => setActiveStoreIndex((prev) => (prev === signatureStores.length - 1 ? 0 : prev + 1))}
+                className="w-10 h-10 rounded-full bg-white/5 border border-white/10 hover:bg-white/15 text-white flex items-center justify-center transition-all cursor-pointer"
+                title="Next Store"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Store Display Box (Matching Reference Layout) */}
+        <div className="bg-[#090a0c] border border-white/15 rounded-[2.5rem] overflow-hidden shadow-2xl grid grid-cols-1 lg:grid-cols-12 min-h-[500px]">
+          {/* Left Side: Store Image */}
+          <div className="lg:col-span-6 relative min-h-[350px] lg:min-h-[500px] bg-black overflow-hidden group">
+            <AnimatePresence mode="wait">
+              <motion.img
+                key={activeStoreIndex}
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.5 }}
+                src={signatureStores[activeStoreIndex].image}
+                alt={signatureStores[activeStoreIndex].name}
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            </AnimatePresence>
+
+            {/* Image Overlays */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
+
+            <div className="absolute top-6 left-6 z-10 flex flex-wrap gap-2">
+              <span className="px-3.5 py-1.5 rounded-full bg-rose-600/90 backdrop-blur-md text-white text-xs font-black uppercase tracking-wider">
+                Build Your Own PC Hub
+              </span>
+            </div>
+
+            {/* Quick Slider Indicator over Image */}
+            <div className="absolute bottom-6 left-6 right-6 z-10 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {signatureStores.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveStoreIndex(idx)}
+                    className={`h-2 rounded-full transition-all cursor-pointer ${
+                      activeStoreIndex === idx ? 'w-8 bg-rose-500' : 'w-2 bg-white/40 hover:bg-white/70'
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-xs font-bold text-slate-300 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                {activeStoreIndex + 1} of {signatureStores.length} Stores
+              </span>
+            </div>
+          </div>
+
+          {/* Right Side: Text & Details (Direct match to reference image) */}
+          <div className="lg:col-span-6 p-8 md:p-12 lg:p-14 flex flex-col justify-between space-y-6 bg-[#0a0b0d] text-left">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeStoreIndex}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.4 }}
+                className="space-y-6 flex-1 flex flex-col justify-between"
+              >
+                <div className="space-y-4">
+                  {/* Red Small Header */}
+                  <div className="text-rose-500 font-black text-xs md:text-sm uppercase tracking-[0.3em]">
+                    OUR GROWING PRESENCE
+                  </div>
+
+                  {/* Main Title */}
+                  <h3 className="text-2xl md:text-4xl font-bold text-white tracking-tight leading-tight">
+                    {signatureStores[activeStoreIndex].title}
+                  </h3>
+
+                  {/* Location Name */}
+                  <div className="pt-1">
+                    <h4 className="text-xl md:text-2xl font-black text-white tracking-tight">
+                      {signatureStores[activeStoreIndex].name}
+                    </h4>
+                  </div>
+
+                  {/* Detailed Description */}
+                  <p className="text-slate-300 text-xs md:text-sm leading-relaxed font-normal pt-2">
+                    {signatureStores[activeStoreIndex].description}
+                  </p>
+                </div>
+
+                {/* Footer Address & Details */}
+                <div className="pt-6 border-t border-white/10 space-y-2">
+                  <p className="text-xs md:text-sm text-slate-200 font-medium leading-normal">
+                    <span className="font-bold text-white">Experiential Centre:</span>{' '}
+                    <span className="text-slate-300">{signatureStores[activeStoreIndex].address}</span>
+                  </p>
+                  <p className="text-xs text-slate-400 font-medium flex flex-wrap gap-4 pt-1">
+                    <span>🕒 {signatureStores[activeStoreIndex].hours}</span>
+                    <span>📞 {signatureStores[activeStoreIndex].phone}</span>
+                  </p>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </section>
 

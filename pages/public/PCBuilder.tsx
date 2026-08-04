@@ -873,7 +873,71 @@ const PCBuilder: React.FC = () => {
         }}
       />
 
-      <main className="relative pt-48 md:pt-64 px-8 md:px-16 max-w-[1800px] mx-auto z-10 pb-64">
+      <main className="relative pt-36 md:pt-44 px-8 md:px-16 max-w-[1800px] mx-auto z-10 pb-64">
+        {/* Build PC Hero Banner */}
+        <div className="relative mb-12 rounded-[2.5rem] overflow-hidden border border-white/10 bg-gradient-to-r from-[#0d0e11] via-[#121418] to-[#1a0a0f] p-8 md:p-12 shadow-2xl">
+          {/* Ambient Glows */}
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-rose-600/15 rounded-full blur-[100px] pointer-events-none"></div>
+          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+          <div className="grid lg:grid-cols-12 gap-8 items-center relative z-10">
+            {/* Text Content */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rose-600/10 border border-rose-500/20 text-rose-400 text-xs font-black uppercase tracking-[0.25em]">
+                <Cpu size={14} className="text-rose-500 animate-pulse" />
+                <span>Next-Gen System Configurator</span>
+              </div>
+
+              <h1 className="text-4xl md:text-6xl xl:text-7xl font-black uppercase tracking-tight text-white leading-none">
+                BUILD YOUR <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-rose-400 to-amber-400">DREAM PC</span>
+              </h1>
+
+              <p className="text-slate-300 text-base md:text-lg font-medium max-w-2xl leading-relaxed">
+                Engineer your ultimate workstation or gaming rig with complete freedom. Select premium flagship processors, graphics cards, liquid cooling, and custom chassis with real-time hardware compatibility validation.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-6 pt-2">
+                <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2.5 rounded-2xl">
+                  <div className="w-8 h-8 rounded-xl bg-rose-600/20 border border-rose-500/30 flex items-center justify-center text-rose-400">
+                    <Zap size={16} />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-black uppercase tracking-wider text-white">Live Wattage</div>
+                    <div className="text-[10px] text-slate-400 font-medium">Auto PSU Estimator</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2.5 rounded-2xl">
+                  <div className="w-8 h-8 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                    <Microchip size={16} />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-black uppercase tracking-wider text-white">100% Compatible</div>
+                    <div className="text-[10px] text-slate-400 font-medium">Smart Socket Check</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Banner Image */}
+            <div className="lg:col-span-5 relative">
+              <div className="relative rounded-3xl overflow-hidden border border-white/15 shadow-2xl group">
+                <img
+                  src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1200&auto=format&fit=crop"
+                  alt="Build PC Custom Rig Banner"
+                  className="w-full h-[260px] md:h-[320px] object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0d0e11] via-transparent to-transparent opacity-80"></div>
+                <div className="absolute bottom-4 left-4 right-4 p-4 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-widest text-white">Meadow Custom Showcase</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400 bg-rose-600/20 border border-rose-500/30 px-3 py-1 rounded-full">Pro Assembly</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="mb-8">
           <Breadcrumbs items={[{ label: 'BUILD YOUR OWN PC' }]} />
         </div>

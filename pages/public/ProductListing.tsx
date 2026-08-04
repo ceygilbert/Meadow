@@ -358,13 +358,13 @@ const ProductListing: React.FC = () => {
                 <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
                   <button 
                     onClick={() => setViewMode('grid')}
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-blue-500' : 'text-slate-400 hover:text-slate-600'}`}
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-red-600' : 'text-slate-400 hover:text-slate-600'}`}
                   >
                     <LayoutGrid size={16} />
                   </button>
                   <button 
                     onClick={() => setViewMode('list')}
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-blue-500' : 'text-slate-400 hover:text-slate-600'}`}
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-red-600' : 'text-slate-400 hover:text-slate-600'}`}
                   >
                     <List size={16} />
                   </button>
@@ -373,7 +373,7 @@ const ProductListing: React.FC = () => {
             </div>
 
             {/* Product Grid */}
-            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8" : "flex flex-col gap-6"}>
+            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5" : "flex flex-col gap-4"}>
           <AnimatePresence mode="popLayout">
             {filteredProducts.map((product) => (
               <motion.div 
@@ -383,24 +383,24 @@ const ProductListing: React.FC = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.4 }}
-                className={`group bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden hover:shadow-2xl hover:border-blue-500/20 transition-all duration-500 ${viewMode === 'list' ? 'flex flex-row h-64' : 'flex flex-col'}`}
+                className={`group bg-white border border-slate-100 rounded-3xl overflow-hidden hover:shadow-xl hover:border-red-500/20 transition-all duration-500 ${viewMode === 'list' ? 'flex flex-row h-52' : 'flex flex-col'}`}
               >
-                <Link to={`/product/${product.slug}`} className={`relative bg-slate-50 overflow-hidden ${viewMode === 'list' ? 'w-64 shrink-0' : 'aspect-square'}`}>
+                <Link to={`/product/${product.slug}`} className={`relative bg-slate-50 overflow-hidden ${viewMode === 'list' ? 'w-52 shrink-0' : 'aspect-square'}`}>
                   <img 
                     src={product.image_url || undefined} 
                     alt={product.name}
-                    className="w-full h-full object-contain p-8 transition-transform duration-700 group-hover:scale-110"
+                    className="w-full h-full object-contain p-5 transition-transform duration-700 group-hover:scale-110"
                   />
                   {product.discount_value > 0 && (
-                    <div className="absolute top-6 left-6 px-4 py-2 bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg">
+                    <div className="absolute top-4 left-4 px-3 py-1.5 bg-red-600 text-white text-[8px] font-black uppercase tracking-widest rounded-full shadow-md">
                       {product.discount_type === 'percentage' ? `-${product.discount_value}%` : `OFF RM${product.discount_value}`}
                     </div>
                   )}
                 </Link>
 
-                <div className="p-8 flex flex-col flex-1">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest">
+                <div className="p-5 flex flex-col flex-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[9px] font-black text-red-600 uppercase tracking-widest">
                       {brands.find(b => b.id === product.brand_id)?.name}
                     </span>
                     <div className="flex items-center gap-1">
@@ -409,24 +409,26 @@ const ProductListing: React.FC = () => {
                     </div>
                   </div>
                   
-                  <Link to={`/product/${product.slug}`} className="text-lg font-black text-slate-900 uppercase tracking-tight leading-tight mb-4 group-hover:text-blue-600 transition-colors line-clamp-2">
+                  <Link to={`/product/${product.slug}`} className="text-xs md:text-sm font-black text-slate-900 uppercase tracking-tight leading-snug mb-3 group-hover:text-red-600 transition-colors line-clamp-2">
                     {product.name}
                   </Link>
 
-                  <div className="mt-auto flex items-center justify-between">
+                  <div className="mt-auto flex items-center justify-between pt-2">
                     <div className="flex flex-col">
-                      <span className="text-xs text-slate-300 font-bold line-through">
-                        {product.discount_value > 0 && `RM${(product.price + (product.discount_type === 'fixed' ? product.discount_value : (product.price * product.discount_value / 100))).toLocaleString()}`}
-                      </span>
-                      <span className="text-xl font-black text-slate-900">
+                      {product.discount_value > 0 && (
+                        <span className="text-[10px] text-slate-300 font-bold line-through">
+                          RM{(product.price + (product.discount_type === 'fixed' ? product.discount_value : (product.price * product.discount_value / 100))).toLocaleString()}
+                        </span>
+                      )}
+                      <span className="text-base font-black text-slate-900">
                         RM{product.price.toLocaleString()}
                       </span>
                     </div>
                     <button 
                       onClick={() => addToCart(product)}
-                      className="w-12 h-12 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+                      className="w-10 h-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-sm"
                     >
-                      <ShoppingCart size={18} />
+                      <ShoppingCart size={16} />
                     </button>
                   </div>
                 </div>

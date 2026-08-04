@@ -765,35 +765,6 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Specialized Infinite Ticker Section */}
-      <section className="py-6 md:py-10 bg-white overflow-hidden relative">
-         <div className="absolute top-0 inset-x-0 h-px bg-slate-100"></div>
-         <div className="absolute bottom-0 inset-x-0 h-px bg-slate-100"></div>
-         
-         <div className="relative flex whitespace-nowrap overflow-hidden">
-            <div className="flex items-center gap-12 animate-ticker-infinite">
-               {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, idx) => (
-                 <div key={idx} className="flex items-center gap-12">
-                   <span className={`text-6xl md:text-[8rem] font-black uppercase tracking-tighter leading-none ${idx % 2 === 0 ? 'text-slate-900' : 'text-transparent stroke-text'}`} style={{ WebkitTextStroke: '2px #0f172a' }}>
-                     {item}
-                   </span>
-                   <Circle className="text-blue-600 shrink-0" size={24} fill="currentColor" />
-                 </div>
-               ))}
-            </div>
-         </div>
-
-         <style>{`
-           @keyframes ticker-infinite {
-             0% { transform: translateX(0); }
-             100% { transform: translateX(-50%); }
-           }
-           .animate-ticker-infinite {
-             animation: ticker-infinite 40s linear infinite;
-           }
-         `}</style>
-      </section>
-
       {/* THE COLLECTION Section */}
       <section className="bg-[#FAF9FB] pt-8 md:pt-12 pb-4 md:pb-6 overflow-hidden border-t border-slate-50">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
@@ -1187,7 +1158,7 @@ const Home: React.FC = () => {
               <div className="flex flex-col gap-6">
                 <Link 
                   to="/our-stores" 
-                  className="block w-[40%] px-8 py-4 bg-white border-2 border-black rounded-xl text-sm font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm text-left"
+                  className="inline-flex items-center justify-center w-fit max-w-full px-6 md:px-8 py-4 whitespace-nowrap bg-white border-2 border-black rounded-xl text-sm font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm text-center"
                 >
                   Our Store
                 </Link>

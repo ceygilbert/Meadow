@@ -11,13 +11,14 @@ interface BreadcrumbsProps {
   items?: BreadcrumbItem[];
   currentPage?: string;
   className?: string;
+  homePath?: string;
 }
 
-const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, currentPage, className }) => {
+const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, currentPage, className, homePath = '/customised' }) => {
   return (
     <div className={`flex items-center gap-4 ${className}`}>
       <Link 
-        to="/" 
+        to={homePath} 
         className="flex items-center gap-3 text-slate-400 hover:text-slate-900 transition-all group shrink-0"
       >
         <Home size={18} className="text-slate-400 group-hover:text-slate-900 transition-colors" />
@@ -35,7 +36,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, currentPage, className
               {item.label}
             </Link>
           ) : (
-            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-rose-500 whitespace-nowrap">
+            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-red-600 whitespace-nowrap">
               {item.label}
             </span>
           )}
@@ -45,7 +46,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, currentPage, className
       {!items && currentPage && (
         <div className="flex items-center gap-4">
           <div className="w-px h-4 bg-slate-200 shrink-0" />
-          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-rose-500 whitespace-nowrap">
+          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-red-600 whitespace-nowrap">
             {currentPage}
           </span>
         </div>

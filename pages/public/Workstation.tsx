@@ -13,13 +13,19 @@ import {
   ArrowRight,
   ChevronRight,
   Monitor,
-  Database
+  Database,
+  Briefcase,
+  Building,
+  Grid
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import StudioNavbar from '../../components/StudioNavbar';
 import Breadcrumbs from '../../components/Breadcrumbs';
 
 const Workstation: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeType = searchParams.get('type') || 'all';
+
   const components = [
     {
       title: "Processor (CPU)",
@@ -67,13 +73,14 @@ const Workstation: React.FC = () => {
 
   const workstations = [
     {
-      name: "The 2D Artist",
+      name: "The 2D Artist Pro",
+      type: "professional",
       description: "Optimized for graphic design, illustration, and photo editing.",
       image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=800&auto=format&fit=crop",
       specs: {
-        cpu: "Low to Mid Range to get the full 2D graphic performance.",
-        ram: "Bigger sized projects require higher RAM size. 8GB is a good start.",
-        gpu: "Any range, depends on software requirements."
+        cpu: "Intel Core i7 / Ryzen 7 High-throughput CPU",
+        ram: "32GB DDR5 High-Speed Memory",
+        gpu: "NVIDIA RTX 4060 Ti 16GB VRAM"
       },
       software: [
         "https://upload.wikimedia.org/wikipedia/commons/a/af/Adobe_Photoshop_CC_icon.svg",
@@ -82,13 +89,14 @@ const Workstation: React.FC = () => {
       ]
     },
     {
-      name: "The 4K Enjoyer",
-      description: "Perfect for high-resolution video editing and motion graphics.",
+      name: "The 4K Video Render Pro",
+      type: "professional",
+      description: "Perfect for high-resolution 4K video editing, color grading, and motion graphics.",
       image: "https://images.unsplash.com/photo-1593640408182-31c70c8268f5?q=80&w=800&auto=format&fit=crop",
       specs: {
-        cpu: "High Range to get the full 2D video rendering processes.",
-        ram: "Bigger sized projects require higher RAM size. 16GB is a good start.",
-        gpu: "Any range, depends on software requirements."
+        cpu: "Intel Core i9 14900K / Ryzen 9 7950X",
+        ram: "64GB DDR5 6000MHz Memory",
+        gpu: "NVIDIA RTX 4080 SUPER 16GB"
       },
       software: [
         "https://upload.wikimedia.org/wikipedia/commons/4/40/Adobe_Premiere_Pro_CC_icon.svg",
@@ -96,19 +104,50 @@ const Workstation: React.FC = () => {
       ]
     },
     {
-      name: "The 3D Maniac",
-      description: "Engineered for complex 3D modeling, rendering, and simulation.",
+      name: "The 3D & AI Heavyweight",
+      type: "professional",
+      description: "Engineered for complex 3D CAD modeling, Octane/Redshift rendering, and AI local model inference.",
       image: "https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=800&auto=format&fit=crop",
       specs: {
-        cpu: "Mid to High Range in order to support GPU processes.",
-        ram: "Bigger sized projects require higher RAM size. 16GB is a good start.",
-        gpu: "High Range GPU is required for complex 3D projects & Machine Learning."
+        cpu: "AMD Ryzen Threadripper / i9 Extreme",
+        ram: "128GB ECC DDR5 Memory",
+        gpu: "NVIDIA RTX 4090 24GB Studio"
       },
       software: [
         "https://upload.wikimedia.org/wikipedia/commons/a/af/Adobe_Photoshop_CC_icon.svg"
       ]
+    },
+    {
+      name: "Office Essential Workstation",
+      type: "office",
+      description: "Reliable, whisper-quiet desktop for seamless multitasking, finance, and office management.",
+      image: "https://images.unsplash.com/photo-1587831990711-23ca6441447b?q=80&w=800&auto=format&fit=crop",
+      specs: {
+        cpu: "Intel Core i5 13400 / Ryzen 5 5600G",
+        ram: "16GB DDR4 Ultra-Stable Memory",
+        gpu: "Integrated Ultra HD Graphics (Dual Display)"
+      },
+      software: []
+    },
+    {
+      name: "Corporate Executive Multi-Display",
+      type: "office",
+      description: "High-speed corporate PC built for multi-monitor trading, data analytics, and enterprise ERP.",
+      image: "https://images.unsplash.com/photo-1591405351990-4726e331f141?q=80&w=800&auto=format&fit=crop",
+      specs: {
+        cpu: "Intel Core i7 13700 Enterprise",
+        ram: "32GB DDR5 Business Edition",
+        gpu: "NVIDIA T1000 Quad Mini-DisplayPort"
+      },
+      software: []
     }
   ];
+
+  const filteredWorkstations = workstations.filter(ws => {
+    if (activeType === 'professional') return ws.type === 'professional';
+    if (activeType === 'office') return ws.type === 'office';
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-[#050607] text-white">
@@ -242,10 +281,49 @@ const Workstation: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="text-slate-400 max-w-3xl mx-auto text-lg leading-relaxed"
+              className="text-slate-400 max-w-3xl mx-auto text-lg leading-relaxed mb-10"
             >
               We have pre-selected PC builds according to your needs so you have a clear starting point. From there, feel free to upgrade or keep the current specs.
             </motion.p>
+
+            {/* Filter Tabs */}
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <button
+                onClick={() => setSearchParams({})}
+                className={`px-8 py-3.5 rounded-full text-xs font-black uppercase tracking-[0.2em] transition-all flex items-center gap-2.5 ${
+                  activeType === 'all'
+                    ? 'bg-white text-slate-900 shadow-lg shadow-white/10'
+                    : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/10'
+                }`}
+              >
+                <Grid size={16} />
+                <span>All Workstations</span>
+              </button>
+
+              <button
+                onClick={() => setSearchParams({ type: 'professional' })}
+                className={`px-8 py-3.5 rounded-full text-xs font-black uppercase tracking-[0.2em] transition-all flex items-center gap-2.5 ${
+                  activeType === 'professional'
+                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                    : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/10'
+                }`}
+              >
+                <Briefcase size={16} />
+                <span>Professional Workstations</span>
+              </button>
+
+              <button
+                onClick={() => setSearchParams({ type: 'office' })}
+                className={`px-8 py-3.5 rounded-full text-xs font-black uppercase tracking-[0.2em] transition-all flex items-center gap-2.5 ${
+                  activeType === 'office'
+                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30'
+                    : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/10'
+                }`}
+              >
+                <Building size={16} />
+                <span>Office PCs</span>
+              </button>
+            </div>
           </div>
 
           <div className="relative group">
@@ -276,7 +354,7 @@ const Workstation: React.FC = () => {
               className="flex gap-8 overflow-x-auto pb-12 snap-x snap-mandatory scrollbar-hide no-scrollbar"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              {workstations.map((ws, index) => (
+              {filteredWorkstations.map((ws, index) => (
                 <motion.div 
                   key={index}
                   initial={{ opacity: 0, scale: 0.9 }}
