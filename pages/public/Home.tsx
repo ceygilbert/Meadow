@@ -1143,30 +1143,32 @@ const Home: React.FC = () => {
       )}
 
       {/* VISIT OUR STORE Section */}
-      <section className="bg-white py-20 md:py-32 overflow-hidden border-t border-slate-50">
+      <section className="bg-white py-20 md:py-32 overflow-hidden border-t border-slate-50 font-sans">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
           <h2 className="text-3xl md:text-5xl font-black text-black tracking-tighter uppercase mb-12">Visit Our Store.</h2>
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Left Card */}
-            <div className="lg:w-1/3 bg-[#f3f4f6] rounded-2xl p-8 flex flex-col justify-between min-h-[400px] shadow-sm">
+            <div className="lg:w-1/3 bg-[#f3f4f6] rounded-2xl p-8 flex flex-col justify-between min-h-[400px] shadow-sm font-sans">
               <div className="flex flex-col justify-start gap-8">
-                <h3 className="text-2xl md:text-3xl font-black leading-tight uppercase text-left text-black">
-                  View All Meadow Computer Store Location.
+                <h3 className="text-2xl md:text-3xl font-bold text-black leading-tight text-left uppercase tracking-tight">
+                  View All Meadow<br />
+                  Computer Mega Store<br />
+                  Location.
                 </h3>
               </div>
               
               <div className="flex flex-col gap-6">
                 <Link 
                   to="/our-stores" 
-                  className="inline-flex items-center justify-center w-fit max-w-full px-6 md:px-8 py-4 whitespace-nowrap bg-white border-2 border-black rounded-xl text-sm font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm text-center"
+                  className="inline-flex items-center justify-center w-fit max-w-full px-6 md:px-8 py-4 whitespace-nowrap bg-white border-2 border-black rounded-xl text-xs font-black uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all shadow-sm text-center"
                 >
                   Our Store
                 </Link>
-                <div className="border-t border-black pt-6">
-                  <div className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-black mb-2">
+                <div className="border-t border-black/20 pt-6">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-[#333] mb-2">
                     VIDEO DISPLAYING <ArrowRight size={16} />
                   </div>
-                  <p className="text-sm font-black uppercase tracking-widest text-black">
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-[#333]">
                     TAMAN PELANGI ASUS STORE
                   </p>
                 </div>
