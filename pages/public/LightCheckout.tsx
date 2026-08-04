@@ -19,21 +19,50 @@ import {
   Box,
   Facebook,
   Instagram,
-  ShoppingCart
+  ShoppingCart,
+  Zap,
+  Loader2,
+  Settings
 } from 'lucide-react';
 
 import PublicNavbar from '../../components/PublicNavbar';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../lib/AuthContext';
+import { submitSenangPayPayment, DEFAULT_SENANGPAY_MERCHANT_ID, DEFAULT_SENANGPAY_SECRET_KEY } from '../../lib/senangpay';
 
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/Red%20Full%20Logo.png";
 
 const LightCheckout: React.FC = () => {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
+
   const [selectedBranch, setSelectedBranch] = useState('MEADOW IT DISTRIBUTION (HQ)');
   const [deliveryMethod, setDeliveryMethod] = useState('Shipping');
   const [paymentMethod, setPaymentMethod] = useState('Credit Card');
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [postalCode, setPostalCode] = useState('');
+
+  // Form states
+  const [fullName, setFullName] = useState(profile?.full_name || '');
+  const [nric, setNric] = useState('');
+  const [phone, setPhone] = useState(profile?.phone || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [address, setAddress] = useState('');
+  const [notes, setNotes] = useState('');
+  const [customerCategory, setCustomerCategory] = useState('Personal');
+
+  // senangPay Config state
+  const [showSenangPayConfig, setShowSenangPayConfig] = useState(false);
+  const [merchantId, setMerchantId] = useState(DEFAULT_SENANGPAY_MERCHANT_ID);
+  const [secretKey, setSecretKey] = useState(DEFAULT_SENANGPAY_SECRET_KEY);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (profile?.full_name && !fullName) setFullName(profile.full_name);
+    if (user?.email && !email) setEmail(user.email);
+    if (profile?.phone && !phone) setPhone(profile.phone);
+  }, [profile, user]);
 
   const filteredHubs = useMemo(() => {
     if (deliveryMethod === 'Shipping') {
@@ -96,6 +125,80 @@ const LightCheckout: React.FC = () => {
 
   const grandTotal = subtotal + deliveryFee;
 
+  const handlePaymentSubmit = () => {
+    setFormError(null);
+    if (cartItems.length === 0) {
+      setFormError('Your shopping cart is empty. Add products before checking out.');
+      return;
+    }
+    if (isOnsiteDeliveryUnsupported) {
+      setFormError('Onsite delivery is only supported for JB postal codes (starting with 8). Please update your postal code or choose another shipping option.');
+      return;
+    }
+    if (!fullName.trim()) {
+      setFormError('Please enter your full name.');
+      return;
+    }
+    if (!email.trim()) {
+      setFormError('Please enter your registry email.');
+      return;
+    }
+    if (!phone.trim()) {
+      setFormError('Please enter your mobile phone number.');
+      return;
+    }
+
+    setIsProcessing(true);
+
+    const orderId = `ORD-${Date.now()}`;
+    const orderData = {
+      order_id: orderId,
+      customer_name: fullName,
+      email: email,
+      phone: phone,
+      nric: nric,
+      address: address,
+      postal_code: postalCode,
+      notes: notes,
+      delivery_method: deliveryMethod,
+      branch: selectedBranch,
+      amount: grandTotal,
+      payment_method: paymentMethod,
+      items: cartItems,
+      created_at: new Date().toISOString()
+    };
+
+    try {
+      const existing = JSON.parse(localStorage.getItem('meadow_orders') || '[]');
+      localStorage.setItem('meadow_orders', JSON.stringify([orderData, ...existing]));
+    } catch (e) {
+      console.error("Failed to save order", e);
+    }
+
+    if (paymentMethod === 'Credit Card') {
+      // Instant Settlement calls senangPay testing API
+      const detailStr = `Meadow IT - ${cartItems.length} Item(s)`;
+      submitSenangPayPayment({
+        merchantId: merchantId.trim() || DEFAULT_SENANGPAY_MERCHANT_ID,
+        secretKey: secretKey.trim() || DEFAULT_SENANGPAY_SECRET_KEY,
+        detail: detailStr,
+        amount: grandTotal,
+        orderId: orderId,
+        name: fullName,
+        email: email,
+        phone: phone,
+        isSandbox: true
+      });
+    } else {
+      setTimeout(() => {
+        setIsProcessing(false);
+        alert(`Order ${orderId} initialized successfully via ${paymentMethod}. Our sales team will verify your transaction shortly.`);
+        localStorage.removeItem('meadow_cart');
+        navigate('/');
+      }, 1200);
+    }
+  };
+
   const deliveryOptions = [
     { id: 'Shipping', label: 'Shipping By GDEX', sub: 'West Malaysia Coverage' },
     { id: 'Self-Pickup', label: 'Self-Pickup', sub: 'From Selected Branch' },
@@ -103,7 +206,7 @@ const LightCheckout: React.FC = () => {
   ];
 
   const paymentOptions = [
-    { id: 'Credit Card', label: 'Instant Settlement', sub: 'Card, FPX, E-Wallet' },
+    { id: 'Credit Card', label: 'Instant Settlement', sub: 'Card, FPX, E-Wallet (senangPay)' },
     { id: 'IPP', label: 'Instalment Plan', sub: 'IPP Settlement' },
     { id: 'Atome', label: 'Buy Now Pay Later', sub: 'Atome, Grab, SpayLater' }
   ];
@@ -135,7 +238,11 @@ const LightCheckout: React.FC = () => {
                 <div className="space-y-8 md:col-span-2">
                    <div>
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block">Customer Category</label>
-                      <select className="w-full h-16 px-6 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-rose-600/50 font-bold transition-all text-slate-900 shadow-inner">
+                      <select 
+                        value={customerCategory}
+                        onChange={(e) => setCustomerCategory(e.target.value)}
+                        className="w-full h-16 px-6 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-rose-600/50 font-bold transition-all text-slate-900 shadow-inner"
+                      >
                          <option value="Personal">Individual / Personal</option>
                          <option value="Corporate">Corporate / Enterprise</option>
                       </select>
@@ -143,28 +250,55 @@ const LightCheckout: React.FC = () => {
                 </div>
 
                 <div className="space-y-4">
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block">Full Name</label>
-                   <input className="w-full h-16 px-6 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-rose-600/50 font-bold transition-all text-slate-900 placeholder:text-slate-300 shadow-inner" placeholder="LEGAL NAME" />
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block">Full Name *</label>
+                   <input 
+                     value={fullName}
+                     onChange={(e) => setFullName(e.target.value)}
+                     className="w-full h-16 px-6 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-rose-600/50 font-bold transition-all text-slate-900 placeholder:text-slate-300 shadow-inner" 
+                     placeholder="LEGAL NAME" 
+                   />
                 </div>
 
                 <div className="space-y-4">
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block">ID Number (For E-Invoice)</label>
-                   <input className="w-full h-16 px-6 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-rose-600/50 font-bold transition-all text-slate-900 placeholder:text-slate-300 shadow-inner" placeholder="NRIC / PASSPORT" />
+                   <input 
+                     value={nric}
+                     onChange={(e) => setNric(e.target.value)}
+                     className="w-full h-16 px-6 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-rose-600/50 font-bold transition-all text-slate-900 placeholder:text-slate-300 shadow-inner" 
+                     placeholder="NRIC / PASSPORT" 
+                   />
                 </div>
 
                 <div className="space-y-4">
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block">Communication Link (Mobile)</label>
-                   <input className="w-full h-16 px-6 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-rose-600/50 font-bold transition-all text-slate-900 placeholder:text-slate-300 shadow-inner" placeholder="+60 000-0000" />
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block">Communication Link (Mobile) *</label>
+                   <input 
+                     value={phone}
+                     onChange={(e) => setPhone(e.target.value)}
+                     className="w-full h-16 px-6 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-rose-600/50 font-bold transition-all text-slate-900 placeholder:text-slate-300 shadow-inner" 
+                     placeholder="+60 000-0000" 
+                   />
                 </div>
 
                 <div className="space-y-4">
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block">Registry Email</label>
-                   <input className="w-full h-16 px-6 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-rose-600/50 font-bold transition-all text-slate-900 placeholder:text-slate-300 shadow-inner" placeholder="EMAIL@DOMAIN.COM" />
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block">Registry Email *</label>
+                   <input 
+                     type="email"
+                     value={email}
+                     onChange={(e) => setEmail(e.target.value)}
+                     className="w-full h-16 px-6 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-rose-600/50 font-bold transition-all text-slate-900 placeholder:text-slate-300 shadow-inner" 
+                     placeholder="EMAIL@DOMAIN.COM" 
+                   />
                 </div>
 
                 <div className="md:col-span-2 space-y-4">
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block">Deployment Address</label>
-                   <textarea rows={4} className="w-full p-6 bg-slate-50 border border-slate-200 rounded-3xl outline-none focus:border-rose-600/50 font-bold transition-all text-slate-900 placeholder:text-slate-300 shadow-inner" placeholder="STREET, UNIT, CITY" />
+                   <textarea 
+                     rows={4} 
+                     value={address}
+                     onChange={(e) => setAddress(e.target.value)}
+                     className="w-full p-6 bg-slate-50 border border-slate-200 rounded-3xl outline-none focus:border-rose-600/50 font-bold transition-all text-slate-900 placeholder:text-slate-300 shadow-inner" 
+                     placeholder="STREET, UNIT, CITY" 
+                   />
                 </div>
 
                  <div className="md:col-span-2 space-y-4">
@@ -182,7 +316,13 @@ const LightCheckout: React.FC = () => {
 
                 <div className="md:col-span-2 space-y-4">
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block">Operational Notes</label>
-                   <textarea rows={2} className="w-full p-6 bg-slate-50 border border-slate-200 rounded-3xl outline-none focus:border-rose-600/50 font-bold transition-all text-slate-900 placeholder:text-slate-300 shadow-inner" placeholder="LEAVE YOUR MESSAGE HERE..." />
+                   <textarea 
+                     rows={2} 
+                     value={notes}
+                     onChange={(e) => setNotes(e.target.value)}
+                     className="w-full p-6 bg-slate-50 border border-slate-200 rounded-3xl outline-none focus:border-rose-600/50 font-bold transition-all text-slate-900 placeholder:text-slate-300 shadow-inner" 
+                     placeholder="LEAVE YOUR MESSAGE HERE..." 
+                   />
                 </div>
               </div>
             </section>
@@ -271,12 +411,61 @@ const LightCheckout: React.FC = () => {
                             : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-md'
                         }`}
                       >
-                         <p className={`text-lg font-black tracking-tight mb-2 ${paymentMethod === opt.id ? 'text-white' : 'text-slate-900 group-hover:text-black'}`}>{opt.label}</p>
+                         <div className="flex items-center gap-2 mb-2">
+                           {opt.id === 'Credit Card' && <Zap size={16} className={paymentMethod === opt.id ? 'text-amber-300 animate-pulse' : 'text-rose-600'} />}
+                           <p className={`text-lg font-black tracking-tight ${paymentMethod === opt.id ? 'text-white' : 'text-slate-900 group-hover:text-black'}`}>{opt.label}</p>
+                         </div>
                          <p className={`text-[10px] font-black uppercase tracking-widest ${paymentMethod === opt.id ? 'text-white/80' : 'text-slate-400'}`}>{opt.sub}</p>
                          {paymentMethod === opt.id && <div className="absolute top-4 right-4 text-white"><CheckCircle2 size={16} /></div>}
                       </button>
                     ))}
                  </div>
+
+                 {paymentMethod === 'Credit Card' && (
+                   <div className="bg-gradient-to-r from-rose-50 via-amber-50 to-rose-50 border border-rose-200 rounded-[2.5rem] p-8 space-y-4 shadow-md animate-in fade-in duration-300">
+                     <div className="flex items-center justify-between">
+                       <div className="flex items-center gap-3">
+                         <div className="w-10 h-10 rounded-2xl bg-rose-600 text-white flex items-center justify-center font-black shadow-lg shadow-rose-600/30">
+                           <Zap size={20} />
+                         </div>
+                         <div>
+                           <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">senangPay Sandbox Active</h4>
+                           <p className="text-[11px] font-bold text-slate-500">Redirects directly to official senangPay testing payment gateway</p>
+                         </div>
+                       </div>
+                       <button 
+                         onClick={() => setShowSenangPayConfig(!showSenangPayConfig)}
+                         className="flex items-center gap-2 text-xs font-black text-rose-600 bg-white border border-rose-200 px-4 py-2 rounded-xl hover:bg-rose-50 transition-all shadow-sm"
+                       >
+                         <Settings size={14} />
+                         <span>{showSenangPayConfig ? 'Hide Gateway Keys' : 'Test API Credentials'}</span>
+                       </button>
+                     </div>
+
+                     {showSenangPayConfig && (
+                       <div className="pt-4 border-t border-rose-200/60 grid md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                         <div>
+                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Merchant ID (Sandbox)</label>
+                           <input 
+                             type="text" 
+                             value={merchantId} 
+                             onChange={(e) => setMerchantId(e.target.value)}
+                             className="w-full h-12 px-4 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:border-rose-500 outline-none" 
+                           />
+                         </div>
+                         <div>
+                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Secret Key (Sandbox)</label>
+                           <input 
+                             type="text" 
+                             value={secretKey} 
+                             onChange={(e) => setSecretKey(e.target.value)}
+                             className="w-full h-12 px-4 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:border-rose-500 outline-none" 
+                           />
+                         </div>
+                       </div>
+                     )}
+                   </div>
+                 )}
 
                  {/* Protocol Terms */}
                  <div className="bg-white border border-slate-200 rounded-[3rem] p-10 space-y-10 shadow-xl shadow-slate-200/40">
@@ -404,15 +593,34 @@ const LightCheckout: React.FC = () => {
                       </div>
 
                       <div className="mt-12 space-y-4">
+                         {formError && (
+                           <div className="bg-rose-50 border border-rose-200 p-4 rounded-2xl text-xs font-black text-rose-600 uppercase tracking-widest animate-in fade-in duration-300">
+                             {formError}
+                           </div>
+                         )}
+
                          <button 
-                           disabled={isOnsiteDeliveryUnsupported}
-                           className={`w-full h-16 rounded-[2rem] font-black text-[13px] uppercase tracking-[0.5em] transition-all duration-300 flex items-center justify-center gap-6 group shadow-xl active:scale-95 ${
-                             isOnsiteDeliveryUnsupported 
+                           onClick={handlePaymentSubmit}
+                           disabled={isOnsiteDeliveryUnsupported || isProcessing}
+                           className={`w-full h-16 rounded-[2rem] font-black text-[13px] uppercase tracking-[0.5em] transition-all duration-300 flex items-center justify-center gap-4 group shadow-xl active:scale-95 ${
+                             isOnsiteDeliveryUnsupported || isProcessing
                                ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
                                : 'bg-slate-900 text-white hover:bg-rose-600 hover:text-white shadow-slate-900/20'
                            }`}
                          >
-                            Pay Now
+                            {isProcessing ? (
+                              <>
+                                <Loader2 size={18} className="animate-spin" />
+                                <span>Connecting Gateway...</span>
+                              </>
+                            ) : paymentMethod === 'Credit Card' ? (
+                              <>
+                                <Zap size={18} className="text-amber-400 group-hover:text-amber-200" />
+                                <span>Pay via senangPay</span>
+                              </>
+                            ) : (
+                              <span>Pay Now</span>
+                            )}
                          </button>
                          <button className="w-full h-16 bg-white border border-slate-200 text-slate-500 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.4em] hover:bg-slate-50 hover:text-slate-900 transition-all flex items-center justify-center gap-4">
                             <FileText size={18} />
