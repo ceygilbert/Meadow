@@ -31,13 +31,27 @@ const CustomerDashboard: React.FC = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const [profileRes, ordersRes] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', session.user.id).single(),
-        supabase.from('orders').select('*, order_items(*)').eq('customer_id', session.user.id).order('created_at', { ascending: false }).limit(5)
-      ]);
-
+      const profileRes = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
       if (profileRes.data) setProfile(profileRes.data);
-      if (ordersRes.data) setOrders(ordersRes.data);
+
+      const { data: oData, error: oError } = await supabase
+        .from('orders')
+        .select('*, order_items(*)')
+        .eq('customer_id', session.user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (oError) {
+        const { data: simpleOrders } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('customer_id', session.user.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
+        setOrders(simpleOrders || []);
+      } else {
+        setOrders(oData || []);
+      }
     } catch (err) {
       console.error(err);
     } finally {

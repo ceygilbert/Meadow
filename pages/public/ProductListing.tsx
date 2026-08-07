@@ -114,26 +114,41 @@ const ProductListing: React.FC = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      let selectStr = '*, categories!inner(*)';
-      if (subcategorySlug) {
-        selectStr += ', subcategories!inner(*)';
-      } else {
-        selectStr += ', subcategories(*)';
-      }
+      const [prodRes, catRes, subRes] = await Promise.all([
+        supabase.from('products').select('*'),
+        supabase.from('categories').select('*'),
+        supabase.from('subcategories').select('*')
+      ]);
 
-      let query = supabase.from('products').select(selectStr);
+      if (prodRes.error) throw prodRes.error;
+
+      const categoriesData = catRes.data || [];
+      const subcategoriesData = subRes.data || [];
+      const catMap = new Map(categoriesData.map(c => [c.id, c]));
+      const subMap = new Map(subcategoriesData.map(s => [s.id, s]));
+
+      let allData = (prodRes.data || []).map(p => ({
+        ...p,
+        categories: p.category_id ? catMap.get(p.category_id) : undefined,
+        subcategories: p.subcategory_id ? subMap.get(p.subcategory_id) : undefined
+      }));
 
       if (categorySlug) {
-        query = query.eq('categories.slug', categorySlug);
+        const matchedCat = categoriesData.find(c => c.slug === categorySlug);
+        if (matchedCat) {
+          allData = allData.filter(p => p.category_id === matchedCat.id);
+        }
       }
       if (subcategorySlug) {
-        query = query.eq('subcategories.slug', subcategorySlug);
+        const matchedSub = subcategoriesData.find(s => s.slug === subcategorySlug);
+        if (matchedSub) {
+          allData = allData.filter(p => p.subcategory_id === matchedSub.id);
+        }
       }
 
-      const { data, error: err } = await query;
-      if (err) throw err;
-      setProducts(data || []);
+      setProducts(allData);
     } catch (err: any) {
+      console.error('Error fetching products:', err);
       setError(err.message);
     } finally {
       setLoading(false);

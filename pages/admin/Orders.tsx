@@ -39,9 +39,20 @@ const Orders: React.FC = () => {
         .from('orders')
         .select('*, order_items(*, products(*))')
         .order('created_at', { ascending: false });
-      if (sbError) throw sbError;
-      setOrders(data || []);
+      
+      if (sbError) {
+        // Fallback to simple orders query if relationship embeds are not defined in schema cache
+        const { data: simpleData, error: simpleError } = await supabase
+          .from('orders')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (simpleError) throw simpleError;
+        setOrders(simpleData || []);
+      } else {
+        setOrders(data || []);
+      }
     } catch (err: any) {
+      console.error('Error fetching orders:', err);
       setError(err.message);
     } finally {
       setLoading(false);

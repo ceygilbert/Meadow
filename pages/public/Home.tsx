@@ -321,17 +321,21 @@ const Home: React.FC = () => {
     setError(null);
     try {
       const [prodRes, brandRes, catRes] = await Promise.all([
-        supabase.from('products').select('*, categories(*)').order('created_at', { ascending: false }),
+        supabase.from('products').select('*').order('created_at', { ascending: false }),
         supabase.from('brands').select('*'),
         supabase.from('categories').select('*')
       ]);
 
       if (prodRes.error) throw prodRes.error;
-      if (brandRes.error) throw brandRes.error;
-      if (catRes.error) throw catRes.error;
 
       if (prodRes.data) {
-        const allProducts = prodRes.data as (Product & { categories?: any })[];
+        const categoriesList = catRes.data || [];
+        const categoriesMap = new Map(categoriesList.map((c: any) => [c.id, c]));
+        const allProducts = (prodRes.data || []).map((p: any) => ({
+          ...p,
+          categories: p.category_id ? categoriesMap.get(p.category_id) : undefined
+        })) as (Product & { categories?: any })[];
+
         setTrendingProducts(allProducts);
         const featured = allProducts.filter(p => p.is_featured === true);
         setFeaturedProducts(featured.length > 0 ? featured : allProducts.slice(0, 12));

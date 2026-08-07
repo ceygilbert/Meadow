@@ -125,7 +125,7 @@ const ProductDetails: React.FC = () => {
         .from('products')
         .select('*')
         .eq('slug', slug)
-        .single();
+        .maybeSingle();
 
       if (prodError) throw prodError;
       if (!data) throw new Error("Product not indexed.");
@@ -133,10 +133,10 @@ const ProductDetails: React.FC = () => {
       setProduct(data);
 
       const [brandRes, catRes, subCatRes, relatedRes] = await Promise.all([
-        supabase.from('brands').select('*').eq('id', data.brand_id).single(),
-        supabase.from('categories').select('*').eq('id', data.category_id).single(),
-        data.subcategory_id ? supabase.from('subcategories').select('*').eq('id', data.subcategory_id).single() : Promise.resolve({ data: null }),
-        supabase.from('products').select('*').eq('category_id', data.category_id).neq('id', data.id).limit(4)
+        data.brand_id ? supabase.from('brands').select('*').eq('id', data.brand_id).maybeSingle() : Promise.resolve({ data: null }),
+        data.category_id ? supabase.from('categories').select('*').eq('id', data.category_id).maybeSingle() : Promise.resolve({ data: null }),
+        data.subcategory_id ? supabase.from('subcategories').select('*').eq('id', data.subcategory_id).maybeSingle() : Promise.resolve({ data: null }),
+        data.category_id ? supabase.from('products').select('*').eq('category_id', data.category_id).neq('id', data.id).limit(4) : Promise.resolve({ data: [] })
       ]);
 
       if (brandRes.data) setBrand(brandRes.data);

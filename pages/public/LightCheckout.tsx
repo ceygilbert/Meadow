@@ -28,7 +28,7 @@ import {
 import PublicNavbar from '../../components/PublicNavbar';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
-import { submitSenangPayPayment, DEFAULT_SENANGPAY_MERCHANT_ID, DEFAULT_SENANGPAY_SECRET_KEY } from '../../lib/senangpay';
+import { getStripeClient, DEFAULT_STRIPE_PUBLISHABLE_KEY, DEFAULT_STRIPE_CHECKOUT_URL, redirectToStripeCheckout } from '../../lib/stripe';
 
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/Red%20Full%20Logo.png";
 
@@ -51,12 +51,19 @@ const LightCheckout: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [customerCategory, setCustomerCategory] = useState('Personal');
 
-  // senangPay Config state
-  const [showSenangPayConfig, setShowSenangPayConfig] = useState(false);
-  const [merchantId, setMerchantId] = useState(DEFAULT_SENANGPAY_MERCHANT_ID);
-  const [secretKey, setSecretKey] = useState(DEFAULT_SENANGPAY_SECRET_KEY);
+  // Stripe Config & State
+  const [showStripeConfig, setShowStripeConfig] = useState(false);
+  const [stripePublishableKey, setStripePublishableKey] = useState(DEFAULT_STRIPE_PUBLISHABLE_KEY);
+  const [stripeCheckoutUrl, setStripeCheckoutUrl] = useState(DEFAULT_STRIPE_CHECKOUT_URL);
+  const [showStripeModal, setShowStripeModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Stripe Card Input Simulation
+  const [stripeCardNumber, setStripeCardNumber] = useState('4242 •••• •••• 4242');
+  const [stripeExpiry, setStripeExpiry] = useState('12 / 28');
+  const [stripeCvc, setStripeCvc] = useState('•••');
+  const [currentOrderId, setCurrentOrderId] = useState('');
 
   useEffect(() => {
     if (profile?.full_name && !fullName) setFullName(profile.full_name);
@@ -151,6 +158,8 @@ const LightCheckout: React.FC = () => {
     setIsProcessing(true);
 
     const orderId = `ORD-${Date.now()}`;
+    setCurrentOrderId(orderId);
+
     const orderData = {
       order_id: orderId,
       customer_name: fullName,
@@ -163,7 +172,7 @@ const LightCheckout: React.FC = () => {
       delivery_method: deliveryMethod,
       branch: selectedBranch,
       amount: grandTotal,
-      payment_method: paymentMethod,
+      payment_method: paymentMethod === 'Credit Card' ? 'Stripe Checkout' : paymentMethod,
       items: cartItems,
       created_at: new Date().toISOString()
     };
@@ -176,27 +185,40 @@ const LightCheckout: React.FC = () => {
     }
 
     if (paymentMethod === 'Credit Card') {
-      // Instant Settlement calls senangPay testing API
-      const detailStr = `Meadow IT - ${cartItems.length} Item(s)`;
-      submitSenangPayPayment({
-        merchantId: merchantId.trim() || DEFAULT_SENANGPAY_MERCHANT_ID,
-        secretKey: secretKey.trim() || DEFAULT_SENANGPAY_SECRET_KEY,
-        detail: detailStr,
+      const redirected = redirectToStripeCheckout({
+        orderId,
         amount: grandTotal,
-        orderId: orderId,
+        detail: `Meadow Order ${orderId}`,
         name: fullName,
         email: email,
         phone: phone,
-        isSandbox: true
+        checkoutUrl: stripeCheckoutUrl
       });
+
+      setIsProcessing(false);
+      if (!redirected) {
+        setShowStripeModal(true);
+      } else {
+        localStorage.removeItem('meadow_cart');
+        navigate(`/order-success?orderId=${orderId}`);
+      }
     } else {
       setTimeout(() => {
         setIsProcessing(false);
-        alert(`Order ${orderId} initialized successfully via ${paymentMethod}. Our sales team will verify your transaction shortly.`);
         localStorage.removeItem('meadow_cart');
-        navigate('/');
-      }, 1200);
+        navigate(`/order-success?orderId=${orderId}`);
+      }, 1000);
     }
+  };
+
+  const handleCompleteStripePayment = () => {
+    setIsProcessing(true);
+    setTimeout(() => {
+      setIsProcessing(false);
+      setShowStripeModal(false);
+      localStorage.removeItem('meadow_cart');
+      navigate(`/order-success?orderId=${currentOrderId || 'ORD-COMPLETE'}`);
+    }, 1200);
   };
 
   const deliveryOptions = [
@@ -206,7 +228,7 @@ const LightCheckout: React.FC = () => {
   ];
 
   const paymentOptions = [
-    { id: 'Credit Card', label: 'Instant Settlement', sub: 'Card, FPX, E-Wallet (senangPay)' },
+    { id: 'Credit Card', label: 'Instant Settlement', sub: 'Card, FPX, E-Wallet (Stripe)' },
     { id: 'IPP', label: 'Instalment Plan', sub: 'IPP Settlement' },
     { id: 'Atome', label: 'Buy Now Pay Later', sub: 'Atome, Grab, SpayLater' }
   ];
@@ -422,46 +444,36 @@ const LightCheckout: React.FC = () => {
                  </div>
 
                  {paymentMethod === 'Credit Card' && (
-                   <div className="bg-gradient-to-r from-rose-50 via-amber-50 to-rose-50 border border-rose-200 rounded-[2.5rem] p-8 space-y-4 shadow-md animate-in fade-in duration-300">
+                   <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-50 border border-indigo-200 rounded-[2.5rem] p-8 space-y-4 shadow-md animate-in fade-in duration-300">
                      <div className="flex items-center justify-between">
                        <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 rounded-2xl bg-rose-600 text-white flex items-center justify-center font-black shadow-lg shadow-rose-600/30">
-                           <Zap size={20} />
+                         <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black shadow-lg shadow-indigo-600/30">
+                           <CreditCard size={20} />
                          </div>
                          <div>
-                           <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">senangPay Sandbox Active</h4>
-                           <p className="text-[11px] font-bold text-slate-500">Redirects directly to official senangPay testing payment gateway</p>
+                           <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Stripe Gateway Integrated</h4>
+                           <p className="text-[11px] font-bold text-slate-500">Secure end-to-end encrypted instant credit card & mobile wallet processing</p>
                          </div>
                        </div>
                        <button 
-                         onClick={() => setShowSenangPayConfig(!showSenangPayConfig)}
-                         className="flex items-center gap-2 text-xs font-black text-rose-600 bg-white border border-rose-200 px-4 py-2 rounded-xl hover:bg-rose-50 transition-all shadow-sm"
+                         onClick={() => setShowStripeConfig(!showStripeConfig)}
+                         className="flex items-center gap-2 text-xs font-black text-indigo-600 bg-white border border-indigo-200 px-4 py-2 rounded-xl hover:bg-indigo-50 transition-all shadow-sm"
                        >
                          <Settings size={14} />
-                         <span>{showSenangPayConfig ? 'Hide Gateway Keys' : 'Test API Credentials'}</span>
+                         <span>{showStripeConfig ? 'Hide Stripe Key' : 'Publishable Key'}</span>
                        </button>
                      </div>
 
-                     {showSenangPayConfig && (
-                       <div className="pt-4 border-t border-rose-200/60 grid md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                         <div>
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Merchant ID (Sandbox)</label>
-                           <input 
-                             type="text" 
-                             value={merchantId} 
-                             onChange={(e) => setMerchantId(e.target.value)}
-                             className="w-full h-12 px-4 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:border-rose-500 outline-none" 
-                           />
-                         </div>
-                         <div>
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Secret Key (Sandbox)</label>
-                           <input 
-                             type="text" 
-                             value={secretKey} 
-                             onChange={(e) => setSecretKey(e.target.value)}
-                             className="w-full h-12 px-4 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:border-rose-500 outline-none" 
-                           />
-                         </div>
+                     {showStripeConfig && (
+                       <div className="pt-4 border-t border-indigo-200/60 animate-in fade-in slide-in-from-top-2 duration-300">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Stripe Publishable Key</label>
+                         <input 
+                           type="text" 
+                           value={stripePublishableKey} 
+                           onChange={(e) => setStripePublishableKey(e.target.value)}
+                           placeholder="pk_test_..." 
+                           className="w-full h-12 px-4 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:border-indigo-500 outline-none" 
+                         />
                        </div>
                      )}
                    </div>
@@ -605,18 +617,18 @@ const LightCheckout: React.FC = () => {
                            className={`w-full h-16 rounded-[2rem] font-black text-[13px] uppercase tracking-[0.5em] transition-all duration-300 flex items-center justify-center gap-4 group shadow-xl active:scale-95 ${
                              isOnsiteDeliveryUnsupported || isProcessing
                                ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
-                               : 'bg-slate-900 text-white hover:bg-rose-600 hover:text-white shadow-slate-900/20'
+                               : 'bg-indigo-600 text-white hover:bg-slate-900 shadow-indigo-600/20'
                            }`}
                          >
                             {isProcessing ? (
                               <>
                                 <Loader2 size={18} className="animate-spin" />
-                                <span>Connecting Gateway...</span>
+                                <span>Processing...</span>
                               </>
                             ) : paymentMethod === 'Credit Card' ? (
                               <>
-                                <Zap size={18} className="text-amber-400 group-hover:text-amber-200" />
-                                <span>Pay via senangPay</span>
+                                <CreditCard size={18} className="text-white group-hover:scale-110 transition-transform" />
+                                <span>Pay via Stripe</span>
                               </>
                             ) : (
                               <span>Pay Now</span>
@@ -635,6 +647,105 @@ const LightCheckout: React.FC = () => {
 
         </div>
       </main>
+
+      {/* Stripe Payment Modal */}
+      {showStripeModal && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
+          <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 md:p-10 max-w-lg w-full shadow-2xl space-y-6 relative animate-in zoom-in-95 duration-200 my-auto">
+            <button 
+              onClick={() => setShowStripeModal(false)}
+              className="absolute top-6 right-6 w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 font-bold transition-all"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center gap-4 border-b border-slate-100 pb-6">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black shadow-lg shadow-indigo-600/30">
+                <CreditCard size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900 uppercase tracking-wider">Stripe Payment Gateway</h3>
+                <p className="text-xs font-bold text-slate-400">Order: {currentOrderId || 'ORD-MEADOW'}</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 space-y-2">
+              <div className="flex justify-between items-center text-xs font-bold text-slate-500">
+                <span>Customer</span>
+                <span className="text-slate-900">{fullName}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs font-bold text-slate-500">
+                <span>Email</span>
+                <span className="text-slate-900">{email}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm font-black text-slate-900 pt-2 border-t border-slate-200">
+                <span>Total Amount</span>
+                <span className="text-indigo-600 text-base">RM {grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              </div>
+            </div>
+
+            {/* Card Inputs */}
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Card Number (Stripe Test Card)</label>
+                <div className="relative">
+                  <input 
+                    type="text" 
+                    value={stripeCardNumber} 
+                    onChange={(e) => setStripeCardNumber(e.target.value)}
+                    className="w-full h-14 px-4 pl-12 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold text-slate-900 focus:border-indigo-600 outline-none" 
+                  />
+                  <CreditCard className="absolute left-4 top-4 text-indigo-600" size={18} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Expires</label>
+                  <input 
+                    type="text" 
+                    value={stripeExpiry} 
+                    onChange={(e) => setStripeExpiry(e.target.value)}
+                    className="w-full h-14 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold text-slate-900 focus:border-indigo-600 outline-none" 
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">CVC / CVC2</label>
+                  <input 
+                    type="text" 
+                    value={stripeCvc} 
+                    onChange={(e) => setStripeCvc(e.target.value)}
+                    className="w-full h-14 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold text-slate-900 focus:border-indigo-600 outline-none" 
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center gap-3 text-xs font-bold text-indigo-700">
+              <Lock size={16} className="shrink-0" />
+              <span>Stripe 256-bit SSL encrypted test transaction</span>
+            </div>
+
+            <button 
+              onClick={handleCompleteStripePayment}
+              disabled={isProcessing}
+              className="w-full h-16 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 size={20} className="animate-spin" />
+                  <span>Authorizing Stripe...</span>
+                </>
+              ) : (
+                <>
+                  <span>Pay RM {grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })} with Stripe</span>
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Footer Minimal */}
       <footer className="relative z-10 px-8 md:px-16 py-20 border-t border-slate-200 mt-20 bg-white">

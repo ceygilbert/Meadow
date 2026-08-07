@@ -11,6 +11,7 @@ import PCBuilder from './pages/public/PCBuilder';
 import Workstation from './pages/public/Workstation';
 import Checkout from './pages/public/Checkout';
 import LightCheckout from './pages/public/LightCheckout';
+import OrderSuccess from './pages/public/OrderSuccess';
 import TermsOfUse from './pages/public/TermsOfUse';
 import ProductPolicy from './pages/public/ProductPolicy';
 import ProductDetails from './pages/public/ProductDetails';
@@ -75,6 +76,7 @@ const AppContent: React.FC = () => {
       <Route path="/workstation" element={<Workstation />} />
       <Route path="/checkout" element={<Checkout />} />
       <Route path="/checkout-light" element={<LightCheckout />} />
+      <Route path="/order-success" element={<OrderSuccess />} />
       <Route path="/terms" element={<TermsOfUse />} />
       <Route path="/product-policy" element={<ProductPolicy />} />
       
