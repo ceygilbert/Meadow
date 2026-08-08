@@ -83,11 +83,11 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
-  const [activeMenu, setActiveMenu] = useState<'category' | 'brand' | null>(null);
+  const [activeMenu, setActiveMenu] = useState<'categories' | 'brands' | null>(null);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [headerSearch, setHeaderSearch] = useState('');
 
-  const toggleMenu = (menu: 'category' | 'brand') => {
+  const toggleMenu = (menu: 'categories' | 'brands') => {
     setActiveMenu(prev => prev === menu ? null : menu);
     if (activeMenu === menu) setHoveredCategory(null);
   };
@@ -162,19 +162,19 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
             
             <div className="relative py-2 group/trigger">
               <button 
-                onClick={() => toggleMenu('category')}
-                className={`text-sm font-nav uppercase tracking-[0.25em] transition-all ${activeMenu === 'category' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-900'}`}
+                onClick={() => toggleMenu('categories')}
+                className={`text-sm font-nav uppercase tracking-[0.25em] transition-all ${activeMenu === 'categories' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-900'}`}
               >
-                Category
+                Categories
               </button>
             </div>
 
             <div className="relative py-2 group/trigger">
               <button 
-                onClick={() => toggleMenu('brand')}
-                className={`text-sm font-nav uppercase tracking-[0.25em] transition-all ${activeMenu === 'brand' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-900'}`}
+                onClick={() => toggleMenu('brands')}
+                className={`text-sm font-nav uppercase tracking-[0.25em] transition-all ${activeMenu === 'brands' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-900'}`}
               >
-                Brand
+                Brands
               </button>
             </div>
 
@@ -223,7 +223,7 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
               className="absolute left-0 right-0 top-full bg-white/95 backdrop-blur-3xl border-b border-slate-100 shadow-2xl pointer-events-auto overflow-hidden"
             >
               <div className="max-w-[1440px] mx-auto">
-                {activeMenu === 'category' && (
+                {activeMenu === 'categories' && (
                   <div className="max-w-[1440px] mx-auto p-12 grid grid-cols-12 gap-12">
                     {/* Categories List */}
                     <div className="col-span-4 border-r border-slate-100 pr-12">
@@ -308,7 +308,7 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
                   </div>
                 )}
 
-                {activeMenu === 'brand' && (
+                {activeMenu === 'brands' && (
                   <div className="flex max-h-[65vh]">
                     {/* Left Info Panel */}
                     <div className="w-1/4 p-8 lg:p-12 pr-12 lg:pr-16 bg-slate-50/50 flex flex-col border-r border-slate-100 overflow-y-auto">

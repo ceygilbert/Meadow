@@ -134,6 +134,7 @@ const Home: React.FC = () => {
   const [newArrivalProducts, setNewArrivalProducts] = useState<Product[]>([]);
   const [laptopProducts, setLaptopProducts] = useState<Product[]>([]);
   const [pcComponentProducts, setPcComponentProducts] = useState<Product[]>([]);
+  const [displayProducts, setDisplayProducts] = useState<Product[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -169,6 +170,7 @@ const Home: React.FC = () => {
   const newArrivalRef = useRef<HTMLDivElement>(null);
   const laptopRef = useRef<HTMLDivElement>(null);
   const pcComponentRef = useRef<HTMLDivElement>(null);
+  const displayRef = useRef<HTMLDivElement>(null);
 
   const scrollCollection = (direction: 'left' | 'right') => {
     if (collectionRef.current) {
@@ -214,6 +216,16 @@ const Home: React.FC = () => {
     if (pcComponentRef.current) {
       const scrollAmount = 400;
       pcComponentRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollDisplay = (direction: 'left' | 'right') => {
+    if (displayRef.current) {
+      const scrollAmount = 400;
+      displayRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
       });
@@ -355,6 +367,16 @@ const Home: React.FC = () => {
           p.categories?.slug === 'pc-component'
         );
         setPcComponentProducts(pcComponents);
+
+        const displays = allProducts.filter(p => 
+          p.categories?.name?.toLowerCase().includes('display') || 
+          p.categories?.name?.toLowerCase().includes('monitor') || 
+          p.categories?.slug === 'display' ||
+          p.categories?.slug === 'displays' ||
+          p.categories?.slug === 'monitors' ||
+          p.categories?.slug === 'monitor'
+        );
+        setDisplayProducts(displays);
       }
       if (brandRes.data) setBrands(brandRes.data);
     } catch (err: any) {
@@ -671,7 +693,7 @@ const Home: React.FC = () => {
         <div className="flex flex-col md:flex-row items-end justify-between mb-8 gap-6">
           <div className="flex flex-col">
             <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-3">Categories</h2>
-            <p className="text-xs text-slate-400 font-black uppercase tracking-[0.4em]">Browse by Hardware Class</p>
+            <p className="text-xs text-slate-400 font-black uppercase tracking-[0.4em]">EXPLORE BY PRODUCT CATEGORIES</p>
           </div>
           <div className="flex items-center gap-4">
             <button 
@@ -750,12 +772,11 @@ const Home: React.FC = () => {
            <div className="absolute inset-0 flex flex-col justify-center p-8 md:p-20">
              <div className="max-w-2xl animate-in fade-in slide-in-from-bottom duration-1000">
                <div className="flex items-center gap-3 mb-6">
-                 <Zap size={20} className="text-[#ef4444]" fill="currentColor" />
-                 <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-[#e11d48]">Bespoke Performance</span>
+                 <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-[#e11d48]">CUSTOM PC BUILDS</span>
                </div>
                <h2 className="text-4xl md:text-7xl font-black text-white tracking-tighter uppercase leading-[0.9] mb-8">Build Your <br /> Own PC.</h2>
                <p className="text-sm md:text-lg text-white/70 font-medium max-w-md leading-relaxed mb-10">
-                 Unleash your creativity and power. Customise every component to match your specific needs, from gaming beasts to professional workstations.
+                  Pick your parts step by step to build our dream PC that suits our budget and needs. Support and after-sales guidance assurance.
                </p>
                <Link 
                  to="/customised" 
@@ -774,8 +795,8 @@ const Home: React.FC = () => {
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
           <div className="flex items-center justify-between mb-8">
              <div className="flex flex-col">
-                <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-3">Top Seller</h2>
-                <p className="text-sm text-slate-500 font-medium">Essentials that pair perfectly with your favourite devices.</p>
+                <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-3">BEST SELLERS</h2>
+                <p className="text-sm text-slate-500 font-medium">The products customers shop most at Meadow.</p>
              </div>
              <div className="hidden md:flex gap-4">
                 <button 
@@ -827,7 +848,7 @@ const Home: React.FC = () => {
       <section className="py-2 md:py-4 bg-slate-50">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">Promotion</h2>
+            <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">FEATURED PROMOTION DEALS</h2>
             <div className="hidden md:flex gap-4">
                 <button 
                   onClick={() => scrollPromo('left')}
@@ -877,7 +898,7 @@ const Home: React.FC = () => {
       <section className="py-6 md:py-10 bg-white">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">New Arrival</h2>
+            <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">New Arrivals</h2>
             <div className="hidden md:flex gap-4">
                 <button 
                   onClick={() => scrollNewArrival('left')}
@@ -928,11 +949,11 @@ const Home: React.FC = () => {
           <div className="flex flex-col lg:flex-row gap-16 items-start">
             {/* Left Content */}
             <div className="lg:w-1/4 flex flex-col items-start pt-10">
-              <span className="text-xl font-bold text-rose-600 mb-6 uppercase tracking-tight">Ready to Run</span>
-              <h2 className="text-6xl md:text-[5rem] font-black text-slate-900 leading-[0.85] tracking-tightest uppercase mb-8">
-                PRE-BUILT <br /> SYSTEMS
+              <span className="text-xl font-bold text-rose-600 mb-6 uppercase tracking-tight">Ready To Go</span>
+              <h2 className="text-5xl md:text-[4rem] font-black text-slate-900 leading-[0.85] tracking-tightest uppercase mb-8">
+                PRE-BUILT PC<br /> PACKAGES
               </h2>
-              <p className="text-slate-500 font-bold mb-12 uppercase tracking-widest text-sm">Professional Packages</p>
+              <p className="text-slate-500 font-bold mb-12 tracking-widest text-sm">Built for different budgets and performance needs.</p>
               <Link 
                 to="/prebuilt" 
                 className="px-10 py-4 bg-white border border-slate-200 text-slate-900 rounded-full font-black text-xs uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-lg"
@@ -1123,6 +1144,59 @@ const Home: React.FC = () => {
             >
               {pcComponentProducts.map((p) => (
                 <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-slate-50 rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+                   <button 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                      className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
+                   >
+                      <Heart size={14} />
+                   </button>
+                   <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-3 relative flex items-center justify-center">
+                       <img src={p.image_url || undefined} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
+                   </div>
+                   <div className="mb-1">
+                       <h3 className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 truncate">{p.name}</h3>
+                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Meadow Tech</p>
+                   </div>
+                   <div>
+                       <span className="text-xs font-black text-slate-900">RM{p.price.toLocaleString()}</span>
+                   </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Display Section */}
+      {displayProducts.length > 0 && (
+        <section className="py-6 md:py-10 bg-slate-50 border-t border-slate-100">
+          <div className="max-w-[1440px] mx-auto px-4 md:px-10">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex flex-col">
+                <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-2">Display</h2>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Visual Excellence</p>
+              </div>
+              <div className="hidden md:flex gap-4">
+                  <button 
+                    onClick={() => scrollDisplay('left')}
+                    className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all bg-white"
+                  >
+                    <ChevronLeft size={22} />
+                  </button>
+                  <button 
+                    onClick={() => scrollDisplay('right')}
+                    className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all bg-white"
+                  >
+                    <ChevronRight size={22} />
+                  </button>
+               </div>
+            </div>
+            <div 
+              ref={displayRef}
+              className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10"
+            >
+              {displayProducts.map((p) => (
+                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
                    <button 
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                       className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"

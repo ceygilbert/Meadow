@@ -89,19 +89,19 @@ const OurStory: React.FC = () => {
            <div className="lg:col-span-2">
               <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#666] mb-12">Foundations</h2>
               <h3 className="text-3xl md:text-4xl font-light text-[#333] leading-snug mb-16 max-w-3xl">
-                We believe that the tools of creation should be as refined as the masterpieces they facilitate. 
+                We help every customer choose the right products with genuine advice and the right value for their needs.
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
                  <div>
-                    <h4 className="text-sm font-bold uppercase tracking-widest mb-6 italic text-[#333]">Precision Hardware</h4>
+                    <h4 className="text-sm font-bold uppercase tracking-widest mb-6 italic text-[#333]">Official Brand Partnership</h4>
                     <p className="text-sm text-[#666] leading-relaxed font-light">
-                      Every component in our collection is curated with an uncompromising eye for performance and thermal integrity. We do not merely distribute hardware; we select the artifacts of modern computing.
+                      As one of the largest distributors in Johor, we work with leading brands across laptops, printers, monitors, PC components and everyday IT products, giving customers more choice from brands they trust in one place.
                     </p>
                  </div>
                  <div>
-                    <h4 className="text-sm font-bold uppercase tracking-widest mb-6 italic text-[#333]">Bespoke Engineering</h4>
+                    <h4 className="text-sm font-bold uppercase tracking-widest mb-6 italic text-[#333]">Workshop Backed Support</h4>
                     <p className="text-sm text-[#666] leading-relaxed font-light">
-                      Meadow's custom builds are more than the sum of their parts. They are balanced ecosystems, meticulously tuned for the unique demands of software development, AI research, and high-fidelity rendering.
+                      Our in-store workshop supports customers with problem diagnosis, formatting, dust cleaning, warranty coordination and technical follow-up after purchase.
                     </p>
                  </div>
               </div>
@@ -132,10 +132,10 @@ const OurStory: React.FC = () => {
               <div className="order-1 lg:order-2 max-w-xl">
                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-8 block">Distribution</span>
                  <h2 className="text-3xl md:text-5xl font-light mb-12 leading-tight">
-                   The Southern Hub of Excellence.
+                   Our Locations
                  </h2>
                  <p className="text-sm md:text-lg text-white/60 leading-relaxed font-light mb-12">
-                   From our headquarters in Johor Jaya to our concept spaces in Plaza Pelangi and Toppen, we serve as the primary conduit for premium technical components in Southeast Asia.
+                   Across Meadow signature stores and official HP and ASUS concept stores, customers can browse, compare, and get practical advice in person. From laptops and printers to PC components and custom builds, our team is here to help you choose with greater clarity and confidence.
                  </p>
                  <Link 
                     to="/our-stores"
