@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Cpu, 
@@ -43,6 +43,7 @@ import WaveGradient from '../../components/WaveGradient';
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/White%20Full%20Logo.png";
 
 const Customised: React.FC = () => {
+  const location = useLocation();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [activeRangeTab, setActiveRangeTab] = useState('originals');
   const [activeStoreIndex, setActiveStoreIndex] = useState(0);
@@ -52,6 +53,17 @@ const Customised: React.FC = () => {
     description: string;
     image: string;
   } | null>(null);
+
+  useEffect(() => {
+    if (location.hash === '#signature-stores' || location.hash === '#signature-store') {
+      setTimeout(() => {
+        const el = document.getElementById('signature-stores') || document.getElementById('signature-store');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 150);
+    }
+  }, [location.hash]);
 
   const signatureStores = [
     {
@@ -607,7 +619,7 @@ const Customised: React.FC = () => {
       </section>
 
       {/* Signature Stores - Build Your Own PC Services */}
-      <section className="px-8 md:px-20 pt-16 pb-20 max-w-[1600px] mx-auto relative z-10 border-t border-white/5">
+      <section id="signature-stores" className="px-8 md:px-20 pt-16 pb-20 max-w-[1600px] mx-auto relative z-10 border-t border-white/5">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-600/10 border border-rose-500/20 text-rose-400 text-xs font-black uppercase tracking-[0.25em] mb-4">

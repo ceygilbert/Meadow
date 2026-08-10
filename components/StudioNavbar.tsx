@@ -1,21 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   ShoppingCart, 
   RotateCcw,
-  ChevronDown,
-  PackageCheck,
-  ShieldCheck,
-  Briefcase,
-  Building,
-  Wrench,
-  Truck,
-  FileText,
-  HelpCircle,
-  Headphones,
-  MapPin,
-  ShieldAlert
+  ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -84,18 +73,13 @@ const StudioNavbar: React.FC<StudioNavbarProps> = ({ showReset, onReset }) => {
                   <Link
                     to="/prebuilt?type=ready-to-ship"
                     onClick={() => setIsPrebuiltOpen(false)}
-                    className="flex items-start gap-3.5 p-3 rounded-xl hover:bg-white/10 transition-all group"
+                    className="p-3 rounded-xl hover:bg-white/10 transition-all group block"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-red-600/20 border border-red-500/30 flex items-center justify-center text-red-400 group-hover:bg-red-600 group-hover:text-white transition-all shrink-0 mt-0.5">
-                      <PackageCheck size={18} />
+                    <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-red-400 transition-colors">
+                      Ready-to-Ship PCs
                     </div>
-                    <div>
-                      <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-red-400 transition-colors">
-                        Ready-to-Ship PCs
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-medium leading-snug mt-0.5">
-                        Pre-assembled & tested systems in stock for immediate dispatch
-                      </div>
+                    <div className="text-[10px] text-slate-400 font-medium leading-snug mt-0.5">
+                      Pre-assembled & tested systems in stock for immediate dispatch
                     </div>
                   </Link>
 
@@ -104,18 +88,13 @@ const StudioNavbar: React.FC<StudioNavbarProps> = ({ showReset, onReset }) => {
                   <Link
                     to="/prebuilt?type=powered-by-brand"
                     onClick={() => setIsPrebuiltOpen(false)}
-                    className="flex items-start gap-3.5 p-3 rounded-xl hover:bg-white/10 transition-all group"
+                    className="p-3 rounded-xl hover:bg-white/10 transition-all group block"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0 mt-0.5">
-                      <ShieldCheck size={18} />
+                    <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-blue-400 transition-colors">
+                      Powered by Brand
                     </div>
-                    <div>
-                      <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-blue-400 transition-colors">
-                        Powered by Brand
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-medium leading-snug mt-0.5">
-                        Official brand partner custom builds (Gigabyte, ASUS, Zotac)
-                      </div>
+                    <div className="text-[10px] text-slate-400 font-medium leading-snug mt-0.5">
+                      Official brand partner custom builds (Gigabyte, ASUS, Zotac)
                     </div>
                   </Link>
                 </motion.div>
@@ -153,18 +132,13 @@ const StudioNavbar: React.FC<StudioNavbarProps> = ({ showReset, onReset }) => {
                   <Link
                     to="/workstation?type=professional"
                     onClick={() => setIsWorkstationOpen(false)}
-                    className="flex items-start gap-3.5 p-3 rounded-xl hover:bg-white/10 transition-all group"
+                    className="p-3 rounded-xl hover:bg-white/10 transition-all group block"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-all shrink-0 mt-0.5">
-                      <Briefcase size={18} />
+                    <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-purple-400 transition-colors">
+                      Professional Workstations
                     </div>
-                    <div>
-                      <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-purple-400 transition-colors">
-                        Professional Workstations
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-medium leading-snug mt-0.5">
-                        High-performance systems for 3D, CAD, AI & heavy video rendering
-                      </div>
+                    <div className="text-[10px] text-slate-400 font-medium leading-snug mt-0.5">
+                      High-performance systems for 3D, CAD, AI & heavy video rendering
                     </div>
                   </Link>
 
@@ -173,18 +147,13 @@ const StudioNavbar: React.FC<StudioNavbarProps> = ({ showReset, onReset }) => {
                   <Link
                     to="/workstation?type=office"
                     onClick={() => setIsWorkstationOpen(false)}
-                    className="flex items-start gap-3.5 p-3 rounded-xl hover:bg-white/10 transition-all group"
+                    className="p-3 rounded-xl hover:bg-white/10 transition-all group block"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0 mt-0.5">
-                      <Building size={18} />
+                    <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-emerald-400 transition-colors">
+                      Office PCs
                     </div>
-                    <div>
-                      <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-emerald-400 transition-colors">
-                        Office PCs
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-medium leading-snug mt-0.5">
-                        Reliable, silent & power-efficient desktop PCs for corporate & office setup
-                      </div>
+                    <div className="text-[10px] text-slate-400 font-medium leading-snug mt-0.5">
+                      Reliable, silent & power-efficient desktop PCs for corporate & office setup
                     </div>
                   </Link>
                 </motion.div>
@@ -193,7 +162,20 @@ const StudioNavbar: React.FC<StudioNavbarProps> = ({ showReset, onReset }) => {
           </div>
 
           {/* Where to Buy */}
-          <Link to="/stores" className="px-6 py-2.5 rounded-full text-[11px] font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10">Where to Buy</Link>
+          <Link 
+            to="/customised#signature-stores" 
+            onClick={() => {
+              if (window.location.pathname === '/customised') {
+                const el = document.getElementById('signature-stores');
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth' });
+                }
+              }
+            }}
+            className="px-6 py-2.5 rounded-full text-[11px] font-black uppercase tracking-[0.3em] transition-all text-white/60 hover:text-white hover:bg-white/10"
+          >
+            Where to Buy
+          </Link>
 
           {/* Support Dropdown */}
           <div 
@@ -225,18 +207,13 @@ const StudioNavbar: React.FC<StudioNavbarProps> = ({ showReset, onReset }) => {
                   <Link
                     to="/contact"
                     onClick={() => setIsSupportOpen(false)}
-                    className="flex items-center gap-3.5 p-3 rounded-xl hover:bg-white/10 transition-all group"
+                    className="p-3 rounded-xl hover:bg-white/10 transition-all group block"
                   >
-                    <div className="w-9 h-9 rounded-xl bg-amber-600/20 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:bg-amber-600 group-hover:text-white transition-all shrink-0">
-                      <Wrench size={16} />
+                    <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-amber-400 transition-colors">
+                      Our Services
                     </div>
-                    <div>
-                      <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-amber-400 transition-colors">
-                        Our Services
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-medium leading-tight">
-                        Custom PC assembly, maintenance & repairs
-                      </div>
+                    <div className="text-[10px] text-slate-400 font-medium leading-tight mt-0.5">
+                      Custom PC assembly, maintenance & repairs
                     </div>
                   </Link>
 
@@ -245,18 +222,13 @@ const StudioNavbar: React.FC<StudioNavbarProps> = ({ showReset, onReset }) => {
                   <Link
                     to="/track-order"
                     onClick={() => setIsSupportOpen(false)}
-                    className="flex items-center gap-3.5 p-3 rounded-xl hover:bg-white/10 transition-all group"
+                    className="p-3 rounded-xl hover:bg-white/10 transition-all group block"
                   >
-                    <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0">
-                      <Truck size={16} />
+                    <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-blue-400 transition-colors">
+                      Track Your Order
                     </div>
-                    <div>
-                      <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-blue-400 transition-colors">
-                        Track Your Order
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-medium leading-tight">
-                        Check real-time status of your order
-                      </div>
+                    <div className="text-[10px] text-slate-400 font-medium leading-tight mt-0.5">
+                      Check real-time status of your order
                     </div>
                   </Link>
 
@@ -265,18 +237,13 @@ const StudioNavbar: React.FC<StudioNavbarProps> = ({ showReset, onReset }) => {
                   <Link
                     to="/product-policy"
                     onClick={() => setIsSupportOpen(false)}
-                    className="flex items-center gap-3.5 p-3 rounded-xl hover:bg-white/10 transition-all group"
+                    className="p-3 rounded-xl hover:bg-white/10 transition-all group block"
                   >
-                    <div className="w-9 h-9 rounded-xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
-                      <ShieldAlert size={16} />
+                    <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-emerald-400 transition-colors">
+                      Warranty & Returns
                     </div>
-                    <div>
-                      <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-emerald-400 transition-colors">
-                        Warranty & Returns
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-medium leading-tight">
-                        Warranty registration & return policies
-                      </div>
+                    <div className="text-[10px] text-slate-400 font-medium leading-tight mt-0.5">
+                      Warranty registration & return policies
                     </div>
                   </Link>
 
@@ -285,18 +252,13 @@ const StudioNavbar: React.FC<StudioNavbarProps> = ({ showReset, onReset }) => {
                   <Link
                     to="/terms"
                     onClick={() => setIsSupportOpen(false)}
-                    className="flex items-center gap-3.5 p-3 rounded-xl hover:bg-white/10 transition-all group"
+                    className="p-3 rounded-xl hover:bg-white/10 transition-all group block"
                   >
-                    <div className="w-9 h-9 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-all shrink-0">
-                      <FileText size={16} />
+                    <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-purple-400 transition-colors">
+                      Terms & Conditions
                     </div>
-                    <div>
-                      <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-purple-400 transition-colors">
-                        Terms & Conditions
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-medium leading-tight">
-                        Service terms & user agreement
-                      </div>
+                    <div className="text-[10px] text-slate-400 font-medium leading-tight mt-0.5">
+                      Service terms & user agreement
                     </div>
                   </Link>
 
@@ -305,18 +267,13 @@ const StudioNavbar: React.FC<StudioNavbarProps> = ({ showReset, onReset }) => {
                   <Link
                     to="/contact"
                     onClick={() => setIsSupportOpen(false)}
-                    className="flex items-center gap-3.5 p-3 rounded-xl hover:bg-white/10 transition-all group"
+                    className="p-3 rounded-xl hover:bg-white/10 transition-all group block"
                   >
-                    <div className="w-9 h-9 rounded-xl bg-cyan-600/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-600 group-hover:text-white transition-all shrink-0">
-                      <HelpCircle size={16} />
+                    <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-cyan-400 transition-colors">
+                      FAQ
                     </div>
-                    <div>
-                      <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-cyan-400 transition-colors">
-                        FAQ
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-medium leading-tight">
-                        Frequently asked questions
-                      </div>
+                    <div className="text-[10px] text-slate-400 font-medium leading-tight mt-0.5">
+                      Frequently asked questions
                     </div>
                   </Link>
 
@@ -325,18 +282,13 @@ const StudioNavbar: React.FC<StudioNavbarProps> = ({ showReset, onReset }) => {
                   <Link
                     to="/contact"
                     onClick={() => setIsSupportOpen(false)}
-                    className="flex items-center gap-3.5 p-3 rounded-xl hover:bg-white/10 transition-all group"
+                    className="p-3 rounded-xl hover:bg-white/10 transition-all group block"
                   >
-                    <div className="w-9 h-9 rounded-xl bg-red-600/20 border border-red-500/30 flex items-center justify-center text-red-400 group-hover:bg-red-600 group-hover:text-white transition-all shrink-0">
-                      <Headphones size={16} />
+                    <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-red-400 transition-colors">
+                      Contact Us
                     </div>
-                    <div>
-                      <div className="text-[11px] font-black uppercase tracking-wider text-white group-hover:text-red-400 transition-colors">
-                        Contact Us
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-medium leading-tight">
-                        Get in touch with our support team
-                      </div>
+                    <div className="text-[10px] text-slate-400 font-medium leading-tight mt-0.5">
+                      Get in touch with our support team
                     </div>
                   </Link>
                 </motion.div>

@@ -26,7 +26,13 @@ import {
   Facebook,
   Instagram,
   Eye,
-  Package
+  Package,
+  Monitor,
+  Maximize,
+  HardDrive,
+  Database,
+  Shield,
+  Wifi
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import Breadcrumbs from '../../components/Breadcrumbs';
@@ -89,6 +95,48 @@ const ProductDetails: React.FC = () => {
     const endStr = end.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
     return `${startStr} - ${endStr}`;
   };
+
+  const isDesktopOrLaptop = useMemo(() => {
+    if (!product) return false;
+    const catName = (category?.name || '').toLowerCase();
+    const subName = (subcategory?.name || '').toLowerCase();
+    const prodName = (product.name || '').toLowerCase();
+
+    const targetCategories = ['laptop', 'laptops', 'desktop', 'desktops'];
+    const isCatMatch = targetCategories.some(tc => catName.includes(tc) || subName.includes(tc));
+    const isNameMatch = prodName.includes('laptop') || prodName.includes('desktop');
+
+    return isCatMatch || isNameMatch;
+  }, [product, category, subcategory]);
+
+  const getSpec = (keys: string[], fallback: string) => {
+    if (!product?.specs) return fallback;
+    for (const k of keys) {
+      if (product.specs[k] && typeof product.specs[k] === 'string' && product.specs[k].trim()) {
+        return product.specs[k];
+      }
+    }
+    return fallback;
+  };
+
+  const sysProcessor = getSpec(['Processor', 'processor', 'CPU', 'cpu'], 'AMD Ryzen™ 5 7535HS Processor');
+  const sysGraphics = getSpec(['Graphics', 'graphics', 'GPU', 'gpu'], 'AMD Radeon™ 660M');
+  const sysDisplay = getSpec(['Display', 'display', 'Screen', 'screen'], 'Non-touch screen, 15.6-inch, FHD (1920 × 1080) 16:9, Wide view, Anti-glare display, LED Backlit, 300nits, NTSC: 45%, Screen-to-body ratio:87 %');
+  const sysMemory = getSpec(['Memory', 'memory', 'RAM', 'ram'], product?.ddr_type ? `16GB ${product.ddr_type} SO-DIMM, Memory Max Up to:64GB` : '16GB DDR5 SO-DIMM, Memory Max Up to:64GB');
+  const sysStorage = getSpec(['Storage', 'storage', 'SSD', 'ssd'], '512GB M.2 2280 NVMe™ PCIe® 4.0 SSD');
+  const sysSecurity = getSpec(['Security', 'security'], 'N/A');
+
+  const addOS = getSpec(['Operating System', 'OS', 'os'], 'Windows 11 Home');
+  const addColor = selectedColor || getSpec(['Color', 'color'], 'Misty Grey');
+  const addSoftware = getSpec(['Included Software', 'Software', 'software'], 'Microsoft Office Home 2024 +Microsoft 365 Basic');
+  const addIncluded = getSpec(['Whats Included', "What's Included?", 'Included', 'included'], 'Backpack');
+
+  const featWeight = getSpec(['Total Weight', 'Weight', 'weight'], '1.60 kg');
+  const featBattery = getSpec(['Battery & Charging', 'Battery', 'battery'], '50WHrs, 3S1P, 3-cell Li-ion, Long life rechargeable lithium polymer battery');
+  const featPorts = getSpec(['Ports & Slots', 'Ports', 'ports'], '2x USB 3.2 Gen 2 Type-C support display / power delivery 2x USB 3.2 Gen 1 Type-A\n1x RJ45 Gigabit Ethernet 1x 3.5mm Combo Audio Jack\n1x HDMI 1.4\nup to 3840×2160p/30Hz');
+  const featCamera = getSpec(['Web Camera', 'Camera', 'camera', 'Webcam'], '720p HD camera, With privacy shutter');
+  const featKeyboard = getSpec(['Keyboard', 'keyboard'], 'Backlit Chiclet Keyboard with Num-key\n1.35mm Key-travel\nSpill-resistant Keyboard\nTouchpad');
+  const featWireless = getSpec(['Wireless Connectivity', 'Wireless', 'wireless'], 'Wi-Fi 6 (802.11ax) + Bluetooth 5.2');
 
   // Shared UI States (Synced with Home)
   const [isFullMenuOpen, setIsFullMenuOpen] = useState(false);
@@ -460,37 +508,227 @@ const ProductDetails: React.FC = () => {
         </div>
       </main>
 
-      {/* Technical Specifications */}
-      <section className="bg-[#FAF9FB] py-20 md:py-32 border-y border-slate-100">
-         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
-            <div className="grid lg:grid-cols-12 gap-16 md:gap-24">
-               <div className="lg:col-span-4">
-                  <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-[0.9] mb-8">Technical <br /> Architecture.</h2>
-                  <p className="text-slate-500 font-medium text-lg leading-relaxed">
-                     Detailed metrics and component validation. Every unit undergoes 72 hours of thermal stress testing prior to indexing.
-                  </p>
-               </div>
-               <div className="lg:col-span-8 grid md:grid-cols-2 gap-12">
-                  {[
-                    { label: 'Thermal Efficiency', val: 'Vortex Airflow Cooling', icon: Zap },
-                    { label: 'System Logic', val: 'Engineered V-Series PCB', icon: Cpu },
-                    { label: 'Durability Matrix', val: 'Military-Grade Alloy', icon: ShieldCheck },
-                    { label: 'Acoustic Level', val: 'Zero-Decibel Static', icon: Zap }
-                  ].map((spec, i) => (
-                    <div key={i} className="flex gap-8 group">
-                       <div className="w-16 h-16 bg-white rounded-2xl shadow-lg border border-slate-100 flex items-center justify-center text-red-600 group-hover:bg-slate-900 group-hover:text-white transition-all shrink-0">
-                          <spec.icon size={28} />
-                       </div>
-                       <div className="space-y-2">
-                          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">{spec.label}</p>
-                          <p className="text-lg font-black text-slate-900 uppercase tracking-tight">{spec.val}</p>
-                       </div>
+      {/* System Specification & Feature Specification Section */}
+      {isDesktopOrLaptop ? (
+        <section className="bg-[#F6F7FA] py-14 md:py-24 border-y border-slate-200/80 font-sans relative overflow-hidden">
+          {/* Subtle background red gradient glow */}
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="max-w-[1550px] mx-auto px-4 md:px-10 relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              {/* Left Column: System Spec + Additional Information */}
+              <div className="lg:col-span-8 flex flex-col gap-6">
+                
+                {/* System Specification Header Box */}
+                <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 text-red-600 text-[11px] font-black uppercase tracking-widest mb-2 border border-red-100">
+                      <Cpu size={14} className="text-red-600" />
+                      Hardware Architecture
                     </div>
-                  ))}
-               </div>
+                    <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                      <span className="w-2 h-7 bg-red-600 rounded-full inline-block"></span>
+                      System Specification
+                    </h2>
+                  </div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-100 px-3 py-1.5 rounded-lg shrink-0 self-start sm:self-center">
+                    Verified Specs
+                  </span>
+                </div>
+
+                {/* 6 Grid Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+                  
+                  {/* Processor */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/70 hover:border-red-500/40 hover:shadow-xl transition-all duration-300 group hover:-translate-y-1 relative overflow-hidden flex flex-col justify-between">
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
+                          <Cpu size={22} />
+                        </div>
+                        <span className="text-red-600 font-extrabold text-base md:text-lg tracking-tight">Processor</span>
+                      </div>
+                      <p className="text-slate-900 font-bold text-sm md:text-base leading-snug">{sysProcessor}</p>
+                    </div>
+                  </div>
+
+                  {/* Graphics */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/70 hover:border-red-500/40 hover:shadow-xl transition-all duration-300 group hover:-translate-y-1 relative overflow-hidden flex flex-col justify-between">
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
+                          <Monitor size={22} />
+                        </div>
+                        <span className="text-red-600 font-extrabold text-base md:text-lg tracking-tight">Graphics</span>
+                      </div>
+                      <p className="text-slate-900 font-bold text-sm md:text-base leading-snug">{sysGraphics}</p>
+                    </div>
+                  </div>
+
+                  {/* Display */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/70 hover:border-red-500/40 hover:shadow-xl transition-all duration-300 group hover:-translate-y-1 relative overflow-hidden flex flex-col justify-between">
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
+                          <Maximize size={22} />
+                        </div>
+                        <span className="text-red-600 font-extrabold text-base md:text-lg tracking-tight">Display</span>
+                      </div>
+                      <p className="text-slate-900 font-bold text-xs md:text-sm leading-relaxed">{sysDisplay}</p>
+                    </div>
+                  </div>
+
+                  {/* Memory */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/70 hover:border-red-500/40 hover:shadow-xl transition-all duration-300 group hover:-translate-y-1 relative overflow-hidden flex flex-col justify-between">
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
+                          <HardDrive size={22} />
+                        </div>
+                        <span className="text-red-600 font-extrabold text-base md:text-lg tracking-tight">Memory</span>
+                      </div>
+                      <p className="text-slate-900 font-bold text-sm md:text-base leading-snug">{sysMemory}</p>
+                    </div>
+                  </div>
+
+                  {/* Storage */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/70 hover:border-red-500/40 hover:shadow-xl transition-all duration-300 group hover:-translate-y-1 relative overflow-hidden flex flex-col justify-between">
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
+                          <Database size={22} />
+                        </div>
+                        <span className="text-red-600 font-extrabold text-base md:text-lg tracking-tight">Storage</span>
+                      </div>
+                      <p className="text-slate-900 font-bold text-sm md:text-base leading-snug">{sysStorage}</p>
+                    </div>
+                  </div>
+
+                  {/* Security */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/70 hover:border-red-500/40 hover:shadow-xl transition-all duration-300 group hover:-translate-y-1 relative overflow-hidden flex flex-col justify-between">
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
+                          <Shield size={22} />
+                        </div>
+                        <span className="text-red-600 font-extrabold text-base md:text-lg tracking-tight">Security</span>
+                      </div>
+                      <p className="text-slate-900 font-bold text-sm md:text-base leading-snug">{sysSecurity}</p>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Additional Information Box */}
+                <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200/80">
+                  <div className="flex items-center gap-3 pb-4 border-b border-slate-100 mb-6">
+                    <span className="w-2 h-7 bg-red-600 rounded-full inline-block"></span>
+                    <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Additional Information</h3>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-100 hover:bg-slate-100/80 transition-colors">
+                      <p className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Operating System</p>
+                      <p className="text-slate-900 font-bold text-base">{addOS}</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-100 hover:bg-slate-100/80 transition-colors">
+                      <p className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Color</p>
+                      <p className="text-slate-900 font-bold text-base">{addColor}</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-100 hover:bg-slate-100/80 transition-colors">
+                      <p className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Included Software</p>
+                      <p className="text-slate-900 font-bold text-base">{addSoftware}</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-100 hover:bg-slate-100/80 transition-colors">
+                      <p className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">What's Included?</p>
+                      <p className="text-slate-900 font-bold text-base">{addIncluded}</p>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Right Column: Feature Specification Box */}
+              <div className="lg:col-span-4 flex">
+                <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200/80 w-full flex flex-col justify-between sticky top-28">
+                  <div>
+                    <div className="flex items-center gap-3 pb-4 border-b border-slate-100 mb-6">
+                      <span className="w-2 h-7 bg-red-600 rounded-full inline-block"></span>
+                      <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Feature Specification</h3>
+                    </div>
+                    <div className="space-y-5">
+                      <div className="border-l-2 border-red-600/40 hover:border-red-600 transition-colors pl-4 py-1">
+                        <h4 className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Total Weight</h4>
+                        <p className="text-slate-900 font-bold text-base">{featWeight}</p>
+                      </div>
+                      <div className="border-l-2 border-red-600/40 hover:border-red-600 transition-colors pl-4 py-1">
+                        <h4 className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Battery & Charging</h4>
+                        <p className="text-slate-900 font-bold text-sm md:text-base leading-relaxed">{featBattery}</p>
+                      </div>
+                      <div className="border-l-2 border-red-600/40 hover:border-red-600 transition-colors pl-4 py-1">
+                        <h4 className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Ports & Slots</h4>
+                        <p className="text-slate-900 font-bold text-sm md:text-base leading-relaxed whitespace-pre-line">{featPorts}</p>
+                      </div>
+                      <div className="border-l-2 border-red-600/40 hover:border-red-600 transition-colors pl-4 py-1">
+                        <h4 className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Web Camera</h4>
+                        <p className="text-slate-900 font-bold text-base">{featCamera}</p>
+                      </div>
+                      <div className="border-l-2 border-red-600/40 hover:border-red-600 transition-colors pl-4 py-1">
+                        <h4 className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Keyboard</h4>
+                        <p className="text-slate-900 font-bold text-sm md:text-base leading-relaxed whitespace-pre-line">{featKeyboard}</p>
+                      </div>
+                      <div className="border-l-2 border-red-600/40 hover:border-red-600 transition-colors pl-4 py-1">
+                        <h4 className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Wireless Connectivity</h4>
+                        <p className="text-slate-900 font-bold text-base">{featWireless}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
-         </div>
-      </section>
+          </div>
+        </section>
+      ) : (
+        /* Technical Specifications */
+        <section className="bg-[#FAF9FB] py-20 md:py-32 border-y border-slate-100">
+           <div className="max-w-[1440px] mx-auto px-4 md:px-10">
+              <div className="grid lg:grid-cols-12 gap-16 md:gap-24">
+                 <div className="lg:col-span-4">
+                    <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-[0.9] mb-8">Technical <br /> Architecture.</h2>
+                    <p className="text-slate-500 font-medium text-lg leading-relaxed">
+                       Detailed metrics and component validation. Every unit undergoes 72 hours of thermal stress testing prior to indexing.
+                    </p>
+                 </div>
+                 <div className="lg:col-span-8 grid md:grid-cols-2 gap-12">
+                    {[
+                      { label: 'Thermal Efficiency', val: 'Vortex Airflow Cooling', icon: Zap },
+                      { label: 'System Logic', val: 'Engineered V-Series PCB', icon: Cpu },
+                      { label: 'Durability Matrix', val: 'Military-Grade Alloy', icon: ShieldCheck },
+                      { label: 'Acoustic Level', val: 'Zero-Decibel Static', icon: Zap }
+                    ].map((spec, i) => (
+                      <div key={i} className="flex gap-8 group">
+                         <div className="w-16 h-16 bg-white rounded-2xl shadow-lg border border-slate-100 flex items-center justify-center text-red-600 group-hover:bg-slate-900 group-hover:text-white transition-all shrink-0">
+                            <spec.icon size={28} />
+                         </div>
+                         <div className="space-y-2">
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">{spec.label}</p>
+                            <p className="text-lg font-black text-slate-900 uppercase tracking-tight">{spec.val}</p>
+                         </div>
+                      </div>
+                    ))}
+                 </div>
+              </div>
+           </div>
+        </section>
+      )}
 
       {/* Related Products */}
       <section className="py-20 md:py-32 bg-white overflow-hidden">

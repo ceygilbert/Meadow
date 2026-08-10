@@ -8,6 +8,8 @@ import {
   Search, 
   Filter, 
   ChevronDown, 
+  ChevronLeft,
+  ChevronRight,
   ArrowUpRight, 
   Loader2, 
   AlertCircle,
@@ -57,6 +59,10 @@ const ProductListing: React.FC = () => {
   const [sortBy, setSortBy] = useState<'price-asc' | 'price-desc' | 'name-asc' | 'newest'>('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 20; // 4 products per row x 5 rows = 20 products per page
 
   // Shared UI States
   const [isFullMenuOpen, setIsFullMenuOpen] = useState(false);
@@ -186,6 +192,18 @@ const ProductListing: React.FC = () => {
 
     return result;
   }, [products, searchQuery, selectedBrandId, sortBy]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedBrandId, sortBy, categorySlug, subcategorySlug]);
+
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE) || 1;
+
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredProducts, currentPage]);
 
   const handleHeaderSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -366,7 +384,7 @@ const ProductListing: React.FC = () => {
             {/* Controls Bar */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8 items-center justify-between pb-6 border-b border-slate-100">
               <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
-                Showing {filteredProducts.length} Items
+                Showing {filteredProducts.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} Items
               </span>
 
               <div className="flex items-center gap-4">
@@ -390,7 +408,7 @@ const ProductListing: React.FC = () => {
             {/* Product Grid */}
             <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5" : "flex flex-col gap-4"}>
           <AnimatePresence mode="popLayout">
-            {filteredProducts.map((product) => (
+            {paginatedProducts.map((product) => (
               <motion.div 
                 key={product.id}
                 layout
@@ -451,6 +469,83 @@ const ProductListing: React.FC = () => {
             ))}
           </AnimatePresence>
         </div>
+
+        {/* Pagination Bar */}
+        {totalPages > 1 && (
+          <div className="mt-12 pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+              Page <span className="text-slate-900 font-black">{currentPage}</span> of <span className="text-slate-900 font-black">{totalPages}</span>
+            </p>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  if (currentPage > 1) {
+                    setCurrentPage(prev => prev - 1);
+                    window.scrollTo({ top: 250, behavior: 'smooth' });
+                  }
+                }}
+                disabled={currentPage === 1}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-wider text-slate-700 hover:bg-slate-900 hover:text-white hover:border-slate-900 disabled:opacity-30 disabled:pointer-events-none transition-all flex items-center gap-1"
+              >
+                <ChevronLeft size={16} />
+                Prev
+              </button>
+
+              <div className="flex items-center gap-1.5 px-2">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                  if (
+                    totalPages <= 7 ||
+                    pageNum === 1 ||
+                    pageNum === totalPages ||
+                    (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => {
+                          setCurrentPage(pageNum);
+                          window.scrollTo({ top: 250, behavior: 'smooth' });
+                        }}
+                        className={`w-10 h-10 rounded-xl text-xs font-black transition-all ${
+                          currentPage === pageNum
+                            ? 'bg-slate-900 text-white shadow-md'
+                            : 'bg-slate-50 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  } else if (
+                    (pageNum === currentPage - 2 && pageNum > 1) ||
+                    (pageNum === currentPage + 2 && pageNum < totalPages)
+                  ) {
+                    return (
+                      <span key={pageNum} className="text-xs text-slate-300 font-bold px-1">
+                        ...
+                      </span>
+                    );
+                  }
+                  return null;
+                })}
+              </div>
+
+              <button
+                onClick={() => {
+                  if (currentPage < totalPages) {
+                    setCurrentPage(prev => prev + 1);
+                    window.scrollTo({ top: 250, behavior: 'smooth' });
+                  }
+                }}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-wider text-slate-700 hover:bg-slate-900 hover:text-white hover:border-slate-900 disabled:opacity-30 disabled:pointer-events-none transition-all flex items-center gap-1"
+              >
+                Next
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
 
         {filteredProducts.length === 0 && (
           <div className="py-40 text-center opacity-30">

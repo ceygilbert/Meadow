@@ -1,12 +1,15 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   ArrowRight,
   ArrowUpRight,
   Facebook,
-  Instagram
+  Instagram,
+  Award,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import PublicNavbar from '../../components/PublicNavbar';
 import { supabase } from '../../lib/supabase';
@@ -26,6 +29,69 @@ const OurStory: React.FC = () => {
   const { user, profile } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [awardSlide, setAwardSlide] = useState(0);
+
+  const awardCardsPages = [
+    // Slide 1: 2 Cards
+    [
+      {
+        id: "asus",
+        company: "ASUSTeK Computer Inc",
+        type: "Computer Hardware Company",
+        logo: (
+          <svg viewBox="0 0 100 100" className="w-10 h-10">
+            <path fill="#00539B" d="M50 15L15 85h18l17-35 17 35h18L50 15zm0 25l10 20H40l10-20z" />
+          </svg>
+        ),
+        awards: [
+          "Millions Dollar Award",
+          "Top Contribution Award",
+          "Top Performance Partner Award"
+        ],
+        duration: "Consecutively 2015-2023 Award Winner"
+      },
+      {
+        id: "msi",
+        company: "Micro-Star International Co. Ltd",
+        type: "Computer Hardware Company",
+        logo: <span className="text-xl font-black italic tracking-tighter text-black font-sans">msi</span>,
+        awards: [
+          "Outstanding Award",
+          "Top Performance Award",
+          "Best Performance Award",
+          "Online Best Performance Award"
+        ],
+        duration: "Consecutively 2013-2024 Award Winner"
+      }
+    ],
+    // Slide 2: 2 Cards
+    [
+      {
+        id: "gigabyte",
+        company: "Gigabyte Technology Co., Ltd.",
+        type: "Computer Hardware & Components",
+        logo: <span className="text-lg font-black tracking-tighter text-[#0066CC] font-sans">GIGABYTE</span>,
+        awards: [
+          "Excellence in Retail Sales",
+          "Outstanding System Integrator Partner",
+          "Top Growth Partner Award"
+        ],
+        duration: "Consecutively 2016-2024 Award Winner"
+      },
+      {
+        id: "hp",
+        company: "HP Inc. Malaysia",
+        type: "Computing & Printing Technology",
+        logo: <span className="text-2xl font-black italic tracking-tighter text-[#0096D6] font-sans">hp</span>,
+        awards: [
+          "Best Retail Growth Award",
+          "Outstanding Concept Store Partner",
+          "Top Consumer PC Partner"
+        ],
+        duration: "Consecutively 2016-2024 Award Winner"
+      }
+    ]
+  ];
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -146,6 +212,135 @@ const OurStory: React.FC = () => {
                  </Link>
               </div>
            </div>
+        </div>
+      </section>
+
+      {/* Multi-Award Company Section */}
+      <section className="bg-[#121212] text-[#FFFEFA] py-28 border-t border-white/10 relative overflow-hidden">
+        {/* Subtle background red gradient glow */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="max-w-[1600px] mx-auto px-6 md:px-16 lg:px-32 relative z-10">
+          
+          {/* Main Title & Overview */}
+          <div className="max-w-4xl mb-12">
+            <h2 className="text-3xl md:text-5xl font-light leading-tight mb-6">
+              We're <span className="text-red-600 font-normal">Multi-Award Company.</span>
+            </h2>
+            <p className="text-sm md:text-lg text-white/70 leading-relaxed font-light mb-10 max-w-3xl">
+              We have been honored with awards from multiple international brands and local authorities, recognized for our nationwide distribution capabilities and our best-in-class products and services.
+            </p>
+            
+            {/* Tag Button */}
+            <div className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-red-600 text-red-500 text-[10px] font-black uppercase tracking-[0.3em] bg-red-600/10 hover:bg-red-600/20 transition-colors">
+              <Award size={14} className="text-red-500" />
+              Award List
+            </div>
+          </div>
+
+          {/* Subheading & Slider Nav Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <h3 className="text-2xl md:text-3xl font-light text-white tracking-tight">
+              Multi-Award.
+            </h3>
+
+            {/* Carousel Controls */}
+            <div className="flex items-center gap-4">
+              <span className="text-xs font-bold tracking-widest text-white/50 uppercase">
+                Page <span className="text-red-500 font-black">{awardSlide + 1}</span> / {awardCardsPages.length}
+              </span>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setAwardSlide(prev => (prev === 0 ? awardCardsPages.length - 1 : prev - 1))}
+                  className="w-10 h-10 rounded-full border border-red-600/50 hover:border-red-500 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white transition-all flex items-center justify-center shadow-lg active:scale-95 cursor-pointer"
+                  aria-label="Previous Award Slide"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+
+                <button
+                  onClick={() => setAwardSlide(prev => (prev === awardCardsPages.length - 1 ? 0 : prev + 1))}
+                  className="w-10 h-10 rounded-full border border-red-600/50 hover:border-red-500 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white transition-all flex items-center justify-center shadow-lg active:scale-95 cursor-pointer"
+                  aria-label="Next Award Slide"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* 2 Cards Grid Slider View */}
+          <div className="relative min-h-[320px]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={awardSlide}
+                initial={{ opacity: 0, x: 25 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -25 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8"
+              >
+                {awardCardsPages[awardSlide].map((card) => (
+                  <div
+                    key={card.id}
+                    className="rounded-[1.75rem] border border-red-600/60 bg-[#181818] p-8 hover:border-red-500 hover:shadow-red-600/10 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group"
+                  >
+                    <div>
+                      {/* Brand Header */}
+                      <div className="flex items-center gap-4 mb-8">
+                        <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center p-2.5 shrink-0 shadow-md">
+                          {card.logo}
+                        </div>
+                        <div>
+                          <h4 className="text-base md:text-lg font-bold text-white tracking-tight group-hover:text-red-500 transition-colors">
+                            {card.company}
+                          </h4>
+                          <p className="text-xs text-white/50 font-medium tracking-wide">
+                            {card.type}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Awards List */}
+                      <ul className="space-y-3 pt-6 border-t border-white/10 text-sm font-medium text-white/90">
+                        {card.awards.map((awardText, idx) => (
+                          <li key={idx} className="flex items-start gap-2.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-600 shrink-0 mt-2"></span>
+                            <span>{awardText}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="mt-8 pt-4 border-t border-white/10">
+                      <span className="text-xs md:text-sm font-bold text-red-500 block">
+                        {card.duration}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Slide Dots Indicator */}
+          <div className="flex justify-center items-center gap-2 mt-8">
+            {awardCardsPages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setAwardSlide(index)}
+                className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+                  awardSlide === index
+                    ? 'w-8 bg-red-600'
+                    : 'w-2.5 bg-white/20 hover:bg-white/40'
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+
         </div>
       </section>
 
