@@ -173,17 +173,23 @@ const ProductManagement: React.FC = () => {
     setModalError(null);
     const slug = formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 
-    const payload = {
-      ...formData,
-      slug,
-      specs: formData.specs || {},
-      // Ensure ddr_type is never null/undefined when sending to DB if it's optional
-      ddr_type: formData.ddr_type || ''
+    const specsWithExtra = {
+      ...(formData.specs || {}),
+      additional_details: formData.additional_details || '',
+      ddr_type: formData.ddr_type || '',
     };
 
-    try {
+    const fullPayload: any = {
+      ...formData,
+      slug,
+      specs: specsWithExtra,
+      additional_details: formData.additional_details || '',
+      ddr_type: formData.ddr_type || '',
+    };
+
+    const saveToSupabase = async (payloadToSave: any) => {
       if (editingId) {
-        const { stock, id, created_at, ...updatePayload } = payload as any;
+        const { stock, id, created_at, ...updatePayload } = payloadToSave;
         const { error: updateError } = await supabase
           .from('products')
           .update(updatePayload)
@@ -192,8 +198,27 @@ const ProductManagement: React.FC = () => {
       } else {
         const { error: insertError } = await supabase
           .from('products')
-          .insert([payload]);
+          .insert([payloadToSave]);
         if (insertError) throw insertError;
+      }
+    };
+
+    try {
+      try {
+        await saveToSupabase(fullPayload);
+      } catch (firstErr: any) {
+        const errMsg = firstErr?.message || '';
+        // If Supabase schema cache does not have additional_details or ddr_type column yet, fallback gracefully
+        if (errMsg.includes('additional_details') || errMsg.includes('ddr_type') || errMsg.includes('schema cache')) {
+          console.warn("Retrying save without optional root columns (data safely stored in specs)...", errMsg);
+          const safePayload = { ...fullPayload };
+          delete safePayload.additional_details;
+          delete safePayload.ddr_type;
+          
+          await saveToSupabase(safePayload);
+        } else {
+          throw firstErr;
+        }
       }
       
       setIsModalOpen(false);

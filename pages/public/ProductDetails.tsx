@@ -724,60 +724,63 @@ const ProductDetails: React.FC = () => {
 
             {/* Right Details Grid */}
             <div className="lg:col-span-8">
-              {product?.additional_details && product.additional_details.trim().length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {product.additional_details
-                    .split('\n')
-                    .map(l => l.trim())
-                    .filter(l => l.length > 0)
-                    .map((line, idx) => {
-                      const hasColon = line.includes(':');
-                      if (hasColon) {
-                        const parts = line.split(':');
-                        const label = parts[0].trim();
-                        const val = parts.slice(1).join(':').trim();
+              {(() => {
+                const addDetails = product?.additional_details || product?.specs?.additional_details || '';
+                return addDetails && addDetails.trim().length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {addDetails
+                      .split('\n')
+                      .map(l => l.trim())
+                      .filter(l => l.length > 0)
+                      .map((line, idx) => {
+                        const hasColon = line.includes(':');
+                        if (hasColon) {
+                          const parts = line.split(':');
+                          const label = parts[0].trim();
+                          const val = parts.slice(1).join(':').trim();
+                          return (
+                            <div key={idx} className="p-5 bg-white rounded-2xl shadow-sm border border-slate-200/80 hover:border-red-500/40 hover:shadow-md transition-all flex items-start gap-4">
+                              <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <CheckCircle size={20} />
+                              </div>
+                              <div>
+                                <p className="text-xs font-black uppercase tracking-wider text-red-600 mb-1">{label}</p>
+                                <p className="text-slate-900 font-bold text-base">{val}</p>
+                              </div>
+                            </div>
+                          );
+                        }
                         return (
-                          <div key={idx} className="p-5 bg-white rounded-2xl shadow-sm border border-slate-200/80 hover:border-red-500/40 hover:shadow-md transition-all flex items-start gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0 mt-0.5">
+                          <div key={idx} className="p-5 bg-white rounded-2xl shadow-sm border border-slate-200/80 hover:border-red-500/40 hover:shadow-md transition-all flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0">
                               <CheckCircle size={20} />
                             </div>
-                            <div>
-                              <p className="text-xs font-black uppercase tracking-wider text-red-600 mb-1">{label}</p>
-                              <p className="text-slate-900 font-bold text-base">{val}</p>
-                            </div>
+                            <p className="text-slate-900 font-bold text-base leading-snug">{line}</p>
                           </div>
                         );
-                      }
-                      return (
-                        <div key={idx} className="p-5 bg-white rounded-2xl shadow-sm border border-slate-200/80 hover:border-red-500/40 hover:shadow-md transition-all flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0">
-                            <CheckCircle size={20} />
-                          </div>
-                          <p className="text-slate-900 font-bold text-base leading-snug">{line}</p>
+                      })}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[
+                      { label: 'Thermal Efficiency', val: 'Vortex Airflow Cooling & Optimized Heat Dissipation', icon: Zap },
+                      { label: 'System Logic', val: 'Engineered V-Series Performance Architecture', icon: Cpu },
+                      { label: 'Durability Matrix', val: 'Military-Grade Certified Materials', icon: ShieldCheck },
+                      { label: 'Quality Assurance', val: '100% Genuine Certified Stock & Local Warranty', icon: CheckCircle }
+                    ].map((spec, i) => (
+                      <div key={i} className="flex gap-5 p-5 bg-white rounded-2xl shadow-sm border border-slate-200/80 group hover:border-red-500/40 hover:shadow-md transition-all">
+                        <div className="w-14 h-14 bg-red-50 rounded-xl border border-red-100 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all shrink-0">
+                          <spec.icon size={24} />
                         </div>
-                      );
-                    })}
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {[
-                    { label: 'Thermal Efficiency', val: 'Vortex Airflow Cooling & Optimized Heat Dissipation', icon: Zap },
-                    { label: 'System Logic', val: 'Engineered V-Series Performance Architecture', icon: Cpu },
-                    { label: 'Durability Matrix', val: 'Military-Grade Certified Materials', icon: ShieldCheck },
-                    { label: 'Quality Assurance', val: '100% Genuine Certified Stock & Local Warranty', icon: CheckCircle }
-                  ].map((spec, i) => (
-                    <div key={i} className="flex gap-5 p-5 bg-white rounded-2xl shadow-sm border border-slate-200/80 group hover:border-red-500/40 hover:shadow-md transition-all">
-                      <div className="w-14 h-14 bg-red-50 rounded-xl border border-red-100 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all shrink-0">
-                        <spec.icon size={24} />
+                        <div className="space-y-1">
+                          <p className="text-xs font-black uppercase tracking-wider text-red-600">{spec.label}</p>
+                          <p className="text-base font-bold text-slate-900 tracking-tight leading-snug">{spec.val}</p>
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-xs font-black uppercase tracking-wider text-red-600">{spec.label}</p>
-                        <p className="text-base font-bold text-slate-900 tracking-tight leading-snug">{spec.val}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
 
           </div>
