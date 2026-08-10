@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Lock, Mail, LogIn, Eye, EyeOff, ChevronRight } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, ShieldCheck, Laptop, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 
@@ -36,7 +35,6 @@ const AdminLogin: React.FC<LoginProps> = ({ onLogin }) => {
       console.log("Auth success, checking profile for session:", data.session?.user?.id);
 
       if (data.session) {
-        // Double check profile role before redirecting from Login page
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role')
@@ -60,9 +58,6 @@ const AdminLogin: React.FC<LoginProps> = ({ onLogin }) => {
         }
 
         onLogin(true);
-        // We still call navigate, but App.tsx will also react to the session change.
-        // If navigate happens while App.tsx is still loading/fetching, it might redirect back,
-        // but App.tsx now has better loading resilience.
         console.log("Navigating to dashboard...");
         navigate('/admin/dashboard');
       } else {
@@ -73,97 +68,201 @@ const AdminLogin: React.FC<LoginProps> = ({ onLogin }) => {
       console.error("Catch block in login:", err);
       setError(err.message || 'An error occurred during sign in.');
     } finally {
-      console.log("Login process finished, setting loading to false");
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#e0f2fe] via-[#dbeafe] to-[#e0e7ff] flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Decorative background elements to simulate the reference arcs */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-white/20 rounded-full -z-0"></div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] border border-white/10 rounded-full -z-0"></div>
-
-      <div className="max-w-[460px] w-full bg-white/70 backdrop-blur-2xl rounded-[3.5rem] p-10 md:p-14 shadow-2xl shadow-blue-900/10 border border-white/60 relative z-10">
+    <div className="min-h-screen bg-[#1c1a19] p-2 md:p-4 lg:p-6 flex items-center justify-center font-sans">
+      <div className="w-full max-w-[1440px] min-h-[92vh] bg-[#1c1a19] rounded-[2.5rem] lg:rounded-[3rem] overflow-hidden grid grid-cols-1 lg:grid-cols-12 shadow-2xl border border-white/5">
         
-        {/* Top Icon Box */}
-        <div className="flex justify-center mb-8">
-          <div className="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center border border-slate-100">
-            <LogIn size={26} className="text-slate-900" />
+        {/* Left Dark Hero Side */}
+        <div className="lg:col-span-5 xl:col-span-6 bg-[#1c1a19] p-8 md:p-12 lg:p-16 flex flex-col justify-between relative overflow-hidden text-white">
+          
+          {/* Subtle concentric rings background */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] md:w-[600px] md:h-[600px] border border-white/5 rounded-full pointer-events-none"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[400px] md:h-[400px] border border-white/10 rounded-full pointer-events-none"></div>
+          
+          {/* Top Slogan */}
+          <div className="relative z-10 max-w-sm">
+            <p className="text-slate-400 text-xs md:text-sm font-normal tracking-wide leading-relaxed">
+              Next-generation IT solutions made simple – hardware management for you.
+            </p>
+          </div>
+
+          {/* Main Visual Showcase */}
+          <div className="my-12 lg:my-0 flex flex-col items-center justify-center relative z-10 text-center">
+            <h2 className="text-4xl md:text-5xl xl:text-6xl font-normal text-white tracking-tight leading-[1.1] mb-12 max-w-md">
+              Manage <br />
+              <span className="font-semibold text-slate-100">your hardware</span>
+            </h2>
+
+            {/* Mobile / Screen Mockup Graphic */}
+            <div className="relative w-64 md:w-72 bg-gradient-to-b from-slate-900 to-black rounded-[2.5rem] p-3 border-4 border-slate-700/60 shadow-2xl shadow-black/80">
+              {/* Phone Speaker Notch */}
+              <div className="w-20 h-4 bg-slate-950 rounded-full mx-auto mb-3 flex items-center justify-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-800"></div>
+              </div>
+
+              {/* Inner Dashboard UI preview */}
+              <div className="bg-[#121214] rounded-[2rem] p-4 text-left border border-white/10 space-y-4">
+                <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
+                  <span>Week 4-10 August</span>
+                  <BarChart3 size={14} className="text-rose-500" />
+                </div>
+
+                <div>
+                  <div className="text-2xl font-bold text-white tracking-tight">
+                    RM 89,700 <span className="text-xs text-emerald-400 font-normal">↑ 14%</span>
+                  </div>
+                  <p className="text-[9px] text-slate-400 uppercase tracking-wider mt-0.5">Total System Inventory Value</p>
+                </div>
+
+                {/* Bar chart graphics */}
+                <div className="flex items-end justify-between gap-1.5 h-16 pt-2 pb-1 px-1 border-b border-white/10">
+                  <div className="w-full bg-slate-800 rounded-t h-[40%]"></div>
+                  <div className="w-full bg-slate-800 rounded-t h-[60%]"></div>
+                  <div className="w-full bg-rose-500 rounded-t h-[85%]"></div>
+                  <div className="w-full bg-slate-800 rounded-t h-[50%]"></div>
+                  <div className="w-full bg-orange-500 rounded-t h-[95%]"></div>
+                  <div className="w-full bg-slate-800 rounded-t h-[35%]"></div>
+                  <div className="w-full bg-slate-800 rounded-t h-[70%]"></div>
+                </div>
+
+                {/* Stock category cards */}
+                <div className="space-y-2 pt-1">
+                  <div className="p-2 bg-slate-900/90 rounded-xl flex items-center justify-between border border-white/5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center">
+                        <Laptop size={12} />
+                      </div>
+                      <span className="text-xs font-medium text-slate-200">Gaming Laptops</span>
+                    </div>
+                    <span className="text-xs font-bold text-white">42 units</span>
+                  </div>
+
+                  <div className="p-2 bg-slate-900/90 rounded-xl flex items-center justify-between border border-white/5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center">
+                        <ShieldCheck size={12} />
+                      </div>
+                      <span className="text-xs font-medium text-slate-200">Desktop Rigs</span>
+                    </div>
+                    <span className="text-xs font-bold text-white">28 units</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Left Footer Badge */}
+          <div className="relative z-10 flex items-center gap-2 text-slate-500 text-xs">
+            <span className="w-5 h-5 rounded-full border border-slate-700 flex items-center justify-center text-[10px] text-slate-400 font-bold">
+              ✓
+            </span>
+            <span>Enterprise Admin Portal</span>
           </div>
         </div>
 
-        <div className="text-center mb-10">
-          <h1 className="text-[1.75rem] font-bold text-slate-900 mb-3 tracking-tight">Sign in with email</h1>
-          <p className="text-slate-500 text-sm leading-relaxed px-4">
-            Access the TechCore administrative console to manage your digital inventory, brands, and store operations.
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="p-4 bg-rose-50/50 text-rose-600 text-xs font-semibold rounded-2xl border border-rose-100 text-center animate-shake">
-              {error}
+        {/* Right Light Sign In Side */}
+        <div className="lg:col-span-7 xl:col-span-6 bg-white rounded-[2.5rem] lg:rounded-[3rem] p-8 md:p-12 lg:p-16 flex flex-col justify-between">
+          
+          {/* Top Row: Logo */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <svg className="w-8 h-8" viewBox="0 0 32 32" fill="none">
+                <circle cx="16" cy="16" r="12" stroke="url(#logo_grad_main)" strokeWidth="4" />
+                <defs>
+                  <linearGradient id="logo_grad_main" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#f97316" />
+                    <stop offset="0.5" stopColor="#ef4444" />
+                    <stop offset="1" stopColor="#ec4899" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span className="text-2xl font-semibold tracking-tight text-slate-900">Meadow IT</span>
             </div>
-          )}
+            
+            {/* No register button or language selector as requested */}
+            <div></div>
+          </div>
 
-          <div className="space-y-3">
-            <div className="relative group">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20} />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-slate-100/50 border-none rounded-[1.25rem] focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-slate-400 font-medium"
-                placeholder="Email"
-                required
-              />
-            </div>
+          {/* Center Form Container */}
+          <div className="max-w-md w-full mx-auto my-12 lg:my-auto">
+            <h1 className="text-4xl lg:text-5xl font-normal text-slate-900 mb-8 md:mb-10 tracking-tight">
+              Sign In
+            </h1>
 
-            <div className="relative group">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20} />
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-12 pr-12 py-4 bg-slate-100/50 border-none rounded-[1.25rem] focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-slate-400 font-medium"
-                placeholder="Password"
-                required
-              />
-              <button 
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <div className="p-4 bg-rose-50 text-rose-600 text-xs font-semibold rounded-2xl border border-rose-200 text-center">
+                  {error}
+                </div>
+              )}
+
+              {/* Email / Username field */}
+              <div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email or Username"
+                  required
+                  className="w-full h-14 px-6 rounded-full bg-white border border-slate-200 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition-all text-sm md:text-base font-normal shadow-sm"
+                />
+              </div>
+
+              {/* Password field */}
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password"
+                  required
+                  className="w-full h-14 pl-6 pr-14 rounded-full bg-white border border-slate-200 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition-all text-sm md:text-base font-normal shadow-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                  aria-label="Toggle password visibility"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+
+              {/* No forget password link as requested */}
+
+              {/* Sign In Button with orange-red-pink gradient */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-14 mt-4 rounded-full bg-gradient-to-r from-[#ff4d00] via-[#ff2a5f] to-[#e6005c] hover:opacity-95 text-white font-medium text-base shadow-lg shadow-red-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <ArrowRight size={20} />
+                    <span>Sign In</span>
+                  </>
+                )}
               </button>
-            </div>
+            </form>
           </div>
 
-          <div className="flex justify-end pr-1">
-            <button type="button" className="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors">
-              Forgot password?
-            </button>
+          {/* Right Bottom Footer */}
+          <div className="flex items-center justify-between text-xs text-slate-400 pt-6">
+            <span>&copy; 2005-{new Date().getFullYear()} Meadow IT Inc.</span>
+            <a href="#contact" className="hover:text-slate-600 transition-colors font-medium">
+              Contact Us
+            </a>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-4 mt-4 bg-slate-900 hover:bg-black text-white font-bold rounded-[1.25rem] transition-all shadow-xl shadow-slate-900/20 disabled:opacity-70 flex items-center justify-center gap-2"
-          >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-            ) : (
-              <>Sign In</>
-            )}
-          </button>
-        </form>
-        
-        <div className="mt-12 text-center">
-           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-             &copy; {new Date().getFullYear()} TechCore IT Solutions
-           </p>
         </div>
+
       </div>
     </div>
   );

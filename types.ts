@@ -46,6 +46,7 @@ export interface Product {
   stock: number;
   image_url: string;
   description: string;
+  additional_details?: string;
   ddr_type?: 'DDR4' | 'DDR5' | '';
   specs: Record<string, string>;
   is_custom_build: boolean;

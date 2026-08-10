@@ -508,8 +508,8 @@ const ProductDetails: React.FC = () => {
         </div>
       </main>
 
-      {/* System Specification & Feature Specification Section */}
-      {isDesktopOrLaptop ? (
+      {/* System Specification & Feature Specification Section (For Laptops & Desktops) */}
+      {isDesktopOrLaptop && (
         <section className="bg-[#F6F7FA] py-14 md:py-24 border-y border-slate-200/80 font-sans relative overflow-hidden">
           {/* Subtle background red gradient glow */}
           <div className="absolute top-0 right-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl pointer-events-none"></div>
@@ -528,8 +528,8 @@ const ProductDetails: React.FC = () => {
                       <Cpu size={14} className="text-red-600" />
                       Hardware Architecture
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                      <span className="w-2 h-7 bg-red-600 rounded-full inline-block"></span>
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                      <span className="w-2.5 h-8 md:h-10 bg-red-600 rounded-full inline-block shrink-0"></span>
                       System Specification
                     </h2>
                   </div>
@@ -549,7 +549,7 @@ const ProductDetails: React.FC = () => {
                         <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
                           <Cpu size={22} />
                         </div>
-                        <span className="text-red-600 font-extrabold text-base md:text-lg tracking-tight">Processor</span>
+                        <span className="text-red-600 font-extrabold text-lg md:text-2xl tracking-tight">Processor</span>
                       </div>
                       <p className="text-slate-900 font-bold text-sm md:text-base leading-snug">{sysProcessor}</p>
                     </div>
@@ -563,7 +563,7 @@ const ProductDetails: React.FC = () => {
                         <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
                           <Monitor size={22} />
                         </div>
-                        <span className="text-red-600 font-extrabold text-base md:text-lg tracking-tight">Graphics</span>
+                        <span className="text-red-600 font-extrabold text-lg md:text-2xl tracking-tight">Graphics</span>
                       </div>
                       <p className="text-slate-900 font-bold text-sm md:text-base leading-snug">{sysGraphics}</p>
                     </div>
@@ -577,7 +577,7 @@ const ProductDetails: React.FC = () => {
                         <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
                           <Maximize size={22} />
                         </div>
-                        <span className="text-red-600 font-extrabold text-base md:text-lg tracking-tight">Display</span>
+                        <span className="text-red-600 font-extrabold text-lg md:text-2xl tracking-tight">Display</span>
                       </div>
                       <p className="text-slate-900 font-bold text-xs md:text-sm leading-relaxed">{sysDisplay}</p>
                     </div>
@@ -591,7 +591,7 @@ const ProductDetails: React.FC = () => {
                         <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
                           <HardDrive size={22} />
                         </div>
-                        <span className="text-red-600 font-extrabold text-base md:text-lg tracking-tight">Memory</span>
+                        <span className="text-red-600 font-extrabold text-lg md:text-2xl tracking-tight">Memory</span>
                       </div>
                       <p className="text-slate-900 font-bold text-sm md:text-base leading-snug">{sysMemory}</p>
                     </div>
@@ -605,7 +605,7 @@ const ProductDetails: React.FC = () => {
                         <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
                           <Database size={22} />
                         </div>
-                        <span className="text-red-600 font-extrabold text-base md:text-lg tracking-tight">Storage</span>
+                        <span className="text-red-600 font-extrabold text-lg md:text-2xl tracking-tight">Storage</span>
                       </div>
                       <p className="text-slate-900 font-bold text-sm md:text-base leading-snug">{sysStorage}</p>
                     </div>
@@ -619,7 +619,7 @@ const ProductDetails: React.FC = () => {
                         <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
                           <Shield size={22} />
                         </div>
-                        <span className="text-red-600 font-extrabold text-base md:text-lg tracking-tight">Security</span>
+                        <span className="text-red-600 font-extrabold text-lg md:text-2xl tracking-tight">Security</span>
                       </div>
                       <p className="text-slate-900 font-bold text-sm md:text-base leading-snug">{sysSecurity}</p>
                     </div>
@@ -630,25 +630,25 @@ const ProductDetails: React.FC = () => {
                 {/* Additional Information Box */}
                 <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200/80">
                   <div className="flex items-center gap-3 pb-4 border-b border-slate-100 mb-6">
-                    <span className="w-2 h-7 bg-red-600 rounded-full inline-block"></span>
-                    <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Additional Information</h3>
+                    <span className="w-2.5 h-8 md:h-10 bg-red-600 rounded-full inline-block shrink-0"></span>
+                    <h3 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">Additional Information</h3>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-100 hover:bg-slate-100/80 transition-colors">
-                      <p className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Operating System</p>
-                      <p className="text-slate-900 font-bold text-base">{addOS}</p>
+                      <p className="text-base font-black uppercase tracking-wider text-red-600 mb-1">Operating System</p>
+                      <p className="text-slate-900 text-base">{addOS}</p>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-100 hover:bg-slate-100/80 transition-colors">
-                      <p className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Color</p>
-                      <p className="text-slate-900 font-bold text-base">{addColor}</p>
+                      <p className="text-base font-black uppercase tracking-wider text-red-600 mb-1">Color</p>
+                      <p className="text-slate-900 text-base">{addColor}</p>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-100 hover:bg-slate-100/80 transition-colors">
-                      <p className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Included Software</p>
-                      <p className="text-slate-900 font-bold text-base">{addSoftware}</p>
+                      <p className="text-base font-black uppercase tracking-wider text-red-600 mb-1">Included Software</p>
+                      <p className="text-slate-900 text-base">{addSoftware}</p>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-100 hover:bg-slate-100/80 transition-colors">
-                      <p className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">What's Included?</p>
-                      <p className="text-slate-900 font-bold text-base">{addIncluded}</p>
+                      <p className="text-base font-black uppercase tracking-wider text-red-600 mb-1">What's Included?</p>
+                      <p className="text-slate-900 text-base">{addIncluded}</p>
                     </div>
                   </div>
                 </div>
@@ -660,33 +660,33 @@ const ProductDetails: React.FC = () => {
                 <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200/80 w-full flex flex-col justify-between sticky top-28">
                   <div>
                     <div className="flex items-center gap-3 pb-4 border-b border-slate-100 mb-6">
-                      <span className="w-2 h-7 bg-red-600 rounded-full inline-block"></span>
-                      <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Feature Specification</h3>
+                      <span className="w-2.5 h-8 md:h-10 bg-red-600 rounded-full inline-block shrink-0"></span>
+                      <h3 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">Feature Specification</h3>
                     </div>
                     <div className="space-y-5">
                       <div className="border-l-2 border-red-600/40 hover:border-red-600 transition-colors pl-4 py-1">
-                        <h4 className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Total Weight</h4>
-                        <p className="text-slate-900 font-bold text-base">{featWeight}</p>
+                        <h4 className="text-base font-black uppercase tracking-wider text-red-600 mb-1">Total Weight</h4>
+                        <p className="text-slate-900 text-base">{featWeight}</p>
                       </div>
                       <div className="border-l-2 border-red-600/40 hover:border-red-600 transition-colors pl-4 py-1">
-                        <h4 className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Battery & Charging</h4>
-                        <p className="text-slate-900 font-bold text-sm md:text-base leading-relaxed">{featBattery}</p>
+                        <h4 className="text-base font-black uppercase tracking-wider text-red-600 mb-1">Battery & Charging</h4>
+                        <p className="text-slate-900 text-sm md:text-base leading-relaxed">{featBattery}</p>
                       </div>
                       <div className="border-l-2 border-red-600/40 hover:border-red-600 transition-colors pl-4 py-1">
-                        <h4 className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Ports & Slots</h4>
-                        <p className="text-slate-900 font-bold text-sm md:text-base leading-relaxed whitespace-pre-line">{featPorts}</p>
+                        <h4 className="text-base font-black uppercase tracking-wider text-red-600 mb-1">Ports & Slots</h4>
+                        <p className="text-slate-900 text-sm md:text-base leading-relaxed whitespace-pre-line">{featPorts}</p>
                       </div>
                       <div className="border-l-2 border-red-600/40 hover:border-red-600 transition-colors pl-4 py-1">
-                        <h4 className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Web Camera</h4>
-                        <p className="text-slate-900 font-bold text-base">{featCamera}</p>
+                        <h4 className="text-base font-black uppercase tracking-wider text-red-600 mb-1">Web Camera</h4>
+                        <p className="text-slate-900 text-base">{featCamera}</p>
                       </div>
                       <div className="border-l-2 border-red-600/40 hover:border-red-600 transition-colors pl-4 py-1">
-                        <h4 className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Keyboard</h4>
-                        <p className="text-slate-900 font-bold text-sm md:text-base leading-relaxed whitespace-pre-line">{featKeyboard}</p>
+                        <h4 className="text-base font-black uppercase tracking-wider text-red-600 mb-1">Keyboard</h4>
+                        <p className="text-slate-900 text-sm md:text-base leading-relaxed whitespace-pre-line">{featKeyboard}</p>
                       </div>
                       <div className="border-l-2 border-red-600/40 hover:border-red-600 transition-colors pl-4 py-1">
-                        <h4 className="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Wireless Connectivity</h4>
-                        <p className="text-slate-900 font-bold text-base">{featWireless}</p>
+                        <h4 className="text-base font-black uppercase tracking-wider text-red-600 mb-1">Wireless Connectivity</h4>
+                        <p className="text-slate-900 text-base">{featWireless}</p>
                       </div>
                     </div>
                   </div>
@@ -696,39 +696,93 @@ const ProductDetails: React.FC = () => {
             </div>
           </div>
         </section>
-      ) : (
-        /* Technical Specifications */
-        <section className="bg-[#FAF9FB] py-20 md:py-32 border-y border-slate-100">
-           <div className="max-w-[1440px] mx-auto px-4 md:px-10">
-              <div className="grid lg:grid-cols-12 gap-16 md:gap-24">
-                 <div className="lg:col-span-4">
-                    <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-[0.9] mb-8">Technical <br /> Architecture.</h2>
-                    <p className="text-slate-500 font-medium text-lg leading-relaxed">
-                       Detailed metrics and component validation. Every unit undergoes 72 hours of thermal stress testing prior to indexing.
-                    </p>
-                 </div>
-                 <div className="lg:col-span-8 grid md:grid-cols-2 gap-12">
-                    {[
-                      { label: 'Thermal Efficiency', val: 'Vortex Airflow Cooling', icon: Zap },
-                      { label: 'System Logic', val: 'Engineered V-Series PCB', icon: Cpu },
-                      { label: 'Durability Matrix', val: 'Military-Grade Alloy', icon: ShieldCheck },
-                      { label: 'Acoustic Level', val: 'Zero-Decibel Static', icon: Zap }
-                    ].map((spec, i) => (
-                      <div key={i} className="flex gap-8 group">
-                         <div className="w-16 h-16 bg-white rounded-2xl shadow-lg border border-slate-100 flex items-center justify-center text-red-600 group-hover:bg-slate-900 group-hover:text-white transition-all shrink-0">
-                            <spec.icon size={28} />
-                         </div>
-                         <div className="space-y-2">
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">{spec.label}</p>
-                            <p className="text-lg font-black text-slate-900 uppercase tracking-tight">{spec.val}</p>
-                         </div>
-                      </div>
-                    ))}
-                 </div>
-              </div>
-           </div>
-        </section>
       )}
+
+      {/* Additional Details Section - Implemented for All Product Categories */}
+      <section className="bg-[#FAF9FB] py-16 md:py-24 border-y border-slate-200/80 font-sans relative overflow-hidden">
+        {/* Subtle background red glow */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="max-w-[1550px] mx-auto px-4 md:px-10 relative z-10">
+          <div className="grid lg:grid-cols-12 gap-10 md:gap-16 items-start">
+            
+            {/* Left Header Box */}
+            <div className="lg:col-span-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 text-red-600 text-[11px] font-black uppercase tracking-widest mb-3 border border-red-100">
+                <ShieldCheck size={14} className="text-red-600" />
+                Product Information
+              </div>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                <span className="w-2.5 h-8 md:h-10 bg-red-600 rounded-full inline-block shrink-0"></span>
+                Additional Details
+              </h2>
+              <p className="text-slate-500 font-medium text-base md:text-lg leading-relaxed mt-4">
+                Detailed metrics, specifications, and quality guarantees for this unit.
+              </p>
+            </div>
+
+            {/* Right Details Grid */}
+            <div className="lg:col-span-8">
+              {product?.additional_details && product.additional_details.trim().length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {product.additional_details
+                    .split('\n')
+                    .map(l => l.trim())
+                    .filter(l => l.length > 0)
+                    .map((line, idx) => {
+                      const hasColon = line.includes(':');
+                      if (hasColon) {
+                        const parts = line.split(':');
+                        const label = parts[0].trim();
+                        const val = parts.slice(1).join(':').trim();
+                        return (
+                          <div key={idx} className="p-5 bg-white rounded-2xl shadow-sm border border-slate-200/80 hover:border-red-500/40 hover:shadow-md transition-all flex items-start gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0 mt-0.5">
+                              <CheckCircle size={20} />
+                            </div>
+                            <div>
+                              <p className="text-xs font-black uppercase tracking-wider text-red-600 mb-1">{label}</p>
+                              <p className="text-slate-900 font-bold text-base">{val}</p>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div key={idx} className="p-5 bg-white rounded-2xl shadow-sm border border-slate-200/80 hover:border-red-500/40 hover:shadow-md transition-all flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0">
+                            <CheckCircle size={20} />
+                          </div>
+                          <p className="text-slate-900 font-bold text-base leading-snug">{line}</p>
+                        </div>
+                      );
+                    })}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {[
+                    { label: 'Thermal Efficiency', val: 'Vortex Airflow Cooling & Optimized Heat Dissipation', icon: Zap },
+                    { label: 'System Logic', val: 'Engineered V-Series Performance Architecture', icon: Cpu },
+                    { label: 'Durability Matrix', val: 'Military-Grade Certified Materials', icon: ShieldCheck },
+                    { label: 'Quality Assurance', val: '100% Genuine Certified Stock & Local Warranty', icon: CheckCircle }
+                  ].map((spec, i) => (
+                    <div key={i} className="flex gap-5 p-5 bg-white rounded-2xl shadow-sm border border-slate-200/80 group hover:border-red-500/40 hover:shadow-md transition-all">
+                      <div className="w-14 h-14 bg-red-50 rounded-xl border border-red-100 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all shrink-0">
+                        <spec.icon size={24} />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-black uppercase tracking-wider text-red-600">{spec.label}</p>
+                        <p className="text-base font-bold text-slate-900 tracking-tight leading-snug">{spec.val}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+          </div>
+        </div>
+      </section>
 
       {/* Related Products */}
       <section className="py-20 md:py-32 bg-white overflow-hidden">

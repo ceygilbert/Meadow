@@ -22,7 +22,19 @@ import {
   ArrowRight,
   Info,
   Ruler,
-  Layers
+  Layers,
+  Cpu,
+  Monitor,
+  HardDrive,
+  Shield,
+  Laptop,
+  Wifi,
+  Camera,
+  Keyboard,
+  Plug,
+  Gift,
+  FileText,
+  Sliders
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { generateProductDescription } from '../../services/geminiService';
@@ -59,6 +71,7 @@ const ProductManagement: React.FC = () => {
     discount_value: 0,
     stock: 0,
     description: '',
+    additional_details: '',
     image_url: '',
     ddr_type: '',
     is_custom_build: false,
@@ -206,8 +219,10 @@ const ProductManagement: React.FC = () => {
       discount_value: 0,
       stock: 0,
       description: '',
+      additional_details: '',
       image_url: '',
       ddr_type: '',
+      specs: {},
       is_custom_build: false,
       is_customised: false
     });
@@ -226,8 +241,10 @@ const ProductManagement: React.FC = () => {
       discount_value: product.discount_value || 0,
       stock: product.stock,
       description: product.description,
+      additional_details: (product as any).additional_details || '',
       image_url: product.image_url,
       ddr_type: product.ddr_type || '',
+      specs: product.specs || {},
       is_custom_build: product.is_custom_build,
       is_customised: product.is_customised
     });
@@ -264,7 +281,34 @@ const ProductManagement: React.FC = () => {
 
   const availableSubCategories = subCategories.filter(s => s.category_id === formData.category_id);
   const selectedSubCategory = subCategories.find(s => s.id === formData.subcategory_id);
+  const selectedCategory = categories.find(c => c.id === formData.category_id);
   const showDDRDropdown = selectedSubCategory && ['ram', 'motherboard', 'processor'].includes(selectedSubCategory.name.toLowerCase());
+
+  const isDesktopOrLaptopCategory = React.useMemo(() => {
+    const catName = (selectedCategory?.name || '').toLowerCase();
+    const subName = (selectedSubCategory?.name || '').toLowerCase();
+    const prodName = (formData.name || '').toLowerCase();
+
+    const targetCategories = ['laptop', 'laptops', 'desktop', 'desktops', 'prebuilt', 'pc', 'gaming pc', 'rig', 'workstation', 'all-in-one'];
+    const isCatMatch = targetCategories.some(tc => catName.includes(tc) || subName.includes(tc));
+    const isNameMatch = prodName.includes('laptop') || prodName.includes('desktop');
+
+    return isCatMatch || isNameMatch;
+  }, [selectedCategory, selectedSubCategory, formData.name]);
+
+  const getSpecValue = (key: string) => {
+    return formData.specs?.[key] || '';
+  };
+
+  const updateSpecField = (key: string, val: string) => {
+    setFormData(prev => ({
+      ...prev,
+      specs: {
+        ...(prev.specs || {}),
+        [key]: val
+      }
+    }));
+  };
 
   return (
     <div className="space-y-6">
@@ -698,15 +742,234 @@ const ProductManagement: React.FC = () => {
                       </button>
                     </div>
                     <textarea 
-                      rows={8}
+                      rows={6}
                       className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-600 text-sm leading-relaxed"
                       placeholder="Hardware specs, capabilities, and highlights..."
                       value={formData.description || ''}
                       onChange={e => setFormData({...formData, description: e.target.value})}
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Additional Details</label>
+                    <textarea 
+                      rows={5}
+                      className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-600 text-sm leading-relaxed"
+                      placeholder="Enter additional details, warranty highlights, or specifications (applies to all categories)..."
+                      value={formData.additional_details || ''}
+                      onChange={e => setFormData({...formData, additional_details: e.target.value})}
+                    />
+                    <p className="text-[11px] text-slate-400 font-bold mt-1.5">
+                      This field is displayed in the "Additional Details" section on the product details page for all categories.
+                    </p>
+                  </div>
                 </div>
               </div>
+
+              {/* Laptop & Desktop Specifications Section */}
+              {isDesktopOrLaptopCategory && (
+                <div className="space-y-8 bg-slate-50/80 p-6 md:p-8 rounded-[2.5rem] border border-slate-200/80 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                  <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+                    <div className="flex items-center gap-3">
+                      <span className="w-2.5 h-8 bg-red-600 rounded-full inline-block"></span>
+                      <div>
+                        <h4 className="text-xl font-black text-slate-900 tracking-tight">Laptop & Desktop Specification Fields</h4>
+                        <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-0.5">Parameters stored in database & shown on single product page</p>
+                      </div>
+                    </div>
+                    <span className="px-3 py-1 bg-red-100 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-red-200">
+                      System Specs Enabled
+                    </span>
+                  </div>
+
+                  {/* 1. System Specifications */}
+                  <div className="space-y-4">
+                    <h5 className="text-xs font-black text-red-600 uppercase tracking-widest flex items-center gap-2">
+                      <Cpu size={16} /> 1. System Specification
+                    </h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Processor (CPU)</label>
+                        <input 
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
+                          placeholder="e.g. AMD Ryzen™ 5 7535HS Processor"
+                          value={getSpecValue('Processor')}
+                          onChange={e => updateSpecField('Processor', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Graphics (GPU)</label>
+                        <input 
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
+                          placeholder="e.g. AMD Radeon™ 660M"
+                          value={getSpecValue('Graphics')}
+                          onChange={e => updateSpecField('Graphics', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Display / Screen</label>
+                        <input 
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
+                          placeholder="e.g. 15.6-inch, FHD (1920x1080) 144Hz"
+                          value={getSpecValue('Display')}
+                          onChange={e => updateSpecField('Display', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Memory (RAM)</label>
+                        <input 
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
+                          placeholder="e.g. 16GB DDR5 SO-DIMM, Max 64GB"
+                          value={getSpecValue('Memory')}
+                          onChange={e => updateSpecField('Memory', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Storage (SSD / HDD)</label>
+                        <input 
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
+                          placeholder="e.g. 512GB M.2 NVMe PCIe 4.0 SSD"
+                          value={getSpecValue('Storage')}
+                          onChange={e => updateSpecField('Storage', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Security</label>
+                        <input 
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
+                          placeholder="e.g. Firmware TPM, Fingerprint"
+                          value={getSpecValue('Security')}
+                          onChange={e => updateSpecField('Security', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. Additional Information */}
+                  <div className="space-y-4 pt-4 border-t border-slate-200">
+                    <h5 className="text-xs font-black text-red-600 uppercase tracking-widest flex items-center gap-2">
+                      <FileText size={16} /> 2. Additional Information
+                    </h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Operating System</label>
+                        <input 
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
+                          placeholder="e.g. Windows 11 Home"
+                          value={getSpecValue('Operating System')}
+                          onChange={e => updateSpecField('Operating System', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Color</label>
+                        <input 
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
+                          placeholder="e.g. Misty Grey / Eclipse Gray"
+                          value={getSpecValue('Color')}
+                          onChange={e => updateSpecField('Color', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Included Software</label>
+                        <input 
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
+                          placeholder="e.g. Microsoft Office Home 2024"
+                          value={getSpecValue('Included Software')}
+                          onChange={e => updateSpecField('Included Software', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">What's Included?</label>
+                        <input 
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
+                          placeholder="e.g. Backpack, 65W Power Adapter"
+                          value={getSpecValue('Whats Included')}
+                          onChange={e => updateSpecField('Whats Included', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Feature Specifications */}
+                  <div className="space-y-4 pt-4 border-t border-slate-200">
+                    <h5 className="text-xs font-black text-red-600 uppercase tracking-widest flex items-center gap-2">
+                      <Sparkles size={16} /> 3. Additional Specification / Feature Specification
+                    </h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Total Weight</label>
+                        <input 
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
+                          placeholder="e.g. 1.60 kg"
+                          value={getSpecValue('Total Weight')}
+                          onChange={e => updateSpecField('Total Weight', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Battery & Charging</label>
+                        <input 
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
+                          placeholder="e.g. 50WHrs, 3-cell Li-ion"
+                          value={getSpecValue('Battery & Charging')}
+                          onChange={e => updateSpecField('Battery & Charging', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Ports & Slots</label>
+                        <textarea 
+                          rows={2}
+                          className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
+                          placeholder="e.g. 2x USB Type-C, 1x HDMI, 1x RJ45"
+                          value={getSpecValue('Ports & Slots')}
+                          onChange={e => updateSpecField('Ports & Slots', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Web Camera</label>
+                        <input 
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
+                          placeholder="e.g. 720p HD camera with privacy shutter"
+                          value={getSpecValue('Web Camera')}
+                          onChange={e => updateSpecField('Web Camera', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Keyboard</label>
+                        <textarea 
+                          rows={2}
+                          className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
+                          placeholder="e.g. Backlit Chiclet Keyboard with Num-key"
+                          value={getSpecValue('Keyboard')}
+                          onChange={e => updateSpecField('Keyboard', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Wireless Connectivity</label>
+                        <input 
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
+                          placeholder="e.g. Wi-Fi 6 (802.11ax) + Bluetooth 5.2"
+                          value={getSpecValue('Wireless Connectivity')}
+                          onChange={e => updateSpecField('Wireless Connectivity', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               
               <div className="pt-10 border-t border-slate-100 flex flex-col sm:flex-row gap-4">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="sm:flex-1 py-5 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition-colors uppercase tracking-widest text-[11px]">
