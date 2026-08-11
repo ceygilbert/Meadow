@@ -339,6 +339,7 @@ const ProductDetails: React.FC = () => {
       {/* Product Content */}
       <main className="pt-24 md:pt-36 pb-20 px-4 md:px-10 max-w-[1440px] mx-auto">
         <Breadcrumbs 
+          className="mb-8"
           items={[
             ...(category ? [{ label: category.name, path: `/products?category=${category.slug}` }] : []),
             ...(subcategory ? [{ label: subcategory.name, path: `/products?category=${category?.slug}&subcategory=${subcategory.slug}` }] : []),
@@ -942,7 +943,7 @@ const ProductDetails: React.FC = () => {
       )}
 
       {/* Editorial Footer */}
-      <footer className="bg-[#F9FAFB] pt-24 pb-12 border-t border-slate-100">
+      <footer className="bg-[#F9FAFB] pt-24 pb-28 md:pb-32 border-t border-slate-100">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-12 mb-20">
             <div className="col-span-1 lg:col-span-1">
@@ -1030,6 +1031,79 @@ const ProductDetails: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* Sticky Bottom Purchase Bar */}
+      {product && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/80 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] py-3 px-4 md:px-10 transition-all duration-300">
+          <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-3 md:gap-6">
+            
+            {/* Product Thumbnail & Info */}
+            <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+              <div className="w-10 h-10 md:w-14 md:h-14 bg-slate-50 rounded-lg border border-slate-100 p-1 shrink-0 flex items-center justify-center overflow-hidden">
+                <img 
+                  src={product.image_url || undefined} 
+                  alt={product.name} 
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h4 className="font-bold text-slate-900 text-xs md:text-sm tracking-tight truncate line-clamp-1">
+                  {product.name}
+                </h4>
+                <div className="font-black text-slate-900 text-sm md:text-base">
+                  RM {finalPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </div>
+              </div>
+            </div>
+
+            {/* Quantity Controls & Action Buttons */}
+            <div className="flex items-center gap-2 md:gap-3 shrink-0">
+              {/* Quantity Selector */}
+              <div className="hidden sm:flex items-center bg-slate-100 rounded-xl px-2.5 md:px-3 py-2 justify-between w-24 md:w-28 border border-slate-200/60 shrink-0">
+                <button 
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))} 
+                  className="text-slate-500 hover:text-slate-900 transition-colors font-bold p-1"
+                >
+                  <Minus size={14} />
+                </button>
+                <span className="font-extrabold text-xs md:text-sm text-slate-900">{quantity}</span>
+                <button 
+                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))} 
+                  className="text-slate-500 hover:text-slate-900 transition-colors font-bold p-1"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+
+              {/* Add to Cart */}
+              <button 
+                onClick={addToCart}
+                disabled={product.stock <= 0}
+                className="py-2.5 md:py-3 px-3 md:px-6 border-2 border-slate-900 bg-white rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest text-slate-900 hover:bg-slate-900 hover:text-white transition-all shadow-sm active:scale-[0.98] disabled:opacity-50 whitespace-nowrap"
+              >
+                {isAdded ? 'ADDED' : 'ADD TO CART'}
+              </button>
+
+              {/* Buy It Now */}
+              <button 
+                onClick={() => {
+                  if (!product || product.stock <= 0) return;
+                  const alreadyInCart = cart.find(item => item.id === product.id);
+                  if (!alreadyInCart) {
+                     setCart(prev => [...prev, { ...product, quantity }]);
+                  }
+                  navigate('/checkout-light');
+                }}
+                disabled={product.stock <= 0}
+                className="py-2.5 md:py-3 px-4 md:px-8 bg-slate-900 text-white rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-black transition-all shadow-sm active:scale-[0.98] disabled:opacity-50 whitespace-nowrap"
+              >
+                BUY IT NOW
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 };

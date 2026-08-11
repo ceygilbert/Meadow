@@ -248,6 +248,7 @@ const ProductListing: React.FC = () => {
         {/* Breadcrumbs & Title */}
         <div className="mb-12">
           <Breadcrumbs 
+            className="mb-6 md:mb-8"
             items={[
               ...(currentCategory ? [{ label: currentCategory.name, path: `/products?category=${currentCategory.slug}` }] : []),
               ...(currentSubCategory ? [{ label: currentSubCategory.name }] : [])
