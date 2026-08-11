@@ -35,7 +35,8 @@ import {
 import PublicNavbar from '../../components/PublicNavbar';
 import Footer from '../../components/Footer';
 import { supabase } from '../../lib/supabase';
-import { Product, Profile, Brand } from '../../types';
+import { Product, Profile, Brand, HomePageSettings } from '../../types';
+import { fetchHomePageSettings } from '../../services/homepageService';
 
 interface CartItem extends Product {
   quantity: number;
@@ -136,6 +137,7 @@ const Home: React.FC = () => {
   const [pcComponentProducts, setPcComponentProducts] = useState<Product[]>([]);
   const [displayProducts, setDisplayProducts] = useState<Product[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
+  const [homeSettings, setHomeSettings] = useState<HomePageSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -144,6 +146,19 @@ const Home: React.FC = () => {
   const [menuMode, setMenuMode] = useState<MenuMode>('all');
   const [currentSlide, setCurrentSlide] = useState(0);
   const [menuBranchIndex, setMenuBranchIndex] = useState(0);
+
+  const activeBanners = (homeSettings?.banners || []).filter(b => b.is_active);
+  const bannersToDisplay = activeBanners.length > 0 
+    ? activeBanners 
+    : BANNERS.map((url, idx) => ({ id: `b-${idx}`, image_url: url, title: '', subtitle: '', link: '/products', button_text: 'Shop Now', is_active: true }));
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % bannersToDisplay.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + bannersToDisplay.length) % bannersToDisplay.length);
+  };
   
   // Auth & Profile States
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -279,11 +294,12 @@ const Home: React.FC = () => {
 
   // Auto-slide effect for hero banner (7 seconds)
   useEffect(() => {
+    const slideCount = bannersToDisplay.length || 1;
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % BANNERS.length);
+      setCurrentSlide((prev) => (prev + 1) % slideCount);
     }, 7000);
     return () => clearInterval(timer);
-  }, []);
+  }, [bannersToDisplay.length]);
 
   // Auto-slide for Menu Branch Slider (5 seconds)
   useEffect(() => {
@@ -332,11 +348,16 @@ const Home: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const [prodRes, brandRes, catRes] = await Promise.all([
+      const [prodRes, brandRes, catRes, homeSettingsRes] = await Promise.all([
         supabase.from('products').select('*').order('created_at', { ascending: false }),
         supabase.from('brands').select('*'),
-        supabase.from('categories').select('*')
+        supabase.from('categories').select('*'),
+        fetchHomePageSettings()
       ]);
+
+      if (homeSettingsRes) {
+        setHomeSettings(homeSettingsRes);
+      }
 
       if (prodRes.error) throw prodRes.error;
 
@@ -468,9 +489,6 @@ const Home: React.FC = () => {
     setMenuMode(mode);
     setIsFullMenuOpen(true);
   };
-
-  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % BANNERS.length);
-  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + BANNERS.length) % BANNERS.length);
 
   if (loading) {
     return (
@@ -630,7 +648,7 @@ const Home: React.FC = () => {
       {/* Hero Section */}
       <header className="relative pt-24 md:pt-32 pb-0">
         <div className="hidden lg:block absolute top-20 left-10 text-[11vw] font-black text-slate-50 tracking-tighter leading-none pointer-events-none select-none -z-10 uppercase">
-          Precision Engineering
+          {homeSettings?.hero_bg_text || "Precision Engineering"}
         </div>
 
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
@@ -638,50 +656,68 @@ const Home: React.FC = () => {
           
           {/* Animated Background Slider */}
           <div className="absolute inset-0 z-0">
-             {BANNERS.map((url, index) => (
-               <div 
-                 key={url}
-                 className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 scale-105' : 'opacity-0 scale-100'}`}
+             {bannersToDisplay.map((banner, index) => (
+               <Link 
+                 key={banner.id || index}
+                 to={banner.link || '/products'}
+                 className={`absolute inset-0 block cursor-pointer transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 scale-105 pointer-events-auto' : 'opacity-0 scale-100 pointer-events-none'}`}
                  style={{ 
                    transition: 'opacity 1s ease-in-out, transform 8s linear' 
                  }}
                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-white via-white/20 to-transparent z-10"></div>
-                  <img src={url} className="w-full h-full object-cover" alt={`Meadow Banner ${index + 1}`} />
-               </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/40 to-transparent z-10"></div>
+                  <img src={banner.image_url} className="w-full h-full object-cover" alt={banner.title || `Meadow Banner ${index + 1}`} />
+
+                  {/* Dynamic Banner Overlay Content */}
+                  {(banner.title || banner.subtitle || banner.button_text) && (
+                    <div className="absolute inset-0 z-20 flex flex-col justify-center p-8 md:p-20 text-white max-w-2xl">
+                      {banner.title && (
+                        <h2 className="text-3xl md:text-6xl font-black uppercase tracking-tight leading-none mb-3 drop-shadow-md">
+                          {banner.title}
+                        </h2>
+                      )}
+                      {banner.subtitle && (
+                        <p className="text-sm md:text-lg text-slate-200 font-medium mb-6 max-w-lg drop-shadow-xs">
+                          {banner.subtitle}
+                        </p>
+                      )}
+                      {banner.button_text && (
+                        <div>
+                          <span className="inline-flex items-center gap-3 px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-black text-xs uppercase tracking-widest transition-all shadow-xl hover:scale-105">
+                            {banner.button_text} <ArrowRight size={16} />
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+               </Link>
              ))}
-          </div>
-          
-          <div className="grid lg:grid-cols-2 w-full p-6 md:p-20 relative z-10">
-            <div className="flex flex-col justify-center text-center lg:text-left">
-              {/* Content removed per user request */}
-            </div>
           </div>
 
           {/* Slider Indicators */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-3">
-             {BANNERS.map((_, i) => (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-3 pointer-events-auto">
+             {bannersToDisplay.map((_, i) => (
                <button 
                 key={i} 
                 onClick={() => setCurrentSlide(i)}
-                className={`h-1.5 transition-all duration-500 rounded-full ${i === currentSlide ? 'w-12 bg-slate-900' : 'w-2 bg-slate-300'}`}
+                className={`h-1.5 transition-all duration-500 rounded-full ${i === currentSlide ? 'w-12 bg-white' : 'w-2 bg-white/40'}`}
                />
              ))}
           </div>
         </div>
       </div>
 
-        {/* Slider Controls - Repositioned to screen edges */}
+        {/* Slider Controls */}
         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-30 px-4 md:px-10 flex justify-between pointer-events-none">
           <button 
             onClick={prevSlide} 
-            className="w-12 h-12 md:w-16 md:h-16 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-white shadow-xl transition-all pointer-events-auto"
+            className="w-12 h-12 md:w-16 md:h-16 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-slate-700 hover:text-slate-900 hover:bg-white shadow-xl transition-all pointer-events-auto"
           >
             <ChevronLeft size={28} />
           </button>
           <button 
             onClick={nextSlide} 
-            className="w-12 h-12 md:w-16 md:h-16 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-white shadow-xl transition-all pointer-events-auto"
+            className="w-12 h-12 md:w-16 md:h-16 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-slate-700 hover:text-slate-900 hover:bg-white shadow-xl transition-all pointer-events-auto"
           >
             <ChevronRight size={28} />
           </button>
@@ -724,23 +760,26 @@ const Home: React.FC = () => {
         </div>
 
         <div id="categories-container" className="flex overflow-x-auto snap-x snap-mandatory gap-6 md:gap-8 pb-10 scrollbar-hide">
-          {[
-            { name: 'PC Component', img: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80', slug: 'pc-component' },
-            { name: 'Laptop', img: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80', slug: 'laptop' },
-            { name: 'Peripheral', img: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&q=80', slug: 'peripheral' },
-            { name: 'Monitor', img: 'https://images.unsplash.com/photo-1551645120-d70bfe84c826?auto=format&fit=crop&q=80', slug: 'monitor' },
-            { name: 'Desktop', img: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?auto=format&fit=crop&q=80', slug: 'desktop' },
-            { name: 'Home & Office', img: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&q=80', slug: 'home-office' },
-            { name: 'Networking', img: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&q=80', slug: 'networking' },
-            { name: 'Smart Home', img: 'https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/smart_house.jpg?auto=format&fit=crop&q=80', slug: 'smart-home' }
-          ].map((cat) => (
+          {(homeSettings?.categories && homeSettings.categories.length > 0 
+            ? homeSettings.categories.filter(c => c.is_active !== false)
+            : [
+                { name: 'PC Component', image_url: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80', slug: 'pc-component' },
+                { name: 'Laptop', image_url: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80', slug: 'laptop' },
+                { name: 'Peripheral', image_url: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&q=80', slug: 'peripheral' },
+                { name: 'Monitor', image_url: 'https://images.unsplash.com/photo-1551645120-d70bfe84c826?auto=format&fit=crop&q=80', slug: 'monitor' },
+                { name: 'Desktop', image_url: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?auto=format&fit=crop&q=80', slug: 'desktop' },
+                { name: 'Home & Office', image_url: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&q=80', slug: 'home-office' },
+                { name: 'Networking', image_url: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&q=80', slug: 'networking' },
+                { name: 'Smart Home', image_url: 'https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/smart_house.jpg?auto=format&fit=crop&q=80', slug: 'smart-home' }
+              ]
+          ).map((cat) => (
             <Link 
-              key={cat.name}
+              key={cat.slug || cat.name}
               to={`/products?category=${cat.slug}`}
               className="group relative flex-shrink-0 w-[85vw] md:w-[350px] aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-xl border border-slate-100 flex flex-col justify-end p-8 snap-start"
             >
               <img 
-                src={cat.img} 
+                src={cat.image_url} 
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
                 alt={cat.name} 
                 referrerPolicy="no-referrer"
@@ -762,7 +801,7 @@ const Home: React.FC = () => {
       <section className="px-4 md:px-10 py-0 max-w-[1440px] mx-auto">
         <div className="relative aspect-video md:aspect-[21/9] rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-2xl group border border-slate-100">
            <img 
-             src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80" 
+             src={homeSettings?.custom_pc_bg_image || "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80"} 
              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
              alt="Build Your Own PC"
              referrerPolicy="no-referrer"
@@ -774,15 +813,17 @@ const Home: React.FC = () => {
                <div className="flex items-center gap-3 mb-6">
                  <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-[#e11d48]">CUSTOM PC BUILDS</span>
                </div>
-               <h2 className="text-4xl md:text-7xl font-black text-white tracking-tighter uppercase leading-[0.9] mb-8">Build Your <br /> Own PC.</h2>
+               <h2 className="text-4xl md:text-7xl font-black text-white tracking-tighter uppercase leading-[0.9] mb-8">
+                 {homeSettings?.custom_pc_title || "Build Your Own PC."}
+               </h2>
                <p className="text-sm md:text-lg text-white/70 font-medium max-w-md leading-relaxed mb-10">
-                  Pick your parts step by step to build our dream PC that suits our budget and needs. Support and after-sales guidance assurance.
+                 {homeSettings?.custom_pc_subtitle || "Pick your parts step by step to build your dream PC that suits your budget and needs. Support and after-sales guidance assurance."}
                </p>
                <Link 
-                 to="/customised" 
+                 to={homeSettings?.custom_pc_btn_link || "/customised"} 
                  className="inline-flex items-center gap-4 px-10 py-4 bg-[#e11d48] text-white rounded-full font-black text-sm uppercase tracking-widest hover:bg-white hover:text-slate-900 transition-all shadow-xl group/btn w-fit"
                >
-                 Start Building
+                 {homeSettings?.custom_pc_btn_text || "Start Building"}
                  <ArrowRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
                </Link>
              </div>
@@ -1223,46 +1264,54 @@ const Home: React.FC = () => {
       {/* VISIT OUR STORE Section */}
       <section className="bg-white py-20 md:py-32 overflow-hidden border-t border-slate-50 font-sans">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
-          <h2 className="text-3xl md:text-5xl font-black text-black tracking-tighter uppercase mb-12">Visit Our Store.</h2>
+          <h2 className="text-3xl md:text-5xl font-black text-black tracking-tighter uppercase mb-12">
+            {homeSettings?.store_section_title || "Visit Our Store."}
+          </h2>
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Left Card */}
             <div className="lg:w-1/3 bg-[#f3f4f6] rounded-2xl p-8 flex flex-col justify-between min-h-[400px] shadow-sm font-sans">
               <div className="flex flex-col justify-start gap-8">
-                <h3 className="text-2xl md:text-3xl font-bold text-black leading-tight text-left uppercase tracking-tight">
-                  View All Meadow<br />
-                  Computer Mega Store<br />
-                  Location.
+                <h3 className="text-2xl md:text-3xl font-bold text-black leading-tight text-left uppercase tracking-tight whitespace-pre-line">
+                  {homeSettings?.store_card_title || "View All Meadow\nComputer Mega Store\nLocation."}
                 </h3>
               </div>
               
               <div className="flex flex-col gap-6">
                 <Link 
-                  to="/our-stores" 
+                  to={homeSettings?.store_btn_link || "/our-stores"} 
                   className="inline-flex items-center justify-center w-fit max-w-full px-6 md:px-8 py-4 whitespace-nowrap bg-white border-2 border-black rounded-xl text-xs font-black uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all shadow-sm text-center"
                 >
-                  Our Store
+                  {homeSettings?.store_btn_text || "Our Store"}
                 </Link>
                 <div className="border-t border-black/20 pt-6">
                   <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-[#333] mb-2">
-                    VIDEO DISPLAYING <ArrowRight size={16} />
+                    {homeSettings?.store_media_type === 'image' ? 'LOCATION DISPLAYING' : 'VIDEO DISPLAYING'} <ArrowRight size={16} />
                   </div>
                   <p className="text-xs font-black uppercase tracking-[0.2em] text-[#333]">
-                    TAMAN PELANGI ASUS STORE
+                    {homeSettings?.store_video_label || "TAMAN PELANGI ASUS STORE"}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Right Card (Video) */}
-            <div className="lg:flex-1 aspect-video md:aspect-auto md:h-[500px] rounded-2xl overflow-hidden shadow-2xl border border-slate-100 relative">
-              <video 
-                src="https://illuminatelabs.space/assets/locator_vd.mp4"
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full h-full object-cover"
-              />
+            {/* Right Card (Video or Image) */}
+            <div className="lg:flex-1 aspect-video md:aspect-auto md:h-[500px] rounded-2xl overflow-hidden shadow-2xl border border-slate-100 relative bg-black">
+              {homeSettings?.store_media_type === 'image' ? (
+                <img 
+                  src={homeSettings?.store_media_url || "https://illuminatelabs.space/assets/locator_vd.mp4"}
+                  alt="Store Location"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <video 
+                  src={homeSettings?.store_media_url || "https://illuminatelabs.space/assets/locator_vd.mp4"}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
           </div>
         </div>

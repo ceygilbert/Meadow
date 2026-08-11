@@ -89,7 +89,9 @@ const UnitManagement: React.FC = () => {
     }
   };
 
-  const filtered = units.filter(u => u.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filtered = units
+    .filter(u => !u.name.startsWith('HOMEPAGE_SETTINGS:') && u.id !== '00000000-0000-0000-0000-000000000001')
+    .filter(u => u.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <div className="space-y-6">

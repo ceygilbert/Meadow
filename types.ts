@@ -111,3 +111,46 @@ export interface DashboardStats {
   totalProducts: number;
   totalCustomers: number;
 }
+
+export interface HeroBanner {
+  id: string;
+  image_url: string;
+  title?: string;
+  subtitle?: string;
+  link?: string;
+  button_text?: string;
+  is_active: boolean;
+}
+
+export interface FeaturedCategorySetting {
+  id: string;
+  name: string;
+  slug: string;
+  image_url: string;
+  is_active: boolean;
+  order?: number;
+}
+
+export interface HomePageSettings {
+  id?: string;
+  hero_title?: string;
+  hero_subtitle?: string;
+  hero_bg_text?: string;
+  banners: HeroBanner[];
+  categories: FeaturedCategorySetting[];
+  custom_pc_title?: string;
+  custom_pc_subtitle?: string;
+  custom_pc_btn_text?: string;
+  custom_pc_btn_link?: string;
+  custom_pc_bg_image?: string;
+  // Visit Our Store Section
+  store_section_title?: string;
+  store_card_title?: string;
+  store_btn_text?: string;
+  store_btn_link?: string;
+  store_video_label?: string;
+  store_media_url?: string;
+  store_media_type?: 'video' | 'image';
+  updated_at?: string;
+}
+
