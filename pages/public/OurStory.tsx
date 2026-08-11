@@ -13,7 +13,8 @@ import {
 } from 'lucide-react';
 import PublicNavbar from '../../components/PublicNavbar';
 import { supabase } from '../../lib/supabase';
-import { Profile } from '../../types';
+import { Profile, OurStorySettings, AwardCardItem } from '../../types';
+import { fetchOurStorySettings, DEFAULT_OUR_STORY_SETTINGS } from '../../services/ourStoryService';
 
 interface CartItem {
   id: string;
@@ -30,68 +31,23 @@ const OurStory: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [awardSlide, setAwardSlide] = useState(0);
+  const [storySettings, setStorySettings] = useState<OurStorySettings>(DEFAULT_OUR_STORY_SETTINGS);
 
-  const awardCardsPages = [
-    // Slide 1: 2 Cards
-    [
-      {
-        id: "asus",
-        company: "ASUSTeK Computer Inc",
-        type: "Computer Hardware Company",
-        logo: (
-          <svg viewBox="0 0 100 100" className="w-10 h-10">
-            <path fill="#00539B" d="M50 15L15 85h18l17-35 17 35h18L50 15zm0 25l10 20H40l10-20z" />
-          </svg>
-        ),
-        awards: [
-          "Millions Dollar Award",
-          "Top Contribution Award",
-          "Top Performance Partner Award"
-        ],
-        duration: "Consecutively 2015-2023 Award Winner"
-      },
-      {
-        id: "msi",
-        company: "Micro-Star International Co. Ltd",
-        type: "Computer Hardware Company",
-        logo: <span className="text-xl font-black italic tracking-tighter text-black font-sans">msi</span>,
-        awards: [
-          "Outstanding Award",
-          "Top Performance Award",
-          "Best Performance Award",
-          "Online Best Performance Award"
-        ],
-        duration: "Consecutively 2013-2024 Award Winner"
-      }
-    ],
-    // Slide 2: 2 Cards
-    [
-      {
-        id: "gigabyte",
-        company: "Gigabyte Technology Co., Ltd.",
-        type: "Computer Hardware & Components",
-        logo: <span className="text-lg font-black tracking-tighter text-[#0066CC] font-sans">GIGABYTE</span>,
-        awards: [
-          "Excellence in Retail Sales",
-          "Outstanding System Integrator Partner",
-          "Top Growth Partner Award"
-        ],
-        duration: "Consecutively 2016-2024 Award Winner"
-      },
-      {
-        id: "hp",
-        company: "HP Inc. Malaysia",
-        type: "Computing & Printing Technology",
-        logo: <span className="text-2xl font-black italic tracking-tighter text-[#0096D6] font-sans">hp</span>,
-        awards: [
-          "Best Retail Growth Award",
-          "Outstanding Concept Store Partner",
-          "Top Consumer PC Partner"
-        ],
-        duration: "Consecutively 2016-2024 Award Winner"
-      }
-    ]
-  ];
+  useEffect(() => {
+    fetchOurStorySettings().then(data => setStorySettings(data));
+  }, []);
+
+  const awardCardsPages = React.useMemo(() => {
+    const cards = storySettings.award_cards && storySettings.award_cards.length > 0
+      ? storySettings.award_cards
+      : DEFAULT_OUR_STORY_SETTINGS.award_cards;
+
+    const pages: AwardCardItem[][] = [];
+    for (let i = 0; i < cards.length; i += 2) {
+      pages.push(cards.slice(i, i + 2));
+    }
+    return pages.length > 0 ? pages : [[]];
+  }, [storySettings.award_cards]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -125,15 +81,20 @@ const OurStory: React.FC = () => {
                 transition={{ duration: 1 }}
                 className="max-w-xl"
               >
-                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#666] mb-8 block">Our Story</span>
+                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#666] mb-8 block">{storySettings.hero_eyebrow || 'Our Story'}</span>
                  <h1 className="text-4xl md:text-6xl font-light text-[#333] leading-tight mb-12">
-                    30 Years as Johor Leading Retailers and Distributors                 </h1>
-                 <p className="text-md md:text-lg text-[#666] leading-relaxed font-light mb-6">
-                   Founded in 1995, Meadow has been serving customers across Johor for more than 30 years through IT distribution, wholesale and multi-brand retail. Over the years, we have grown alongside the industry while building trusted relationships with leading technology brands and the customers we serve.
-                 </p>
-                 <p className="text-md md:text-lg text-[#666] leading-relaxed font-light mb-8">
-                   Today, that foundation continues to shape our growth as we expand our retail presence, strengthen our customer support services, and make technology products more accessible, reliable and easier to shop with confidence for our customers.
-                 </p>
+                    {storySettings.hero_title || '30 Years as Johor Leading Retailers and Distributors'}
+                 </h1>
+                 {storySettings.hero_paragraph_1 && (
+                   <p className="text-md md:text-lg text-[#666] leading-relaxed font-light mb-6">
+                     {storySettings.hero_paragraph_1}
+                   </p>
+                 )}
+                 {storySettings.hero_paragraph_2 && (
+                   <p className="text-md md:text-lg text-[#666] leading-relaxed font-light mb-8">
+                     {storySettings.hero_paragraph_2}
+                   </p>
+                 )}
               </motion.div>
            </div>
            <div className="relative overflow-hidden bg-[#F6F5E8]">
@@ -141,7 +102,7 @@ const OurStory: React.FC = () => {
                 initial={{ scale: 1.1, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 1.5 }}
-                src="https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&fit=crop&q=80" 
+                src={storySettings.hero_image_url || "https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&fit=crop&q=80"} 
                 alt="Architecture" 
                 className="w-full h-full object-cover grayscale brightness-90"
               />
@@ -153,21 +114,21 @@ const OurStory: React.FC = () => {
       <section className="py-32 px-6 md:px-16 lg:px-32 max-w-[1600px] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-24">
            <div className="lg:col-span-2">
-              <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#666] mb-12">Foundations</h2>
+              <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#666] mb-12">{storySettings.foundations_eyebrow || 'Foundations'}</h2>
               <h3 className="text-3xl md:text-4xl font-light text-[#333] leading-snug mb-16 max-w-3xl">
-                We help every customer choose the right products with genuine advice and the right value for their needs.
+                {storySettings.foundations_title || 'We help every customer choose the right products with genuine advice and the right value for their needs.'}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
                  <div>
-                    <h4 className="text-sm font-bold uppercase tracking-widest mb-6 italic text-[#333]">Official Brand Partnership</h4>
+                    <h4 className="text-sm font-bold uppercase tracking-widest mb-6 italic text-[#333]">{storySettings.foundations_feature1_title || 'Official Brand Partnership'}</h4>
                     <p className="text-sm text-[#666] leading-relaxed font-light">
-                      As one of the largest distributors in Johor, we work with leading brands across laptops, printers, monitors, PC components and everyday IT products, giving customers more choice from brands they trust in one place.
+                      {storySettings.foundations_feature1_desc}
                     </p>
                  </div>
                  <div>
-                    <h4 className="text-sm font-bold uppercase tracking-widest mb-6 italic text-[#333]">Workshop Backed Support</h4>
+                    <h4 className="text-sm font-bold uppercase tracking-widest mb-6 italic text-[#333]">{storySettings.foundations_feature2_title || 'Workshop Backed Support'}</h4>
                     <p className="text-sm text-[#666] leading-relaxed font-light">
-                      Our in-store workshop supports customers with problem diagnosis, formatting, dust cleaning, warranty coordination and technical follow-up after purchase.
+                      {storySettings.foundations_feature2_desc}
                     </p>
                  </div>
               </div>
@@ -175,7 +136,7 @@ const OurStory: React.FC = () => {
            <div className="flex items-end">
               <div className="aspect-[3/4] w-full bg-[#F6F5E8] overflow-hidden">
                  <img 
-                   src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80" 
+                   src={storySettings.foundations_image_url || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80"} 
                    alt="Details" 
                    className="w-full h-full object-cover grayscale opacity-80"
                  />
@@ -190,24 +151,24 @@ const OurStory: React.FC = () => {
            <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
               <div className="order-2 lg:order-1">
                  <img 
-                   src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80" 
+                   src={storySettings.locations_image_url || "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80"} 
                    alt="Space" 
                    className="w-full aspect-video object-cover grayscale opacity-70"
                  />
               </div>
               <div className="order-1 lg:order-2 max-w-xl">
-                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-8 block">Distribution</span>
+                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-8 block">{storySettings.locations_eyebrow || 'Distribution'}</span>
                  <h2 className="text-3xl md:text-5xl font-light mb-12 leading-tight">
-                   Our Locations
+                   {storySettings.locations_title || 'Our Locations'}
                  </h2>
                  <p className="text-sm md:text-lg text-white/60 leading-relaxed font-light mb-12">
-                   Across Meadow signature stores and official HP and ASUS concept stores, customers can browse, compare, and get practical advice in person. From laptops and printers to PC components and custom builds, our team is here to help you choose with greater clarity and confidence.
+                   {storySettings.locations_desc}
                  </p>
                  <Link 
-                    to="/our-stores"
+                    to={storySettings.locations_btn_link || "/our-stores"}
                     className="inline-flex items-center justify-between px-8 py-4 border border-white/20 hover:border-white group transition-all duration-500 w-full md:w-auto md:min-w-[280px]"
                  >
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Explore our locations</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">{storySettings.locations_btn_text || 'Explore our locations'}</span>
                     <ArrowRight size={14} className="transition-transform duration-500 group-hover:translate-x-2" />
                  </Link>
               </div>
@@ -226,16 +187,16 @@ const OurStory: React.FC = () => {
           {/* Main Title & Overview */}
           <div className="max-w-4xl mb-12">
             <h2 className="text-3xl md:text-5xl font-light leading-tight mb-6">
-              We're <span className="text-red-600 font-normal">Multi-Award Company.</span>
+              {storySettings.awards_section_title || "We're Multi-Award Company."}
             </h2>
             <p className="text-sm md:text-lg text-white/70 leading-relaxed font-light mb-10 max-w-3xl">
-              We have been honored with awards from multiple international brands and local authorities, recognized for our nationwide distribution capabilities and our best-in-class products and services.
+              {storySettings.awards_section_desc}
             </p>
             
             {/* Tag Button */}
             <div className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-red-600 text-red-500 text-[10px] font-black uppercase tracking-[0.3em] bg-red-600/10 hover:bg-red-600/20 transition-colors">
               <Award size={14} className="text-red-500" />
-              Award List
+              {storySettings.awards_tag_label || 'Award List'}
             </div>
           </div>
 
@@ -282,16 +243,22 @@ const OurStory: React.FC = () => {
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
                 className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8"
               >
-                {awardCardsPages[awardSlide].map((card) => (
+                {awardCardsPages[awardSlide] && awardCardsPages[awardSlide].map((card) => (
                   <div
-                    key={card.id}
+                    key={card.id || card.company}
                     className="rounded-[1.75rem] border border-red-600/60 bg-[#181818] p-8 hover:border-red-500 hover:shadow-red-600/10 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group"
                   >
                     <div>
                       {/* Brand Header */}
                       <div className="flex items-center gap-4 mb-8">
                         <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center p-2.5 shrink-0 shadow-md">
-                          {card.logo}
+                          {card.logo_url ? (
+                            <img src={card.logo_url} alt={card.company} className="w-10 h-10 object-contain" />
+                          ) : (
+                            <span className="text-xl font-black italic tracking-tighter text-slate-900 font-sans">
+                              {card.company.slice(0, 3).toUpperCase()}
+                            </span>
+                          )}
                         </div>
                         <div>
                           <h4 className="text-base md:text-lg font-bold text-white tracking-tight group-hover:text-red-500 transition-colors">
@@ -305,7 +272,7 @@ const OurStory: React.FC = () => {
 
                       {/* Awards List */}
                       <ul className="space-y-3 pt-6 border-t border-white/10 text-sm font-medium text-white/90">
-                        {card.awards.map((awardText, idx) => (
+                        {(card.awards || []).map((awardText, idx) => (
                           <li key={idx} className="flex items-start gap-2.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-red-600 shrink-0 mt-2"></span>
                             <span>{awardText}</span>
@@ -347,22 +314,22 @@ const OurStory: React.FC = () => {
       {/* Values */}
       <section className="py-32 px-6 md:px-16 lg:px-32 max-w-[1600px] mx-auto border-b border-[#EAEABA]">
          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#666] mb-12">Our Commitment</h2>
+            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#666] mb-12">{storySettings.commitment_eyebrow || 'Our Commitment'}</h2>
             <p className="text-xl md:text-2xl font-light text-[#333] leading-relaxed mb-24 italic">
-              "We serve those who define the future. To provide anything less than perfection would be to fail the vision of our clients."
+              {storySettings.commitment_quote}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-left">
                <div>
-                  <h4 className="border-t border-[#333]/10 pt-6 text-[10px] font-black uppercase tracking-[0.4em] text-[#333] mb-4">Integrity</h4>
-                  <p className="text-xs text-[#666] font-light leading-relaxed">Honest consultation, transparent pricing, and genuine components from verified global supply chains.</p>
+                  <h4 className="border-t border-[#333]/10 pt-6 text-[10px] font-black uppercase tracking-[0.4em] text-[#333] mb-4">{storySettings.val1_title || 'Integrity'}</h4>
+                  <p className="text-xs text-[#666] font-light leading-relaxed">{storySettings.val1_desc}</p>
                </div>
                <div>
-                  <h4 className="border-t border-[#333]/10 pt-6 text-[10px] font-black uppercase tracking-[0.4em] text-[#333] mb-4">Mastery</h4>
-                  <p className="text-xs text-[#666] font-light leading-relaxed">Continuous research into emerging hardware architectures and thermal optimization techniques.</p>
+                  <h4 className="border-t border-[#333]/10 pt-6 text-[10px] font-black uppercase tracking-[0.4em] text-[#333] mb-4">{storySettings.val2_title || 'Mastery'}</h4>
+                  <p className="text-xs text-[#666] font-light leading-relaxed">{storySettings.val2_desc}</p>
                </div>
                <div>
-                  <h4 className="border-t border-[#333]/10 pt-6 text-[10px] font-black uppercase tracking-[0.4em] text-[#333] mb-4">Support</h4>
-                  <p className="text-xs text-[#666] font-light leading-relaxed">A lifecycle-long commitment to the machines we build, ensuring they evolve with your ambitions.</p>
+                  <h4 className="border-t border-[#333]/10 pt-6 text-[10px] font-black uppercase tracking-[0.4em] text-[#333] mb-4">{storySettings.val3_title || 'Support'}</h4>
+                  <p className="text-xs text-[#666] font-light leading-relaxed">{storySettings.val3_desc}</p>
                </div>
             </div>
          </div>

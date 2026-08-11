@@ -90,7 +90,7 @@ const UnitManagement: React.FC = () => {
   };
 
   const filtered = units
-    .filter(u => !u.name.startsWith('HOMEPAGE_SETTINGS:') && u.id !== '00000000-0000-0000-0000-000000000001')
+    .filter(u => !u.name.startsWith('HOMEPAGE_SETTINGS:') && !u.name.startsWith('OUR_STORY_SETTINGS:') && u.id !== '00000000-0000-0000-0000-000000000001' && u.id !== '00000000-0000-0000-0000-000000000002')
     .filter(u => u.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (

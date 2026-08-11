@@ -21,7 +21,8 @@ import {
   Receipt,
   Users,
   Ruler,
-  Home
+  Home,
+  BookOpen
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -36,6 +37,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout }) => {
   const primaryMenuItems = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Home Page', path: '/admin/homepage', icon: Home },
+    { name: 'Our Story', path: '/admin/our-story', icon: BookOpen },
     { name: 'Products', path: '/admin/products', icon: Package },
     { name: 'Stock Take', path: '/admin/stock-take', icon: ClipboardCheck },
     { name: 'Transactions', path: '/admin/orders', icon: Receipt },

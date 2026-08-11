@@ -25,6 +25,7 @@ import Contact from './pages/public/Contact';
 import AdminLogin from './pages/admin/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import HomePageSettingsPage from './pages/admin/HomePageSettings';
+import OurStorySettingsPage from './pages/admin/OurStorySettings';
 import ProductManagement from './pages/admin/Products';
 import CategoryManagement from './pages/admin/Categories';
 import SubCategoryManagement from './pages/admin/SubCategories';
@@ -92,6 +93,7 @@ const AppContent: React.FC = () => {
       >
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="homepage" element={<HomePageSettingsPage />} />
+        <Route path="our-story" element={<OurStorySettingsPage />} />
         <Route path="products" element={<ProductManagement />} />
         <Route path="stock-take" element={<StockTake />} />
         <Route path="orders" element={<Orders />} />

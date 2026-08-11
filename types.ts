@@ -154,3 +154,58 @@ export interface HomePageSettings {
   updated_at?: string;
 }
 
+export interface AwardCardItem {
+  id: string;
+  company: string;
+  type: string;
+  logo_url?: string;
+  awards: string[];
+  duration: string;
+}
+
+export interface OurStorySettings {
+  id?: string;
+  // Hero Section
+  hero_eyebrow?: string;
+  hero_title?: string;
+  hero_paragraph_1?: string;
+  hero_paragraph_2?: string;
+  hero_image_url?: string;
+
+  // Foundations Section
+  foundations_eyebrow?: string;
+  foundations_title?: string;
+  foundations_feature1_title?: string;
+  foundations_feature1_desc?: string;
+  foundations_feature2_title?: string;
+  foundations_feature2_desc?: string;
+  foundations_image_url?: string;
+
+  // Distribution / Locations Section
+  locations_eyebrow?: string;
+  locations_title?: string;
+  locations_desc?: string;
+  locations_btn_text?: string;
+  locations_btn_link?: string;
+  locations_image_url?: string;
+
+  // Multi-Award Section
+  awards_section_title?: string;
+  awards_section_desc?: string;
+  awards_tag_label?: string;
+  award_cards: AwardCardItem[];
+
+  // Commitment / Values Section
+  commitment_eyebrow?: string;
+  commitment_quote?: string;
+  val1_title?: string;
+  val1_desc?: string;
+  val2_title?: string;
+  val2_desc?: string;
+  val3_title?: string;
+  val3_desc?: string;
+
+  updated_at?: string;
+}
+
+

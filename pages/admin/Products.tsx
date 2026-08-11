@@ -145,7 +145,7 @@ const ProductManagement: React.FC = () => {
       setCategories(catRes.data || []);
       setSubCategories(subRes.data || []);
       setBrands(brandRes.data || []);
-      setUnits((unitRes.data || []).filter(u => !u.name.startsWith('HOMEPAGE_SETTINGS:') && u.id !== '00000000-0000-0000-0000-000000000001'));
+      setUnits((unitRes.data || []).filter(u => !u.name.startsWith('HOMEPAGE_SETTINGS:') && !u.name.startsWith('OUR_STORY_SETTINGS:') && u.id !== '00000000-0000-0000-0000-000000000001' && u.id !== '00000000-0000-0000-0000-000000000002'));
       
       if (!editingId && catRes.data?.[0]) {
         setFormData(prev => ({ 
