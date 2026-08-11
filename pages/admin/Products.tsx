@@ -34,7 +34,8 @@ import {
   Plug,
   Gift,
   FileText,
-  Sliders
+  Sliders,
+  Eye
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { generateProductDescription } from '../../services/geminiService';
@@ -58,6 +59,7 @@ const ProductManagement: React.FC = () => {
   const [modalError, setModalError] = useState<string | null>(null);
   
   const [isUploading, setIsUploading] = useState(false);
+  const [showDetailsPreview, setShowDetailsPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<Partial<Product>>({
@@ -77,6 +79,45 @@ const ProductManagement: React.FC = () => {
     is_custom_build: false,
     is_customised: false
   });
+
+  const insertSampleDetails = () => {
+    const productName = formData.name || 'ASUS ExpertBook P1';
+    const sample = `The ${productName} combines high-performance processing, a crisp anti-glare display, expandable high-speed memory, and business-class security in a reliable device built for professionals and hybrid work.
+
+**Business Grade Performance** - Powered by multi-core processing architecture delivering responsive performance for office productivity, multitasking, video conferencing, and daily computing.
+
+**15.6-inch Full HD Anti-Glare Display** - Features 300 nits brightness, wide viewing angles, and high screen-to-body ratio for comfortable viewing throughout the workday.
+
+**16GB DDR5 Memory & 512GB PCIe® 4.0 SSD** - High-speed memory and fast NVMe SSD storage provide smooth multitasking, rapid boot times, and ample storage for files.
+
+**Business Security & Comprehensive Connectivity** - Includes dual USB-C with DisplayPort™ and Power Delivery, HDMI, RJ-45 LAN, Wi-Fi 6E, Bluetooth® 5.4, TPM 2.0, fingerprint sensor, and webcam privacy shutter.
+
+![Product Highlight Graphic](https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=1000)`;
+
+    setFormData(prev => ({
+      ...prev,
+      additional_details: sample
+    }));
+  };
+
+  const insertFeatureLine = () => {
+    const line = `\n**Feature Title** - Enter description of the feature or spec highlight here.`;
+    setFormData(prev => ({
+      ...prev,
+      additional_details: (prev.additional_details || '') + line
+    }));
+  };
+
+  const insertImageTemplate = () => {
+    const imgUrl = prompt('Enter Image URL (or paste external image link):', 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=1000');
+    if (imgUrl && imgUrl.trim()) {
+      const markdown = `\n![Product Illustration](${imgUrl.trim()})\n`;
+      setFormData(prev => ({
+        ...prev,
+        additional_details: (prev.additional_details || '') + markdown
+      }));
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -776,16 +817,122 @@ const ProductManagement: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Additional Details</label>
-                    <textarea 
-                      rows={5}
-                      className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-600 text-sm leading-relaxed"
-                      placeholder="Enter additional details, warranty highlights, or specifications (applies to all categories)..."
-                      value={formData.additional_details || ''}
-                      onChange={e => setFormData({...formData, additional_details: e.target.value})}
-                    />
-                    <p className="text-[11px] text-slate-400 font-bold mt-1.5">
-                      This field is displayed in the "Additional Details" section on the product details page for all categories.
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <FileText size={14} className="text-blue-600" /> Additional Details (Text & Images)
+                      </label>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <button 
+                          type="button"
+                          onClick={insertSampleDetails}
+                          className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-bold rounded-lg transition-all border border-blue-200/60"
+                          title="Populate sample format matching layout"
+                        >
+                          + Sample Format
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={insertFeatureLine}
+                          className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-lg transition-all"
+                          title="Add bold feature title line"
+                        >
+                          + Bold Feature
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={insertImageTemplate}
+                          className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-lg transition-all"
+                          title="Insert image markdown"
+                        >
+                          + Add Image
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={() => setShowDetailsPreview(!showDetailsPreview)}
+                          className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1 ${
+                            showDetailsPreview ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-900'
+                          }`}
+                        >
+                          <Eye size={12} /> {showDetailsPreview ? 'Edit Text' : 'Live Preview'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {showDetailsPreview ? (
+                      <div className="p-6 bg-white border border-slate-200 rounded-2xl min-h-[180px] space-y-4 shadow-sm">
+                        <div className="text-[10px] font-black uppercase text-blue-600 tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
+                          <span>Live Preview (Product Page Rendering)</span>
+                          <span className="text-slate-400 font-normal">Switch to Edit Text to make changes</span>
+                        </div>
+                        {formData.additional_details ? (
+                          <div className="space-y-3.5 text-sm text-slate-800 leading-relaxed font-sans">
+                            {formData.additional_details.split('\n').map((line, idx) => {
+                              const lineTrim = line.trim();
+                              if (!lineTrim) return null;
+
+                              const imgMatch = lineTrim.match(/^!\[(.*?)\]\((.*?)\)$/) || lineTrim.match(/^\[image:\s*(.*?)\]$/i);
+                              const isDirectImg = /^https?:\/\/.*\.(png|jpg|jpeg|webp|gif|svg)(\?.*)?$/i.test(lineTrim);
+                              const url = imgMatch ? (imgMatch[2] || imgMatch[1]) : (isDirectImg ? lineTrim : '');
+
+                              if (url) {
+                                return (
+                                  <div key={idx} className="my-3 p-2 bg-slate-50 border border-slate-200 rounded-xl flex justify-center">
+                                    <img src={url} alt="Preview" className="max-h-56 object-contain rounded-lg" />
+                                  </div>
+                                );
+                              }
+
+                              if (lineTrim.includes('**')) {
+                                const parts = lineTrim.split(/(\*\*.*?\*\*)/g);
+                                return (
+                                  <p key={idx}>
+                                    {parts.map((p, pI) => p.startsWith('**') && p.endsWith('**') ? (
+                                      <strong key={pI} className="font-extrabold text-slate-900">{p.slice(2, -2)}</strong>
+                                    ) : p)}
+                                  </p>
+                                );
+                              }
+
+                              if (lineTrim.includes(' - ')) {
+                                const dIdx = lineTrim.indexOf(' - ');
+                                return (
+                                  <p key={idx}>
+                                    <strong className="font-extrabold text-slate-900">{lineTrim.slice(0, dIdx)}</strong>
+                                    {lineTrim.slice(dIdx)}
+                                  </p>
+                                );
+                              }
+
+                              if (lineTrim.includes(':')) {
+                                const cIdx = lineTrim.indexOf(':');
+                                return (
+                                  <p key={idx}>
+                                    <strong className="font-extrabold text-slate-900">{lineTrim.slice(0, cIdx)}</strong>
+                                    {lineTrim.slice(cIdx)}
+                                  </p>
+                                );
+                              }
+
+                              return <p key={idx}>{lineTrim}</p>;
+                            })}
+                          </div>
+                        ) : (
+                          <p className="text-slate-400 text-xs italic">No additional details entered yet. Click "+ Sample Format" above to test!</p>
+                        )}
+                      </div>
+                    ) : (
+                      <textarea 
+                        rows={8}
+                        className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-600 text-sm leading-relaxed"
+                        placeholder="Enter plain text paragraphs, bold feature headings (e.g. **Title** - description), or image URLs / markdown ![Alt](https://...)"
+                        value={formData.additional_details || ''}
+                        onChange={e => setFormData({...formData, additional_details: e.target.value})}
+                      />
+                    )}
+
+                    <p className="text-[11px] text-slate-400 font-bold mt-2 flex items-center justify-between">
+                      <span>Supports plain text paragraphs, <code>**Bold Title** - Description</code>, and image links <code>![Image](https://...)</code></span>
+                      <span className="text-blue-600">Renders on Product Details Page</span>
                     </p>
                   </div>
                 </div>
