@@ -161,19 +161,24 @@ const Customised: React.FC = () => {
 
   const heroSlides = [
     {
-      type: 'video',
-      url: 'https://assets.mixkit.co/videos/preview/mixkit-circuit-board-of-a-computer-close-up-34863-large.mp4',
+      type: 'image',
+      url: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1920&auto=format&fit=crop',
       description: 'Fast • Beautiful • Thoughtfully Crafted. Architecting performance for the elite workspace.'
     },
     {
       type: 'image',
-      url: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1920&auto=format&fit=crop',
+      url: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1920&auto=format&fit=crop',
       description: 'Every component hand-picked for maximum sustained performance and reliability.'
     },
     {
       type: 'image',
-      url: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?q=80&w=1920&auto=format&fit=crop',
+      url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1920&auto=format&fit=crop',
       description: 'Where high-end computational power meets executive-grade design and cable management.'
+    },
+    {
+      type: 'image',
+      url: 'https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=1920&auto=format&fit=crop',
+      description: 'Precision engineered custom gaming rigs built to dominate.'
     }
   ];
 
@@ -222,75 +227,70 @@ const Customised: React.FC = () => {
 
       {/* Hero Section Slider */}
       <section className="relative h-screen min-h-[800px] flex items-center justify-center overflow-hidden z-10">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.5 }}
-            className="absolute inset-0 z-0"
-          >
-            {heroSlides[currentSlide].type === 'video' ? (
-              <video
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="w-full h-full object-cover opacity-40 scale-105"
-              >
-                <source src={heroSlides[currentSlide].url} type="video/mp4" />
-              </video>
-            ) : (
-              <img
-                src={heroSlides[currentSlide].url}
-                className="w-full h-full object-cover opacity-40 scale-105"
-                alt="Hero Background"
-                referrerPolicy="no-referrer"
-              />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#050607] via-transparent to-[#050607]" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#050607] via-transparent to-[#050607]" />
-          </motion.div>
-        </AnimatePresence>
+        <Link to="/buildpc" className="absolute inset-0 block cursor-pointer group z-0">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentSlide}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.5 }}
+              className="absolute inset-0 z-0"
+            >
+              {heroSlides[currentSlide].type === 'video' ? (
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover opacity-80 scale-105 group-hover:scale-110 transition-transform duration-1000"
+                >
+                  <source src={heroSlides[currentSlide].url} type="video/mp4" />
+                </video>
+              ) : (
+                <img
+                  src={heroSlides[currentSlide].url}
+                  className="w-full h-full object-cover opacity-85 scale-105 group-hover:scale-110 transition-transform duration-1000"
+                  alt="Hero Background"
+                  referrerPolicy="no-referrer"
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-b from-[#050607]/60 via-transparent to-[#050607]/80" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#050607]/40 via-transparent to-[#050607]/40" />
+            </motion.div>
+          </AnimatePresence>
 
-        <div className="relative z-10 max-w-[1440px] mx-auto px-8 md:px-20 w-full">
-          <div className="flex flex-col items-center text-center">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentSlide}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.8 }}
-                className="flex flex-col items-center"
-              >
-                <div className="max-w-3xl space-y-10">
-                  <p className="text-lg md:text-2xl text-slate-300 font-light leading-relaxed">
-                    {heroSlides[currentSlide].description}
-                  </p>
-                  
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                    <Link to="/buildpc" className="h-16 px-12 bg-white text-black rounded-full font-black text-[10px] uppercase tracking-[0.4em] hover:bg-rose-600 hover:text-white transition-all duration-700 shadow-2xl flex items-center gap-4 group">
-                      Initialize Build
-                      <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                    <button className="h-16 px-10 bg-white/10 border border-white/20 text-white rounded-full font-black text-[10px] uppercase tracking-[0.4em] hover:bg-white/20 transition-all">
-                      The Archive
-                    </button>
+          <div className="relative z-10 max-w-[1440px] mx-auto px-8 md:px-20 w-full h-full flex items-center justify-center">
+            <div className="flex flex-col items-center text-center">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentSlide}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.8 }}
+                  className="flex flex-col items-center"
+                >
+                  <div className="max-w-3xl space-y-6">
+                    <p className="text-lg md:text-2xl text-slate-200 font-light leading-relaxed drop-shadow-md">
+                      {heroSlides[currentSlide].description}
+                    </p>
                   </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
-        </div>
+        </Link>
 
         {/* Slider Navigation Dots */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-4 z-20">
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-4 z-20 pointer-events-auto">
           {heroSlides.map((_, i) => (
             <button
               key={i}
-              onClick={() => setCurrentSlide(i)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrentSlide(i);
+              }}
               className={`w-12 h-1 transition-all duration-500 rounded-full ${
                 currentSlide === i ? 'bg-rose-600 w-20' : 'bg-white/20 hover:bg-white/40'
               }`}
@@ -298,22 +298,22 @@ const Customised: React.FC = () => {
           ))}
         </div>
 
-        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-rose-600/40 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-rose-600/40 to-transparent pointer-events-none"></div>
       </section>
 
       {/* Product Categories Grid */}
       <section className="relative z-10 px-8 md:px-20 max-w-[1800px] mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 pb-12">
           {/* Custom Build PC */}
-          <div className="relative w-full aspect-video group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5">
+          <div className="relative w-full aspect-square group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5">
             <img 
               src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1200&auto=format&fit=crop" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
               alt="Custom PC"
               referrerPolicy="no-referrer"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/20 to-black/80"></div>
-            <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-12 text-center space-y-8">
+            <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/40 to-black/70"></div>
+            <div className="relative h-full flex flex-col items-center justify-start p-8 md:p-12 text-center space-y-6 md:space-y-8 pt-10 md:pt-14">
               <div className="space-y-4">
                 <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white">Custom build PC</h2>
                 <p className="text-slate-300 text-[10px] md:text-[12px] font-medium uppercase tracking-[0.4em] leading-relaxed max-w-sm mx-auto">
@@ -327,15 +327,15 @@ const Customised: React.FC = () => {
           </div>
 
           {/* Pre-Built PC */}
-          <div className="relative w-full aspect-video group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5">
+          <div className="relative w-full aspect-square group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5">
             <img 
               src="https://images.unsplash.com/photo-1593640408182-31c70c8268f5?q=80&w=1200&auto=format&fit=crop" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
               alt="Pre-Built PC"
               referrerPolicy="no-referrer"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/80"></div>
-            <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-12 text-center space-y-8">
+            <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/40 to-black/70"></div>
+            <div className="relative h-full flex flex-col items-center justify-start p-8 md:p-12 text-center space-y-6 md:space-y-8 pt-10 md:pt-14">
               <div className="space-y-4">
                 <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white">Pre-Built PC</h2>
                 <p className="text-slate-300 text-[10px] md:text-[12px] font-medium uppercase tracking-[0.4em] leading-relaxed max-w-sm mx-auto">
@@ -349,15 +349,15 @@ const Customised: React.FC = () => {
           </div>
 
           {/* Workstation PC */}
-          <div className="relative w-full aspect-video group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5">
+          <div className="relative w-full aspect-square group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5">
             <img 
               src="https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1200&auto=format&fit=crop" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
               alt="Workstation PC"
               referrerPolicy="no-referrer"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/80"></div>
-            <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-12 text-center space-y-8">
+            <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/40 to-black/70"></div>
+            <div className="relative h-full flex flex-col items-center justify-start p-8 md:p-12 text-center space-y-6 md:space-y-8 pt-10 md:pt-14">
               <div className="space-y-4">
                 <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white">Workstation PC</h2>
                 <p className="text-slate-300 text-[10px] md:text-[12px] font-medium uppercase tracking-[0.4em] leading-relaxed max-w-sm mx-auto">
@@ -371,15 +371,15 @@ const Customised: React.FC = () => {
           </div>
 
           {/* Laptop */}
-          <div className="relative w-full aspect-video group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5">
+          <div className="relative w-full aspect-square group overflow-hidden rounded-[3rem] shadow-2xl border border-white/5">
             <img 
               src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1200&auto=format&fit=crop" 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
               alt="Laptop"
               referrerPolicy="no-referrer"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/80"></div>
-            <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-12 text-center space-y-8">
+            <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/40 to-black/70"></div>
+            <div className="relative h-full flex flex-col items-center justify-start p-8 md:p-12 text-center space-y-6 md:space-y-8 pt-10 md:pt-14">
               <div className="space-y-4">
                 <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white">Laptop</h2>
                 <p className="text-slate-300 text-[10px] md:text-[12px] font-medium uppercase tracking-[0.4em] leading-relaxed max-w-sm mx-auto">
