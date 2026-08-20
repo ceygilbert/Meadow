@@ -30,7 +30,10 @@ import {
   Video,
   Circle,
   Facebook,
-  Instagram
+  Instagram,
+  Wrench,
+  ShieldCheck,
+  Truck
 } from 'lucide-react';
 import PublicNavbar from '../../components/PublicNavbar';
 import Footer from '../../components/Footer';
@@ -1313,6 +1316,87 @@ const Home: React.FC = () => {
                 />
               )}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* WHAT WE DO / Support Beyond the Purchase Section */}
+      <section className="bg-[#FAF9FB] py-20 md:py-28 border-t border-slate-100 font-sans">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+            
+            {/* Left Header Info */}
+            <div className="lg:col-span-4 flex flex-col justify-center pr-0 lg:pr-6">
+              <span className="text-xs font-black uppercase tracking-[0.25em] text-[#e11d48] mb-3">
+                WHAT WE DO
+              </span>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
+                Support Beyond the Purchase
+              </h2>
+              <p className="text-sm md:text-base text-slate-500 font-medium leading-relaxed max-w-md">
+                Practical, ongoing support and added convenience that go beyond your purchase.
+              </p>
+            </div>
+
+            {/* Right 3 Cards Grid */}
+            <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              {/* Card 1: Workshop Services */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
+                <div>
+                  <div className="w-12 h-12 rounded-full bg-rose-50 text-[#e11d48] flex items-center justify-center mb-6">
+                    <Wrench size={22} />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-3 tracking-tight">
+                    Workshop Services
+                  </h3>
+                  <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed mb-8">
+                    Dust cleaning, basic maintenance, problem diagnosis, formatting and data backup.
+                  </p>
+                </div>
+                <Link to="/contact" className="inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-900 hover:text-[#e11d48] transition-colors group/link mt-auto">
+                  Learn More <ArrowRight size={16} className="group-hover/link:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+
+              {/* Card 2: Warranty & RMA Support */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
+                <div>
+                  <div className="w-12 h-12 rounded-full bg-rose-50 text-[#e11d48] flex items-center justify-center mb-6">
+                    <ShieldCheck size={22} />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-3 tracking-tight">
+                    Warranty & RMA Support
+                  </h3>
+                  <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed mb-8">
+                    We manage the claim process from start to finish.
+                  </p>
+                </div>
+                <Link to="/contact" className="inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-900 hover:text-[#e11d48] transition-colors group/link mt-auto">
+                  View Support <ArrowRight size={16} className="group-hover/link:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+
+              {/* Card 3: Delivery Nationwide */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
+                <div>
+                  <div className="w-12 h-12 rounded-full bg-rose-50 text-[#e11d48] flex items-center justify-center mb-6">
+                    <Truck size={22} />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-3 tracking-tight">
+                    Delivery Nationwide
+                  </h3>
+                  <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed mb-8">
+                    We deliver nationwide across Malaysia for purchases above RM 1,500, arranged at no additional charges.
+                  </p>
+                </div>
+                <Link to="/contact" className="inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-900 hover:text-[#e11d48] transition-colors group/link mt-auto">
+                  Learn More <ArrowRight size={16} className="group-hover/link:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+
+            </div>
+
           </div>
         </div>
       </section>

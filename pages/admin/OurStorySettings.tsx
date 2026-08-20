@@ -248,6 +248,16 @@ const OurStorySettingsPage: React.FC = () => {
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:border-slate-900"
               />
             </div>
+
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Paragraph 3</label>
+              <textarea
+                rows={3}
+                value={settings.hero_paragraph_3 || ''}
+                onChange={(e) => setSettings({ ...settings, hero_paragraph_3: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:border-slate-900"
+              />
+            </div>
           </div>
 
           <div className="space-y-4">

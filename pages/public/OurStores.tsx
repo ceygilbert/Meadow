@@ -1,112 +1,141 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   ArrowRight,
   MapPin,
   Phone,
   Clock,
-  ChevronRight,
   Navigation,
   X,
-  Menu,
-  ShoppingCart,
-  User as UserIcon,
-  Search,
-  ArrowUpRight,
-  Facebook,
-  Instagram
+  LayoutList,
+  Map as MapIcon,
+  ExternalLink,
+  Check,
+  Building2,
+  ShieldCheck,
+  Wrench,
+  Laptop
 } from 'lucide-react';
 import PublicNavbar from '../../components/PublicNavbar';
-import { supabase } from '../../lib/supabase';
-import { Profile, Product } from '../../types';
+import Footer from '../../components/Footer';
+import { Product } from '../../types';
+import { useAuth } from '../../lib/AuthContext';
 
-interface Branch {
+interface StoreItem {
   id: string;
   name: string;
-  type: string;
+  badge: string;
+  badgeType: 'meadow' | 'asus' | 'hp' | 'hq';
+  category: 'Meadow Computer' | 'ASUS' | 'HP' | 'Distribution HQ';
   address: string;
-  lat: number;
-  lng: number;
-  phone: string;
-  city: string;
+  tags: string[];
   image: string;
-  hours?: string;
+  phone: string;
+  hours: string;
+  googleMapsUrl: string;
+  embedMapUrl: string;
+  description: string;
+  features: string[];
 }
 
-const BRANCHES: Branch[] = [
+const STORE_LIST: StoreItem[] = [
   {
-    id: '1',
-    name: 'MEADOW IT DISTRIBUTION SDN BHD (HQ)',
-    type: 'Service Center',
-    address: 'No 5, 7 & 9, Jalan Keembong 22, Johor Jaya, 81100 Johor Bahru, Johor.',
-    lat: 1.5410,
-    lng: 103.7997,
-    phone: '+60 7-355 5555',
-    city: 'Johor Jaya',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80',
-    hours: '9:00 AM - 6:00 PM'
-  },
-  {
-    id: '2',
-    name: 'MEADOW COMPUTER SDN BHD TAMAN U',
-    type: 'IT Store',
-    address: 'No 8, Jalan Kebudayaan 1, Taman Universiti, 81300 Skudai, Johor.',
-    lat: 1.5435,
-    lng: 103.6267,
-    phone: '+60 7-521 1111',
-    city: 'Skudai',
-    image: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&q=80',
-    hours: '10:00 AM - 9:00 PM'
-  },
-  {
-    id: '3',
-    name: 'MEADOW COMPUTER SDN BHD PLAZA PELANGI',
-    type: 'Mega Store',
-    address: 'Lot.3.26, 26A, 27, Level 3, Plaza Pelangi, 80400 Johor Bahru, Johor.',
-    lat: 1.4827,
-    lng: 103.7635,
+    id: 'pelangi-meadow',
+    name: 'Pelangi Plaza',
+    badge: 'MEADOW STORE',
+    badgeType: 'meadow',
+    category: 'Meadow Computer',
+    address: 'Lot 3.26, 26A, 27, Level 3, Plaza Pelangi, Taman Pelangi, 80400 Johor Bahru, Johor',
+    tags: ['PC Build', 'Laptops', 'Components', 'Support'],
+    image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80&w=1200',
     phone: '+60 7-333 3333',
-    city: 'Johor Bahru',
-    image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80',
-    hours: '10:00 AM - 10:00 PM'
+    hours: '10:00 AM - 10:00 PM (Daily)',
+    googleMapsUrl: 'https://maps.google.com/?q=Lot+3.26+Plaza+Pelangi+Johor+Bahru',
+    embedMapUrl: 'https://www.google.com/maps?q=Lot+3.26+Plaza+Pelangi+Johor+Bahru&output=embed',
+    description: 'Our flagship retail experience featuring an extensive showroom of custom gaming rigs, workstation architectures, and enthusiast component displays.',
+    features: ['Custom PC Assembly & Diagnostic Lab', 'Dedicated Component Consultation Desk', 'Comprehensive Peripheral Testing Zone', 'Immediate Warranty & RMA Drop-off']
   },
   {
-    id: '4',
-    name: 'ASUS CONCEPT STORE MEADOW COMPUTER',
-    type: 'IT Store',
-    address: 'Lot.3.16, Level 3, Plaza Pelangi, 80400 Johor Bahru, Johor.',
-    lat: 1.4827,
-    lng: 103.7635,
+    id: 'larkin-junction',
+    name: 'Larkin Junction',
+    badge: 'MEADOW STORE',
+    badgeType: 'meadow',
+    category: 'Meadow Computer',
+    address: 'Lot 4.12, Jalan Dewata, Taman Larkin Perdana, 80350 Johor Bahru, Johor Darul Ta\'zim',
+    tags: ['PC Build', 'Laptops', 'Peripherals', 'Support'],
+    image: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&q=80&w=1200',
+    phone: '+60 7-221 2222',
+    hours: '10:00 AM - 10:00 PM (Daily)',
+    googleMapsUrl: 'https://maps.google.com/?q=Larkin+Junction+Johor+Bahru',
+    embedMapUrl: 'https://www.google.com/maps?q=Lot+4.12+Jalan+Dewata+Taman+Larkin+Perdana+Johor+Bahru&output=embed',
+    description: 'Conveniently situated in Larkin, offering prompt technical assistance, prebuilt desktop configurations, and everyday workspace peripherals.',
+    features: ['Instant Hardware Upgrade Station', 'Business Fleet & Student Solutions', 'Official Genuine Components Guarantee', 'Same-Day Pickup for Online Orders']
+  },
+  {
+    id: 'taman-universiti',
+    name: 'Taman Universiti',
+    badge: 'MEADOW STORE',
+    badgeType: 'meadow',
+    category: 'Meadow Computer',
+    address: '8, Jalan Kebudayaan 1, Taman Universiti, 81300 Skudai',
+    tags: ['PC Build', 'Components', 'Peripherals', 'Support'],
+    image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80&w=1200',
+    phone: '+60 7-521 1111',
+    hours: '10:00 AM - 9:00 PM (Daily)',
+    googleMapsUrl: 'https://maps.google.com/?q=8+Jalan+Kebudayaan+1+Taman+Universiti+81300+Skudai',
+    embedMapUrl: 'https://www.google.com/maps?q=8+Jalan+Kebudayaan+1+Taman+Universiti+81300+Skudai&output=embed',
+    description: 'The core student and enthusiast hub in Skudai, providing accessible custom PC builds, laptop optimization, and hardware upgrades.',
+    features: ['Student Discount Verification & Bundles', 'Rapid Thermal Paste & Cleaning Service', 'Comprehensive Graphic Card Stock', 'Mechanical Keyboards & Audio Gear Demo']
+  },
+  {
+    id: 'pelangi-asus',
+    name: 'Pelangi Plaza',
+    badge: 'ASUS CONCEPT STORE',
+    badgeType: 'asus',
+    category: 'ASUS',
+    address: 'LOT 3.16 & 3.17, Level 3, Plaza Pelangi, Jalan Kuning, Taman Pelangi, 80400 Johor Bahru, Johor Darul Ta\'zim',
+    tags: ['ASUS Products', 'Laptops', 'Accessories', 'Support'],
+    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=1200',
     phone: '+60 7-333 4444',
-    city: 'Johor Bahru',
-    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80',
-    hours: '10:00 AM - 10:00 PM'
+    hours: '10:00 AM - 10:00 PM (Daily)',
+    googleMapsUrl: 'https://maps.google.com/?q=ASUS+Plaza+Pelangi+Johor+Bahru',
+    embedMapUrl: 'https://www.google.com/maps?q=Plaza+Pelangi+ASUS+Concept+Store+Johor+Bahru&output=embed',
+    description: 'Authorized ASUS concept store showcasing the complete Republic of Gamers (ROG), TUF Gaming, ZenBook, and ProArt ecosystem.',
+    features: ['Complete ROG & TUF Gaming Battle Stations', 'ZenBook Ultraportable Touch Experience', 'ProArt Color-Calibrated Displays', 'Official ASUS Authorized Warranty Service']
   },
   {
-    id: '5',
-    name: 'HP WORLD MEADOW COMPUTER TOPPEN',
-    type: 'IT Store',
-    address: 'Level 2, Lot L2.22, Toppen Shopping Centre, 33A, Jln Harmonium, Taman Desa Tebrau, 81100 Johor Bahru, Johor Darul Ta’zim.',
-    lat: 1.5484,
-    lng: 103.7963,
+    id: 'toppen-hp',
+    name: 'Toppen',
+    badge: 'HP CONCEPT STORE',
+    badgeType: 'hp',
+    category: 'HP',
+    address: 'No 33A, Lot L2/22, Level 2, Toppen Shopping Centre, Jln Harmonium, Taman Desa Tebrau, 81100 Johor Bahru, Johor Darul Ta\'zim',
+    tags: ['HP Products', 'Laptops', 'Printers', 'Support'],
+    image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80&w=1200',
     phone: '+60 7-364 8888',
-    city: 'Johor Bahru',
-    image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80',
-    hours: '10:00 AM - 10:00 PM'
+    hours: '10:00 AM - 10:00 PM (Daily)',
+    googleMapsUrl: 'https://maps.google.com/?q=Toppen+Shopping+Centre+Johor+Bahru',
+    embedMapUrl: 'https://www.google.com/maps?q=Toppen+Shopping+Centre+HP+Store+Johor+Bahru&output=embed',
+    description: 'Dedicated HP Brand Experience Store showcasing OMEN gaming rigs, Spectre luxury convertibles, ENVY creative laptops, and smart printing solutions.',
+    features: ['OMEN High-FPS Gaming Playground', 'Spectre & ENVY Creator Experience', 'Smart Tank Printer & Ink Supply Hub', 'Certified HP Customer Support Desk']
   },
   {
-    id: '6',
-    name: 'HUAWEI AUTHORIZED EXPERIENCE STORE',
-    type: 'IT Store',
-    address: 'K1.01B, Level 1, Plaza Pelangi, 80400 Johor Bahru, Johor.',
-    lat: 1.4827,
-    lng: 103.7635,
-    phone: '+60 7-333 5555',
-    city: 'Johor Bahru',
-    image: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&q=80',
-    hours: '10:00 AM - 10:00 PM'
+    id: 'distribution-hq',
+    name: 'Meadow IT Distribution',
+    badge: 'DISTRIBUTION HQ',
+    badgeType: 'hq',
+    category: 'Distribution HQ',
+    address: '7 & 9, Jalan Keembong 22, Taman Johor Jaya, 81100 Johor Bahru, Johor Darul Ta\'zim',
+    tags: ['Distribution', 'Warehouse', 'Business', 'HQ'],
+    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1200',
+    phone: '+60 7-355 5555',
+    hours: '9:00 AM - 6:00 PM (Mon - Fri)',
+    googleMapsUrl: 'https://maps.google.com/?q=7+Jalan+Keembong+22+Johor+Jaya+Johor+Bahru',
+    embedMapUrl: 'https://www.google.com/maps?q=7+Jalan+Keembong+22+Johor+Jaya+Johor+Bahru&output=embed',
+    description: 'The central hub for wholesale hardware distribution, enterprise computing procurement, and corporate IT infrastructure deployment in Southern Malaysia.',
+    features: ['B2B Corporate Procurement Department', 'Large-Scale Warehousing & Logistics Fulfillment', 'Enterprise Server & Networking Testing Area', 'Wholesale Partner Helpdesk']
   }
 ];
 
@@ -114,9 +143,15 @@ interface CartItem extends Product {
   quantity: number;
 }
 
-import { useAuth } from '../../lib/AuthContext';
+const CATEGORY_FILTERS = [
+  'All Stores',
+  'Meadow Computer',
+  'ASUS',
+  'HP',
+  'Distribution HQ'
+] as const;
 
-const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/Red%20Full%20Logo.png";
+type FilterCategory = typeof CATEGORY_FILTERS[number];
 
 const OurStores: React.FC = () => {
   const navigate = useNavigate();
@@ -124,7 +159,11 @@ const OurStores: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [filterType, setFilterType] = useState('All');
+  
+  const [activeCategory, setActiveCategory] = useState<FilterCategory>('All Stores');
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [selectedModalStore, setSelectedModalStore] = useState<StoreItem | null>(null);
+  const [selectedMapStore, setSelectedMapStore] = useState<StoreItem>(STORE_LIST[0]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -137,12 +176,26 @@ const OurStores: React.FC = () => {
     if (savedCart) setCart(JSON.parse(savedCart));
   }, []);
 
-  const filteredBranches = filterType === 'All' 
-    ? BRANCHES 
-    : BRANCHES.filter(b => b.type === filterType);
+  const filteredStores = activeCategory === 'All Stores'
+    ? STORE_LIST
+    : STORE_LIST.filter(s => s.category === activeCategory);
+
+  const getBadgeStyle = (type: StoreItem['badgeType']) => {
+    switch (type) {
+      case 'meadow':
+        return 'bg-[#FFF1F2] text-[#E11D48] border border-[#FFE4E6]';
+      case 'asus':
+      case 'hp':
+        return 'bg-[#F0F9FF] text-[#0284C7] border border-[#E0F2FE]';
+      case 'hq':
+        return 'bg-[#FAF5FF] text-[#9333EA] border border-[#F3E8FF]';
+      default:
+        return 'bg-slate-100 text-slate-700 border border-slate-200';
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#FFFEFA] text-[#333] font-sans selection:bg-[#333] selection:text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#FAFAFA] text-slate-800 font-sans selection:bg-slate-900 selection:text-white overflow-x-hidden">
       <PublicNavbar 
         user={user}
         profile={profile}
@@ -152,8 +205,8 @@ const OurStores: React.FC = () => {
         scrolled={scrolled}
       />
 
-      {/* Hero Section - Aesop Style */}
-      <section className="relative h-[80vh] flex items-center overflow-hidden">
+      {/* Hero Section */}
+      <section className="relative h-[70vh] min-h-[480px] flex items-center overflow-hidden">
         <video 
           src="https://illuminatelabs.space/assets/locator_vd.mp4"
           autoPlay
@@ -162,175 +215,370 @@ const OurStores: React.FC = () => {
           playsInline
           className="absolute inset-0 w-full h-full object-cover grayscale brightness-75"
         />
-        <div className="absolute inset-0 bg-neutral-900/20"></div>
-        <div className="relative px-6 md:px-16 max-w-[1600px] mx-auto w-full z-10">
+        <div className="absolute inset-0 bg-neutral-900/40 backdrop-blur-[1px]"></div>
+        <div className="relative px-6 md:px-16 max-w-[1440px] mx-auto w-full z-10">
           <div className="max-w-3xl">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.6em] text-white/60 mb-6 animate-in fade-in slide-in-from-bottom duration-700">Presence</h2>
-            <h1 className="text-5xl md:text-7xl font-light text-white leading-tight mb-8 animate-in fade-in slide-in-from-bottom duration-1000">
-              Our Stores
+            <h2 className="text-[10px] font-black uppercase tracking-[0.6em] text-white/70 mb-5 animate-in fade-in slide-in-from-bottom duration-700">Presence</h2>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light text-white leading-tight mb-6 animate-in fade-in slide-in-from-bottom duration-1000">
+              Find a Meadow Store Near You
             </h1>
-            <p className="text-lg md:text-xl font-light text-white/80 max-w-xl animate-in fade-in slide-in-from-bottom duration-1000 delay-300">
-              Discover Meadow's physical spaces across Johor, where computational excellence meets human-centric service.
+            <p className="text-lg md:text-xl font-light italic text-white/90 max-w-xl animate-in fade-in slide-in-from-bottom duration-1000 delay-300">
+              Discover Meadow's physical spaces across Johor
             </p>
           </div>
         </div>
       </section>
 
-      {/* Filter Section */}
-      <section className="bg-[#FFFEFA] pt-24 pb-12 px-6 md:px-16 max-w-[1600px] mx-auto">
-        <div className="flex flex-wrap gap-x-12 gap-y-6 border-b border-neutral-200 pb-8">
-          {['All', 'Mega Store', 'Service Center', 'IT Store'].map((type) => (
-            <button 
-              key={type}
-              onClick={() => setFilterType(type)}
-              className={`text-[10px] font-black uppercase tracking-[0.4em] transition-all pb-2 relative ${
-                filterType === type 
-                  ? 'text-[#333]' 
-                  : 'text-[#999] hover:text-[#333]'
+      {/* Main Body Section */}
+      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10 py-12 md:py-16">
+        
+        {/* Controls Bar: Category Filters & View Toggle */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 mb-10">
+          
+          {/* Left Category Filter Pills */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            {CATEGORY_FILTERS.map((cat) => {
+              const isActive = activeCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`px-5 py-2.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                    isActive
+                      ? 'bg-[#0B1329] text-white shadow-sm hover:bg-black'
+                      : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                  }`}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Right View Toggle Pill */}
+          <div className="inline-flex items-center bg-white border border-slate-200 rounded-full p-1 shadow-sm shrink-0">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+                viewMode === 'list'
+                  ? 'bg-slate-100 text-slate-900 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
             >
-              {type}
-              {filterType === type && (
-                <motion.div layoutId="activeFilter" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#333]" />
-              )}
+              <LayoutList size={15} />
+              <span>List View</span>
             </button>
-          ))}
+            <button
+              onClick={() => setViewMode('map')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+                viewMode === 'map'
+                  ? 'bg-slate-100 text-slate-900 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <MapIcon size={15} />
+              <span>Map View</span>
+            </button>
+          </div>
         </div>
-      </section>
 
-      {/* Stores List - Alternating Layout */}
-      <section className="bg-[#FFFEFA]">
-        {filteredBranches.map((branch, idx) => (
-          <div 
-            key={branch.id} 
-            className={`flex flex-col md:flex-row min-h-[600px] border-b border-[#EAEABA] ${
-              idx % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
-            }`}
-          >
-            {/* Text Side */}
-            <div className={`w-full md:w-1/2 flex flex-col justify-center p-8 md:p-24 lg:p-32 bg-[#FFFEFA]`}>
-              <div className="max-w-md animate-in fade-in slide-in-from-bottom duration-1000">
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#666] mb-4 block">Signature store</span>
-                <h3 className="text-2xl md:text-3xl font-light text-[#333] mb-6 leading-tight">
-                  {branch.name}
-                </h3>
-                <p className="text-sm text-[#666] leading-relaxed mb-10 font-light">
-                  {branch.address}
-                </p>
-                
-                <Link 
-                  to={`/stores?id=${branch.id}`}
-                  className="inline-flex items-center justify-between px-6 py-4 border border-[#333]/20 hover:border-[#333] group transition-all duration-500 min-w-[200px]"
-                >
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#333]">Discover the store</span>
-                  <ArrowRight size={14} className="transition-transform duration-500 group-hover:translate-x-2" />
-                </Link>
+        {/* View Mode: List View Grid (Matching Screenshot) */}
+        {viewMode === 'list' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+            {filteredStores.map((store) => (
+              <div 
+                key={store.id}
+                className="bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col group"
+              >
+                {/* Store Image */}
+                <div className="relative h-56 sm:h-64 overflow-hidden bg-slate-100">
+                  <img 
+                    src={store.image} 
+                    alt={store.name} 
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+
+                {/* Store Content */}
+                <div className="p-6 flex flex-col flex-1">
+                  
+                  {/* Store Badge */}
+                  <div className="mb-3">
+                    <span className={`inline-block text-[10px] font-extrabold tracking-wider uppercase px-3 py-1 rounded-full ${getBadgeStyle(store.badgeType)}`}>
+                      {store.badge}
+                    </span>
+                  </div>
+
+                  {/* Store Name */}
+                  <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2 leading-tight">
+                    {store.name}
+                  </h3>
+
+                  {/* Store Address */}
+                  <div className="flex items-start gap-2 text-xs text-slate-500 font-medium leading-relaxed mb-5 min-h-[36px]">
+                    <MapPin size={15} className="shrink-0 text-slate-400 mt-0.5" />
+                    <span>{store.address}</span>
+                  </div>
+
+                  {/* Store Service Tags */}
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-6">
+                    {store.tags.map((tag) => (
+                      <span 
+                        key={tag}
+                        className="px-3 py-1 bg-slate-50 text-slate-600 rounded-full text-[11px] font-medium border border-slate-100"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center justify-end gap-3 mt-auto pt-3 border-t border-slate-100">
+                    <button
+                      onClick={() => setSelectedModalStore(store)}
+                      className="bg-[#0F172A] hover:bg-black text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-all duration-200 shadow-xs active:scale-95 cursor-pointer"
+                    >
+                      View Store
+                    </button>
+                    <a
+                      href={store.googleMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-xs font-semibold px-5 py-2.5 rounded-full transition-all duration-200 flex items-center gap-1.5 active:scale-95"
+                    >
+                      <span>Directions</span>
+                      <ArrowRight size={13} />
+                    </a>
+                  </div>
+
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* View Mode: Map View */}
+        {viewMode === 'map' && (
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm flex flex-col lg:flex-row h-[750px]">
+            {/* Store Selection List */}
+            <div className="w-full lg:w-[420px] border-r border-slate-100 flex flex-col bg-slate-50/40">
+              <div className="p-5 border-b border-slate-100 bg-white">
+                <h3 className="font-bold text-slate-900 text-sm">Select a Meadow Location</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Showing {filteredStores.length} spaces in Johor</p>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {filteredStores.map((store) => {
+                  const isSelected = selectedMapStore.id === store.id;
+                  return (
+                    <div
+                      key={store.id}
+                      onClick={() => setSelectedMapStore(store)}
+                      className={`p-4 rounded-xl cursor-pointer transition-all border ${
+                        isSelected 
+                          ? 'bg-white border-slate-900 shadow-sm' 
+                          : 'bg-white border-slate-200/70 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <span className={`text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${getBadgeStyle(store.badgeType)}`}>
+                          {store.badge}
+                        </span>
+                        <span className="text-[11px] text-slate-400 font-medium">{store.hours.split('(')[0]}</span>
+                      </div>
+                      <h4 className="font-bold text-slate-900 text-base mb-1">{store.name}</h4>
+                      <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">{store.address}</p>
+                      
+                      {isSelected && (
+                        <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedModalStore(store);
+                            }}
+                            className="text-xs font-bold text-slate-900 hover:underline"
+                          >
+                            Details & Hours
+                          </button>
+                          <a
+                            href={store.googleMapsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                          >
+                            Directions <ArrowRight size={12} />
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Image Side */}
-            <div className="w-full md:w-1/2 h-[400px] md:h-auto overflow-hidden bg-[#F6F5E8]">
-              <img 
-                src={branch.image} 
-                alt={branch.name} 
-                className="w-full h-full object-cover grayscale opacity-90 transition-all duration-2000 hover:grayscale-0 hover:scale-105"
+            {/* Google Map Embed */}
+            <div className="flex-1 bg-slate-100 relative h-full">
+              <iframe
+                title="Store Map"
+                src={selectedMapStore.embedMapUrl}
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
               />
-            </div>
-          </div>
-        ))}
-      </section>
-
-      {/* Editorial Footer */}
-      <footer className="bg-[#F9FAFB] pt-24 pb-12 border-t border-slate-100 mt-24">
-        <div className="max-w-[1440px] mx-auto px-4 md:px-10">
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-12 mb-20">
-            <div className="col-span-1 lg:col-span-1">
-              <img src={LOGO_URL} className="h-16 w-auto mb-8 grayscale opacity-50" alt="Meadow" />
-              <p className="text-xs text-slate-400 font-medium leading-relaxed max-w-xs mb-8">
-                Premium hardware distribution and bespoke computational engineering. Built for the elite.
-              </p>
-              
-              <div className="space-y-8">
+              <div className="absolute bottom-6 left-6 right-6 lg:left-auto lg:right-6 lg:w-96 bg-white/95 backdrop-blur-md p-4 rounded-xl border border-slate-200 shadow-xl flex items-center justify-between gap-4">
                 <div>
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-4 text-left">Payment Method</h4>
-                  <div className="flex flex-wrap gap-2">
-                    <img src="https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/fpx.svg" className="h-8 w-auto px-2 py-1 bg-white rounded border border-slate-100 object-contain" alt="FPX" />
-                    <img src="https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/master.svg" className="h-8 w-auto px-2 py-1 bg-white rounded border border-slate-100 object-contain" alt="Mastercard" />
-                    <img src="https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/visa.svg" className="h-8 w-auto px-2 py-1 bg-white rounded border border-slate-100 object-contain" alt="VISA" />
-                  </div>
+                  <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${getBadgeStyle(selectedMapStore.badgeType)}`}>
+                    {selectedMapStore.badge}
+                  </span>
+                  <h4 className="font-bold text-slate-900 text-sm mt-1">{selectedMapStore.name}</h4>
+                  <p className="text-[11px] text-slate-500 truncate max-w-[200px]">{selectedMapStore.address}</p>
                 </div>
-
-                <div>
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-4 text-left">Logistic Services</h4>
-                  <div className="flex flex-wrap gap-2">
-                    <img src="https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/gdex.svg" className="h-8 w-auto px-2 py-1 bg-white rounded border border-slate-100 object-contain" alt="GDEX" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div>
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Company</h4>
-              <ul className="space-y-4">
-                <li><Link to="/our-story" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Our Story</Link></li>
-                <li><Link to="/our-stores" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Our Store</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Shop With Us</h4>
-              <ul className="space-y-4">
-                <li><Link to="/buildpc" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">BUILD YOUR OWN PC</Link></li>
-                <li><Link to="/products?category=Desktop" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Desktop</Link></li>
-                <li><Link to="/products?category=Display" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Display</Link></li>
-                <li><Link to="/products?category=Home+%26+Office" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Home & Office</Link></li>
-                <li><Link to="/products?category=Laptop" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Laptop</Link></li>
-                <li><Link to="/products?category=Networking" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Networking</Link></li>
-                <li><Link to="/products?category=PC+Components" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">PC Component</Link></li>
-                <li><Link to="/products?category=Peripherals" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Peripherals</Link></li>
-                <li><Link to="/products?category=Smart+Home" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Smart Home</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Support</h4>
-              <ul className="space-y-4">
-                <li><Link to="/track-order" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Track Your Order</Link></li>
-                <li><Link to="/warranty" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Warranty</Link></li>
-                <li><Link to="/product-policy" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Terms & Conditions</Link></li>
-                <li><Link to="/" className="text-[11px] font-nav text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Contact Us</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 mb-8">Newsletter</h4>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6">Join the Registry for updates.</p>
-              <form className="flex gap-2 mb-8">
-                <input type="email" placeholder="Email" className="flex-1 bg-white border border-slate-100 rounded-xl px-4 py-3 text-xs outline-none focus:border-slate-900 transition-colors" />
-                <button className="bg-slate-900 text-white p-3 rounded-xl hover:bg-black transition-colors"><ArrowRight size={16} /></button>
-              </form>
-              <div className="flex items-center gap-4">
-                <a href="#" className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm">
-                  <Facebook size={18} />
-                </a>
-                <a href="#" className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm">
-                  <Instagram size={18} />
-                </a>
-                <a href="#" className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm">
-                  <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-                    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.13-1.47V18.77a6.738 6.738 0 0 1-6.76 6.76 6.738 6.738 0 0 1-6.76-6.76 6.738 6.738 0 0 1 6.76-6.76c.42-.02.84.03 1.25.12v4.03a2.71 2.71 0 0 0-1.25-.12 2.728 2.728 0 0 0-2.72 2.73 2.728 2.728 0 0 0 2.72 2.73 2.728 2.728 0 0 0 2.73-2.73V.02z"/>
-                  </svg>
-                </a>
-                <a href="#" className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm">
-                  <img src="https://illuminatelabs.space/assets/xhs_logo.png" className="w-5 h-5 object-contain" referrerPolicy="no-referrer" alt="Xiaohongshu" />
+                <a
+                  href={selectedMapStore.googleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-[#0F172A] text-white text-xs font-semibold px-4 py-2.5 rounded-full shrink-0 flex items-center gap-1 hover:bg-black transition-colors"
+                >
+                  Navigate <Navigation size={12} />
                 </a>
               </div>
             </div>
           </div>
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8 pt-12 border-t border-slate-200/50">
-             <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300 text-center">© {new Date().getFullYear()} Meadow SDN BHD — ALL RIGHTS RESERVED</p>
-             <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300 italic">Core Operational Status: Nominal</p>
+        )}
+
+      </main>
+
+      {/* Store Detail Modal */}
+      <AnimatePresence>
+        {selectedModalStore && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-6 md:p-10">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedModalStore(null)}
+              className="absolute inset-0 bg-black/50 backdrop-blur-xs"
+            />
+            
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden z-10 max-h-[90vh] flex flex-col"
+            >
+              {/* Modal Header Image */}
+              <div className="relative h-60 sm:h-72 w-full bg-slate-100 overflow-hidden shrink-0">
+                <img 
+                  src={selectedModalStore.image} 
+                  alt={selectedModalStore.name} 
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  onClick={() => setSelectedModalStore(null)}
+                  className="absolute top-4 right-4 w-10 h-10 bg-white/90 hover:bg-white text-slate-800 rounded-full flex items-center justify-center shadow-md transition-all cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+                <div className="absolute bottom-4 left-4">
+                  <span className={`text-[10px] font-extrabold tracking-wider uppercase px-3 py-1 rounded-full shadow-xs ${getBadgeStyle(selectedModalStore.badgeType)}`}>
+                    {selectedModalStore.badge}
+                  </span>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 sm:p-8 overflow-y-auto space-y-6">
+                <div>
+                  <h3 className="text-2xl sm:text-3xl font-bold text-slate-900">
+                    {selectedModalStore.name}
+                  </h3>
+                  <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                    {selectedModalStore.description}
+                  </p>
+                </div>
+
+                {/* Key Info Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-3">
+                    <MapPin className="text-slate-600 shrink-0 mt-0.5" size={18} />
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Address</p>
+                      <p className="text-xs font-semibold text-slate-800 mt-0.5 leading-relaxed">{selectedModalStore.address}</p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-3">
+                    <Clock className="text-slate-600 shrink-0 mt-0.5" size={18} />
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Operating Hours</p>
+                      <p className="text-xs font-semibold text-slate-800 mt-0.5">{selectedModalStore.hours}</p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-3">
+                    <Phone className="text-slate-600 shrink-0 mt-0.5" size={18} />
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Direct Contact</p>
+                      <a href={`tel:${selectedModalStore.phone}`} className="text-xs font-semibold text-blue-600 hover:underline mt-0.5 block">{selectedModalStore.phone}</a>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-3">
+                    <ShieldCheck className="text-slate-600 shrink-0 mt-0.5" size={18} />
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Services Available</p>
+                      <p className="text-xs font-semibold text-slate-800 mt-0.5">{selectedModalStore.tags.join(', ')}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Features Checklist */}
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900 mb-3">Highlights & Store Capabilities</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {selectedModalStore.features.map((feat, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs text-slate-600">
+                        <Check size={14} className="text-emerald-600 shrink-0" />
+                        <span>{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Modal Footer Actions */}
+                <div className="flex flex-col sm:flex-row items-center gap-3 pt-4 border-t border-slate-100">
+                  <a
+                    href={selectedModalStore.googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:flex-1 py-3.5 bg-[#0F172A] hover:bg-black text-white text-xs font-bold rounded-full text-center flex items-center justify-center gap-2 transition-colors shadow-sm"
+                  >
+                    <Navigation size={14} /> Open in Google Maps
+                  </a>
+                  <a
+                    href="https://wa.me/message/SWV2JDRGAAHHK1"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-full text-center flex items-center justify-center gap-2 transition-colors"
+                  >
+                    Chat on WhatsApp
+                  </a>
+                </div>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      </footer>
+        )}
+      </AnimatePresence>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
 
 export default OurStores;
+

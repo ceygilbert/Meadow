@@ -170,6 +170,7 @@ export interface OurStorySettings {
   hero_title?: string;
   hero_paragraph_1?: string;
   hero_paragraph_2?: string;
+  hero_paragraph_3?: string;
   hero_image_url?: string;
 
   // Foundations Section

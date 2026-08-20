@@ -47,12 +47,6 @@ const Customised: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [activeRangeTab, setActiveRangeTab] = useState('originals');
   const [activeStoreIndex, setActiveStoreIndex] = useState(0);
-  const [selectedPortfolio, setSelectedPortfolio] = useState<{
-    title: string;
-    subtitle: string;
-    description: string;
-    image: string;
-  } | null>(null);
 
   useEffect(() => {
     if (location.hash === '#signature-stores' || location.hash === '#signature-store') {
@@ -87,27 +81,6 @@ const Customised: React.FC = () => {
       hours: "10:00 AM - 10:00 PM Daily",
       image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1400&auto=format&fit=crop",
       description: "Visit our flagship Experiential Centre at Pelangi Plaza for a comprehensive custom PC building lounge. Featuring live stress-testing bays, custom liquid loop displays, and direct 1-on-1 consultations with our senior hardware technicians. Test processors, graphics cards, and high-refresh monitors on-site to build your personalized gaming or workstation system with absolute confidence."
-    }
-  ];
-
-  const portfolioItems = [
-    {
-      title: "Mod-3 PC",
-      subtitle: "Alien-inspired",
-      image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1200&auto=format&fit=crop",
-      description: "This case is an impressively ornate piece of computing equipment for consumers seeking out a decidedly otherworldly option for their setup. The case boasts a custom-made GPU that's crafted to absorb light, while the refractions on the CPU create an RGB backlighting effect to give the unit the appearance of being quite out of this world. The angular design with sharp angles to boot helps to further enhance the ethereal nature of the alienist computer setup. This case was built on the request of a customer and features a cable-free appearance thanks to the use of an open loop system. The system thus appears quite complex, but hides its various internals in a decidedly stylish way for onlookers to admire."
-    },
-    {
-      title: "Cyberpunk Edition",
-      subtitle: "Neon-Infused Water Loop",
-      image: "https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1200&auto=format&fit=crop",
-      description: "Designed for high-load Ray Tracing and futuristic aesthetics, this custom rig features dual distro plates with custom nickel-plated brass tubing. The neon-infused coolant flows seamlessly through high-grade acrylic blocks, delivering exceptional thermal performance while maintaining a strikingly vibrant cyberpunk ambiance. Hand-sleeved modular cables and precision-machined aluminum accents complete this bespoke masterpiece created for an enthusiast client."
-    },
-    {
-      title: "Zeal-M Masterpiece",
-      subtitle: "Bespoke Glass Showcase",
-      image: "https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=1200&auto=format&fit=crop",
-      description: "A minimalist yet extreme custom workstation engineered for silent 3D rendering and computational physics. Featuring a dual 360mm copper radiator arrangement and ultra-quiet MagLev fans, this build operates with zero thermal throttling under full synthetic load. The panoramic tempered glass enclosure highlights the mirror-finish water blocks and clean geometric layout, demonstrating absolute precision craftsmanship."
     }
   ];
 
@@ -394,113 +367,6 @@ const Customised: React.FC = () => {
         </div>
       </section>
 
-      {/* Our Portfolio Section */}
-      <section className="px-8 md:px-20 py-16 max-w-[1600px] mx-auto relative z-10">
-        <div className="text-center mb-20">
-          <h2 className="font-black text-5xl md:text-7xl lg:text-[8rem] uppercase tracking-tighter text-white leading-[0.9] mb-16">Our Portfolio</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
-            {[
-              { label: "Years Experience", value: "10+" },
-              { label: "PCs Built", value: "5,000+" },
-              { label: "5 Star Reviews", value: "1,000+" },
-              { label: "Branches", value: "7+" }
-            ].map((stat, i) => (
-              <div key={i} className="space-y-2">
-                <p className="text-3xl md:text-5xl font-black text-white">{stat.value}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/60">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[400px] md:h-[500px]">
-          {portfolioItems.map((item, index) => (
-            <div 
-              key={index} 
-              onClick={() => setSelectedPortfolio(item)}
-              className="relative group overflow-hidden rounded-[2rem] border border-white/10 cursor-pointer shadow-2xl"
-            >
-              <img 
-                src={item.image} 
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
-                alt={item.title}
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-8">
-                <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-2xl font-bold text-white tracking-tight">{item.title}</h3>
-                    <div className="w-8 h-8 rounded-full bg-white/10 group-hover:bg-rose-600 text-white flex items-center justify-center transition-all">
-                      <Maximize2 size={14} />
-                    </div>
-                  </div>
-                  <p className="text-xs text-rose-400 font-bold uppercase tracking-wider mt-1">{item.subtitle}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Portfolio Item Popup Modal */}
-      <AnimatePresence>
-        {selectedPortfolio && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-8">
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedPortfolio(null)}
-              className="absolute inset-0 bg-black/85 backdrop-blur-md cursor-pointer"
-            />
-
-            {/* Modal Box */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.92, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.92, y: 20 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className="relative w-full max-w-5xl bg-[#0a0b0c] border border-white/15 rounded-3xl overflow-hidden shadow-2xl z-10 grid grid-cols-1 md:grid-cols-2 max-h-[90vh] my-auto"
-            >
-              {/* Close Button */}
-              <button
-                onClick={() => setSelectedPortfolio(null)}
-                className="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer border border-white/10"
-              >
-                <X size={20} />
-              </button>
-
-              {/* Left Column - Image */}
-              <div className="relative min-h-[280px] md:min-h-[480px] w-full bg-black overflow-hidden flex items-center justify-center">
-                <img
-                  src={selectedPortfolio.image}
-                  alt={selectedPortfolio.title}
-                  className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-
-              {/* Right Column - Information */}
-              <div className="p-8 md:p-12 flex flex-col justify-center overflow-y-auto space-y-6 bg-[#0a0b0c] text-left">
-                <div>
-                  <h3 className="text-3xl md:text-5xl font-bold text-white tracking-tight leading-none mb-3">
-                    {selectedPortfolio.title}
-                  </h3>
-                  <h4 className="text-base md:text-lg font-bold text-slate-300">
-                    {selectedPortfolio.subtitle}
-                  </h4>
-                </div>
-
-                <p className="text-slate-300 text-xs md:text-sm leading-relaxed font-normal">
-                  {selectedPortfolio.description}
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
       {/* Cinematic Video Section */}
       <section className="px-8 md:px-20 py-4 max-w-[1600px] mx-auto relative z-10">
         <div className="relative w-full aspect-video rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl group">
@@ -581,40 +447,145 @@ const Customised: React.FC = () => {
         </div>
       </section>
 
-      {/* We Care for You Section */}
-      <section className="px-8 md:px-20 pt-20 pb-24 max-w-[1600px] mx-auto relative z-10 border-t border-white/5">
-        <div className="text-center mb-16 pt-2">
-          <span className="text-[12px] font-black uppercase tracking-[0.6em] text-rose-500 mb-2 block">Our Commitment</span>
-          <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase mb-2">We Care for You.</h2>
-          <p className="text-slate-400 max-w-2xl mx-auto text-lg font-light leading-relaxed">
-            Securing a lifetime of professional after-sale services, ready on-call to ensure your computational performance remains absolute.
-          </p>
+      {/* Why Choose Meadow to build a Gaming PC Section */}
+      <section className="px-6 sm:px-8 md:px-20 pt-20 pb-24 max-w-[1600px] mx-auto relative z-10 border-t border-white/5">
+        <div className="text-center mb-14 pt-2">
+          <span className="text-[12px] font-black uppercase tracking-[0.6em] text-rose-500 mb-3 block">
+            The Meadow Standard
+          </span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tighter uppercase">
+            Why Choose Meadow to build a Gaming PC?
+          </h2>
         </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-8 gap-y-12 mb-2">
-          {[
-            { icon: <ShieldCheck size={32} />, label: "Lifetime Free Labor" },
-            { icon: <RefreshCw size={32} />, label: "90 Days 1-to-1 Exchange" },
-            { icon: <Wrench size={32} />, label: "Free On-Site Support" },
-            { icon: <Award size={32} />, label: "Full Warranty Coverage" },
-            { icon: <Truck size={32} />, label: "Free Warranty Pick-up" },
-            { icon: <ClipboardCheck size={32} />, label: "Professional Stress Test" },
-            { icon: <Cable size={32} />, label: "Elite Cable Management" },
-            { icon: <Headphones size={32} />, label: "Lifetime Tech Support" },
-            { icon: <Settings size={32} />, label: "Free OS Installation" },
-            { icon: <Truck size={32} />, label: "Nationwide Delivery" },
-            { icon: <Download size={32} />, label: "Latest Driver Updates" },
-            { icon: <BadgeCheck size={32} />, label: "Genuine Components" }
-          ].map((item, i) => (
-            <div key={i} className="flex flex-col items-center text-center space-y-6 group">
-              <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-rose-500 group-hover:bg-rose-600 group-hover:text-white transition-all duration-500 shadow-xl">
-                {item.icon}
-              </div>
-              <div className="text-[10px] font-black text-white uppercase tracking-widest leading-tight max-w-[120px]">
-                {item.label}
+
+        {/* Top Row: 2 Split Feature Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Card 1: Meadow Reward Points */}
+          <div className="bg-[#090a0c] border border-white/10 rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col sm:flex-row hover:border-white/20 transition-all duration-300 group shadow-xl">
+            <div className="sm:w-1/2 relative min-h-[190px] sm:min-h-[220px] bg-gradient-to-br from-blue-950 via-slate-900 to-black overflow-hidden flex items-center justify-center p-6">
+              <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-400 via-transparent to-transparent"></div>
+              {/* Visual Rewards Badge */}
+              <div className="relative text-center z-10 flex flex-col items-center">
+                <div className="w-14 h-14 rounded-2xl bg-blue-600/20 border border-blue-400/40 flex items-center justify-center text-blue-400 mb-3 shadow-[0_0_30px_rgba(59,130,246,0.4)] group-hover:scale-110 transition-transform duration-500">
+                  <Star size={26} className="fill-blue-400 text-blue-400" />
+                </div>
+                <span className="text-base sm:text-lg font-black uppercase tracking-[0.2em] text-white">Reward Points</span>
+                <span className="text-[10px] uppercase font-bold tracking-widest text-blue-300/80 mt-0.5">Member Exclusive</span>
               </div>
             </div>
-          ))}
+            <div className="sm:w-1/2 p-6 sm:p-8 flex flex-col justify-center">
+              <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 leading-tight">
+                Meadow Reward Points
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-400 font-light leading-relaxed mb-6">
+                Earn Meadow Reward Points with every purchase, redeemable across our entire range on Meadow!
+              </p>
+              <Link 
+                to="/products"
+                className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-rose-400 hover:text-rose-300 transition-colors mt-auto group/link"
+              >
+                <span>Learn More</span>
+                <ArrowRight size={14} className="group-hover/link:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Card 2: Our Support */}
+          <div className="bg-[#090a0c] border border-white/10 rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col sm:flex-row hover:border-white/20 transition-all duration-300 group shadow-xl">
+            <div className="sm:w-1/2 relative min-h-[190px] sm:min-h-[220px] bg-black overflow-hidden">
+              <img 
+                src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop" 
+                alt="Our Support" 
+                className="w-full h-full object-cover grayscale contrast-125 opacity-80 group-hover:scale-105 group-hover:grayscale-0 transition-all duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-transparent via-black/20 to-[#090a0c]"></div>
+            </div>
+            <div className="sm:w-1/2 p-6 sm:p-8 flex flex-col justify-center">
+              <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 leading-tight">
+                Our Support
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-400 font-light leading-relaxed mb-6">
+                We're here for you, always striving to exceed expectations and deliver exceptional service.
+              </p>
+              <Link 
+                to="/our-stores"
+                className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-rose-400 hover:text-rose-300 transition-colors mt-auto group/link"
+              >
+                <span>Learn More</span>
+                <ArrowRight size={14} className="group-hover/link:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Row: 3 Feature Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Card 1: Free Shipping */}
+          <div className="bg-[#090a0c] border border-white/10 rounded-2xl sm:rounded-3xl p-8 sm:p-10 flex flex-col items-center text-center hover:border-white/20 transition-all duration-300 group shadow-xl">
+            <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-white mb-6 group-hover:border-rose-500/50 group-hover:text-rose-400 transition-all duration-300">
+              <Truck size={30} strokeWidth={1.5} />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-3">
+              Free Shipping
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-400 font-light leading-relaxed mb-8 flex-1">
+              All Meadow gaming PCs come with free shipping!
+            </p>
+            <Link
+              to="/product-policy"
+              className="w-full sm:w-auto min-w-[160px] py-2.5 px-6 border border-rose-600/70 hover:border-rose-500 text-white hover:bg-rose-600 rounded-lg text-xs font-black uppercase tracking-widest transition-all duration-300 text-center"
+            >
+              LEARN MORE
+            </Link>
+          </div>
+
+          {/* Card 2: Professionally Assembled */}
+          <div className="bg-[#090a0c] border border-white/10 rounded-2xl sm:rounded-3xl p-8 sm:p-10 flex flex-col items-center text-center hover:border-white/20 transition-all duration-300 group shadow-xl">
+            <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-white mb-6 group-hover:border-rose-500/50 group-hover:text-rose-400 transition-all duration-300">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="2.5" />
+                <path d="M12 2v4" />
+                <path d="M12 18v4" />
+                <path d="M2 12h4" />
+                <path d="M18 12h4" />
+                <path d="m4.93 4.93 2.83 2.83" />
+                <path d="m16.24 16.24 2.83 2.83" />
+                <path d="m4.93 19.07 2.83-2.83" />
+                <path d="m16.24 7.76 2.83-2.83" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-3">
+              Professionally Assembled
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-400 font-light leading-relaxed mb-8 flex-1">
+              Every Meadow gaming PC and laptop that goes through our assembly line is professionally assembled.
+            </p>
+            <Link
+              to="/our-story"
+              className="w-full sm:w-auto min-w-[160px] py-2.5 px-6 border border-rose-600/70 hover:border-rose-500 text-white hover:bg-rose-600 rounded-lg text-xs font-black uppercase tracking-widest transition-all duration-300 text-center"
+            >
+              LEARN MORE
+            </Link>
+          </div>
+
+          {/* Card 3: Industry-Leading Warranty */}
+          <div className="bg-[#090a0c] border border-white/10 rounded-2xl sm:rounded-3xl p-8 sm:p-10 flex flex-col items-center text-center hover:border-white/20 transition-all duration-300 group shadow-xl">
+            <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-white mb-6 group-hover:border-rose-500/50 group-hover:text-rose-400 transition-all duration-300">
+              <ShieldCheck size={30} strokeWidth={1.5} />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-3">
+              Industry-Leading Warranty
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-400 font-light leading-relaxed mb-8 flex-1">
+              Meadow desktops comes with our industry leading 3-year parts warranty, 3-year labor service, and life-time technical support from our in-house technicians.
+            </p>
+            <Link
+              to="/product-policy"
+              className="w-full sm:w-auto min-w-[160px] py-2.5 px-6 border border-rose-600/70 hover:border-rose-500 text-white hover:bg-rose-600 rounded-lg text-xs font-black uppercase tracking-widest transition-all duration-300 text-center"
+            >
+              LEARN MORE
+            </Link>
+          </div>
         </div>
       </section>
 

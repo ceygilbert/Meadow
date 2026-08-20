@@ -3,10 +3,11 @@ import { OurStorySettings } from '../types';
 
 export const DEFAULT_OUR_STORY_SETTINGS: OurStorySettings = {
   id: 'our_story',
-  hero_eyebrow: 'Our Story',
-  hero_title: '30 Years as Johor Leading Retailers and Distributors',
-  hero_paragraph_1: 'Founded in 1995, Meadow has been serving customers across Johor for more than 30 years through IT distribution, wholesale and multi-brand retail. Over the years, we have grown alongside the industry while building trusted relationships with leading technology brands and the customers we serve.',
-  hero_paragraph_2: 'Today, that foundation continues to shape our growth as we expand our retail presence, strengthen our customer support services, and make technology products more accessible, reliable and easier to shop with confidence for our customers.',
+  hero_eyebrow: 'OUR STORY',
+  hero_title: 'A Trusted Name in PCs & Technology Since 1995.',
+  hero_paragraph_1: 'Meadow Computer is a computer retailer and distributor offering a wide range of PCs, laptops, components, printers and everyday IT products through our retail stores. Our journey began in distribution in 1995, before gradually expanding into retail with Meadow Computer stores, together with official ASUS and HP concept stores.',
+  hero_paragraph_2: 'Over the years, we have grown alongside the technology industry while building long-standing relationships with leading brands and the customers we serve.',
+  hero_paragraph_3: 'For us, the experience does not end when a product is sold. We want customers to feel confident about what they buy, with practical advice before their purchase and dependable after-sales support whenever they need it.',
   hero_image_url: 'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&fit=crop&q=80',
 
   foundations_eyebrow: 'Foundations',
@@ -93,6 +94,51 @@ const LOCAL_STORAGE_KEY = 'meadow_our_story_settings';
 const DB_SETTINGS_ID = '00000000-0000-0000-0000-000000000002';
 const DB_PREFIX = 'OUR_STORY_SETTINGS:';
 
+function sanitizeOurStorySettings(raw: Partial<OurStorySettings> | null | undefined): OurStorySettings {
+  if (!raw) return { ...DEFAULT_OUR_STORY_SETTINGS };
+
+  const merged: OurStorySettings = {
+    ...DEFAULT_OUR_STORY_SETTINGS,
+    ...raw
+  };
+
+  // Migrate legacy template hero text if found in storage/database
+  if (
+    !merged.hero_paragraph_1 ||
+    merged.hero_paragraph_1.includes('Founded in 1995') ||
+    merged.hero_paragraph_1.includes('technology retailer and distributor')
+  ) {
+    merged.hero_paragraph_1 = DEFAULT_OUR_STORY_SETTINGS.hero_paragraph_1;
+  }
+
+  if (
+    !merged.hero_title ||
+    merged.hero_title.includes('30 Years as Johor Leading Retailers and Distributors')
+  ) {
+    merged.hero_title = DEFAULT_OUR_STORY_SETTINGS.hero_title;
+  }
+
+  if (
+    !merged.hero_eyebrow ||
+    merged.hero_eyebrow.toLowerCase() === 'our story'
+  ) {
+    merged.hero_eyebrow = DEFAULT_OUR_STORY_SETTINGS.hero_eyebrow;
+  }
+
+  if (
+    !merged.hero_paragraph_2 ||
+    merged.hero_paragraph_2.includes('Today, that foundation continues to shape our growth')
+  ) {
+    merged.hero_paragraph_2 = DEFAULT_OUR_STORY_SETTINGS.hero_paragraph_2;
+  }
+
+  if (!merged.hero_paragraph_3) {
+    merged.hero_paragraph_3 = DEFAULT_OUR_STORY_SETTINGS.hero_paragraph_3;
+  }
+
+  return merged;
+}
+
 export async function fetchOurStorySettings(): Promise<OurStorySettings> {
   // 1. Try reading from dedicated Supabase table 'our_story_settings'
   try {
@@ -103,10 +149,7 @@ export async function fetchOurStorySettings(): Promise<OurStorySettings> {
       .maybeSingle();
 
     if (!error && data) {
-      const merged: OurStorySettings = {
-        ...DEFAULT_OUR_STORY_SETTINGS,
-        ...data
-      };
+      const merged = sanitizeOurStorySettings(data);
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(merged));
       return merged;
     }
@@ -125,10 +168,7 @@ export async function fetchOurStorySettings(): Promise<OurStorySettings> {
     if (!error && data && data.name && data.name.startsWith(DB_PREFIX)) {
       const jsonStr = data.name.substring(DB_PREFIX.length);
       const parsed = JSON.parse(jsonStr);
-      const merged: OurStorySettings = {
-        ...DEFAULT_OUR_STORY_SETTINGS,
-        ...parsed
-      };
+      const merged = sanitizeOurStorySettings(parsed);
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(merged));
       return merged;
     }
@@ -140,16 +180,16 @@ export async function fetchOurStorySettings(): Promise<OurStorySettings> {
   const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
   if (cached) {
     try {
-      return {
-        ...DEFAULT_OUR_STORY_SETTINGS,
-        ...JSON.parse(cached)
-      };
+      const parsed = JSON.parse(cached);
+      const merged = sanitizeOurStorySettings(parsed);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(merged));
+      return merged;
     } catch (e) {
       console.error('Error parsing cached our story settings:', e);
     }
   }
 
-  return DEFAULT_OUR_STORY_SETTINGS;
+  return { ...DEFAULT_OUR_STORY_SETTINGS };
 }
 
 export async function saveOurStorySettings(settings: OurStorySettings): Promise<{ success: boolean; message?: string }> {
