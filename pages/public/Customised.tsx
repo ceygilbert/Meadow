@@ -156,12 +156,20 @@ const Customised: React.FC = () => {
     }
   ];
 
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+  };
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 8000);
     return () => clearInterval(timer);
-  }, []);
+  }, [heroSlides.length]);
 
   const testimonials = [
     {
@@ -200,80 +208,114 @@ const Customised: React.FC = () => {
       <StudioNavbar />
 
       {/* Hero Section Slider */}
-      <section className="relative h-screen min-h-[800px] flex items-center justify-center overflow-hidden z-10">
-        <Link to="/buildpc" className="absolute inset-0 block cursor-pointer group z-0">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentSlide}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.5 }}
-              className="absolute inset-0 z-0"
-            >
-              {heroSlides[currentSlide].type === 'video' ? (
-                <video
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  className="w-full h-full object-cover opacity-80 scale-105 group-hover:scale-110 transition-transform duration-1000"
-                >
-                  <source src={heroSlides[currentSlide].url} type="video/mp4" />
-                </video>
-              ) : (
-                <img
-                  src={heroSlides[currentSlide].url}
-                  className="w-full h-full object-cover opacity-85 scale-105 group-hover:scale-110 transition-transform duration-1000"
-                  alt="Hero Background"
-                  referrerPolicy="no-referrer"
-                />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-b from-[#050607]/60 via-transparent to-[#050607]/80" />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#050607]/40 via-transparent to-[#050607]/40" />
-            </motion.div>
-          </AnimatePresence>
-
-          <div className="relative z-10 max-w-[1440px] mx-auto px-8 md:px-20 w-full h-full flex items-center justify-center">
-            <div className="flex flex-col items-center text-center">
+      <header className="relative pt-28 md:pt-36 pb-8 md:pb-12 z-10">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-10">
+          <div className="bg-[#0a0b0d] rounded-[2rem] md:rounded-[3.5rem] relative min-h-[420px] md:min-h-[550px] lg:min-h-[580px] flex items-center overflow-hidden border border-white/10 shadow-2xl shadow-black/80 group">
+            
+            {/* Background Slider */}
+            <Link to="/buildpc" className="absolute inset-0 block cursor-pointer z-0">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentSlide}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.8 }}
-                  className="flex flex-col items-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1 }}
+                  className="absolute inset-0 z-0"
                 >
-                  <div className="max-w-3xl space-y-6">
-                    <p className="text-lg md:text-2xl text-slate-200 font-light leading-relaxed drop-shadow-md">
-                      {heroSlides[currentSlide].description}
-                    </p>
-                  </div>
+                  {heroSlides[currentSlide].type === 'video' ? (
+                    <video
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      className="w-full h-full object-cover opacity-80 scale-105 group-hover:scale-110 transition-transform duration-1000"
+                    >
+                      <source src={heroSlides[currentSlide].url} type="video/mp4" />
+                    </video>
+                  ) : (
+                    <img
+                      src={heroSlides[currentSlide].url}
+                      className="w-full h-full object-cover opacity-80 scale-105 group-hover:scale-110 transition-transform duration-1000"
+                      alt="Hero Background"
+                      referrerPolicy="no-referrer"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-black/85 z-10" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 z-10" />
                 </motion.div>
               </AnimatePresence>
+
+              {/* Centered Content */}
+              <div className="relative z-20 w-full h-full flex flex-col items-center justify-center p-8 md:p-16 text-center">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentSlide}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.6 }}
+                    className="flex flex-col items-center max-w-3xl space-y-6"
+                  >
+                    <p className="text-base md:text-2xl text-slate-100 font-light leading-relaxed drop-shadow-md">
+                      {heroSlides[currentSlide].description}
+                    </p>
+                    <div>
+                      <span className="inline-flex items-center gap-3 px-8 py-3.5 bg-rose-600 hover:bg-rose-700 text-white rounded-full font-black text-xs uppercase tracking-widest transition-all shadow-xl hover:scale-105">
+                        Build Your Custom PC <ArrowRight size={16} />
+                      </span>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </Link>
+
+            {/* Slider Indicators */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-3 pointer-events-auto">
+              {heroSlides.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setCurrentSlide(i);
+                  }}
+                  className={`h-1.5 transition-all duration-500 rounded-full ${
+                    currentSlide === i ? 'w-12 bg-rose-600' : 'w-2 bg-white/40 hover:bg-white/70'
+                  }`}
+                  aria-label={`Slide ${i + 1}`}
+                />
+              ))}
             </div>
           </div>
-        </Link>
-
-        {/* Slider Navigation Dots */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-4 z-20 pointer-events-auto">
-          {heroSlides.map((_, i) => (
-            <button
-              key={i}
-              onClick={(e) => {
-                e.stopPropagation();
-                setCurrentSlide(i);
-              }}
-              className={`w-12 h-1 transition-all duration-500 rounded-full ${
-                currentSlide === i ? 'bg-rose-600 w-20' : 'bg-white/20 hover:bg-white/40'
-              }`}
-            />
-          ))}
         </div>
 
-        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-rose-600/40 to-transparent pointer-events-none"></div>
-      </section>
+        {/* Slider Controls (Previous / Next Arrows) */}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-30 px-2 md:px-6 max-w-[1480px] mx-auto flex justify-between pointer-events-none">
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              prevSlide();
+            }} 
+            className="w-11 h-11 md:w-14 md:h-14 bg-black/60 hover:bg-black/90 backdrop-blur-md border border-white/15 rounded-full flex items-center justify-center text-white/80 hover:text-white shadow-2xl transition-all pointer-events-auto hover:scale-105"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft size={26} />
+          </button>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              nextSlide();
+            }} 
+            className="w-11 h-11 md:w-14 md:h-14 bg-black/60 hover:bg-black/90 backdrop-blur-md border border-white/15 rounded-full flex items-center justify-center text-white/80 hover:text-white shadow-2xl transition-all pointer-events-auto hover:scale-105"
+            aria-label="Next slide"
+          >
+            <ChevronRight size={26} />
+          </button>
+        </div>
+      </header>
 
       {/* Product Categories Grid */}
       <section className="relative z-10 px-8 md:px-20 max-w-[1800px] mx-auto">
