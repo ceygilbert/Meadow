@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import StudioNavbar from '../../components/StudioNavbar';
 import WaveGradient from '../../components/WaveGradient';
+import Footer from '../../components/Footer';
 
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/White%20Full%20Logo.png";
 
@@ -807,59 +808,7 @@ const Customised: React.FC = () => {
       <WaveGradient />
 
       {/* Footer */}
-      <footer className="px-8 md:px-20 py-48 bg-[#050607] border-t border-white/10 relative z-10 overflow-hidden">
-         <div className="max-w-[1440px] mx-auto flex flex-col items-center text-center">
-            <img src={LOGO_URL} className="h-24 md:h-32 w-auto object-contain opacity-60 mb-40" alt="Meadow" />
-            
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-32 w-full mb-40">
-               <div className="text-left space-y-10">
-                  <h4 className="text-[12px] font-black uppercase tracking-[0.6em] text-white/50">Protocol</h4>
-                  <ul className="space-y-6 text-[12px] font-bold uppercase tracking-widest text-slate-400">
-                     <li><a href="#" className="hover:text-rose-500 transition-all">Ownership Guide</a></li>
-                     <li><a href="#" className="hover:text-rose-500 transition-all">Privacy Kernel</a></li>
-                     <li><Link to="/terms" className="hover:text-rose-500 transition-all">Terms of Access</Link></li>
-                  </ul>
-               </div>
-               <div className="text-left space-y-10">
-                  <h4 className="text-[12px] font-black uppercase tracking-[0.6em] text-white/50">Branches</h4>
-                  <p className="text-[12px] font-bold uppercase tracking-widest text-slate-400 leading-relaxed">
-                     Larkin Junction L4 (08 & 12) <br />
-                     Johor Bahru, MY <br />
-                     Est. MMXX
-                  </p>
-               </div>
-               <div className="text-left space-y-10 col-span-2 md:col-span-1">
-                  <h4 className="text-[12px] font-black uppercase tracking-[0.6em] text-white/50">Status</h4>
-                  <div className="flex items-center gap-5">
-                     <div className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse"></div>
-                     <span className="text-[12px] font-black uppercase tracking-[0.4em] text-white/80">Space Age Protocol Active</span>
-                  </div>
-               </div>
-            </div>
-            
-            <div className="pt-24 border-t border-white/10 w-full">
-               <div className="flex items-center justify-center gap-8 mb-16">
-                 <a href="#" className="w-14 h-14 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:border-white transition-all shadow-2xl group">
-                   <Facebook size={24} className="group-hover:scale-110 transition-transform" />
-                 </a>
-                 <a href="#" className="w-14 h-14 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:border-white transition-all shadow-2xl group">
-                   <Instagram size={24} className="group-hover:scale-110 transition-transform" />
-                 </a>
-                 <a href="#" className="w-14 h-14 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:border-white transition-all shadow-2xl group">
-                   <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24" className="group-hover:scale-110 transition-transform">
-                     <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.13-1.47V18.77a6.738 6.738 0 0 1-6.76 6.76 6.738 6.738 0 0 1-6.76-6.76 6.738 6.738 0 0 1 6.76-6.76c.42-.02.84.03 1.25.12v4.03a2.71 2.71 0 0 0-1.25-.12 2.728 2.728 0 0 0-2.72 2.73 2.728 2.728 0 0 0 2.72 2.73 2.728 2.728 0 0 0 2.73-2.73V.02z"/>
-                   </svg>
-                 </a>
-                 <a href="#" className="w-14 h-14 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:border-white transition-all shadow-2xl group">
-                   <img src="https://illuminatelabs.space/assets/xhs_logo.png" className="w-7 h-7 object-contain brightness-0 invert opacity-40 group-hover:opacity-100 transition-all" referrerPolicy="no-referrer" alt="Xiaohongshu" />
-                 </a>
-               </div>
-               <p className="font-black text-xs text-white/30 uppercase tracking-[0.4em]">
-                  — © Space Age Studio & Meadow IT | Confidential & Proprietary —
-               </p>
-            </div>
-         </div>
-      </footer>
+      <Footer theme="dark" />
 
     </div>
   );

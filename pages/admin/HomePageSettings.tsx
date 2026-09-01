@@ -867,7 +867,7 @@ const HomePageSettingsPage: React.FC = () => {
                 {/* Preview Left Card */}
                 <div className="bg-[#f3f4f6] rounded-xl p-6 flex flex-col justify-between min-h-[220px]">
                   <h4 className="text-sm md:text-base font-bold text-black uppercase tracking-tight whitespace-pre-line">
-                    {settings.store_card_title || 'View All Meadow\nComputer Mega Store\nLocation.'}
+                    {settings.store_card_title || 'View All Meadow\nComputer All Locations.'}
                   </h4>
 
                   <div className="space-y-3 mt-4">
@@ -949,7 +949,7 @@ const HomePageSettingsPage: React.FC = () => {
                 value={settings.store_card_title || ''} 
                 onChange={(e) => setSettings({ ...settings, store_card_title: e.target.value })}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900"
-                placeholder="View All Meadow&#10;Computer Mega Store&#10;Location."
+                placeholder="View All Meadow&#10;Computer All Locations."
               />
             </div>
 

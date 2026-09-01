@@ -1105,6 +1105,87 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* WHAT WE DO / Support Beyond the Purchase Section */}
+      <section className="bg-[#FAF9FB] py-20 md:py-28 border-t border-slate-100 font-sans">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+            
+            {/* Left Header Info */}
+            <div className="lg:col-span-4 flex flex-col justify-center pr-0 lg:pr-6">
+              <span className="text-xs font-black uppercase tracking-[0.25em] text-[#e11d48] mb-3">
+                WHAT WE DO
+              </span>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
+                Support Beyond the Purchase
+              </h2>
+              <p className="text-sm md:text-base text-slate-500 font-medium leading-relaxed max-w-md">
+                Practical, ongoing support and added convenience that go beyond your purchase.
+              </p>
+            </div>
+
+            {/* Right 3 Cards Grid */}
+            <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              {/* Card 1: Workshop Services */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
+                <div>
+                  <div className="w-12 h-12 rounded-full bg-rose-50 text-[#e11d48] flex items-center justify-center mb-6">
+                    <Wrench size={22} />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-3 tracking-tight">
+                    Workshop Services
+                  </h3>
+                  <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed mb-8">
+                    Dust cleaning, basic maintenance, problem diagnosis, formatting and data backup.
+                  </p>
+                </div>
+                <Link to="/contact" className="inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-900 hover:text-[#e11d48] transition-colors group/link mt-auto">
+                  Learn More <ArrowRight size={16} className="group-hover/link:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+
+              {/* Card 2: Warranty & RMA Support */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
+                <div>
+                  <div className="w-12 h-12 rounded-full bg-rose-50 text-[#e11d48] flex items-center justify-center mb-6">
+                    <ShieldCheck size={22} />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-3 tracking-tight">
+                    Warranty & RMA Support
+                  </h3>
+                  <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed mb-8">
+                    We manage the claim process from start to finish.
+                  </p>
+                </div>
+                <Link to="/contact" className="inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-900 hover:text-[#e11d48] transition-colors group/link mt-auto">
+                  View Support <ArrowRight size={16} className="group-hover/link:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+
+              {/* Card 3: Delivery Nationwide */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
+                <div>
+                  <div className="w-12 h-12 rounded-full bg-rose-50 text-[#e11d48] flex items-center justify-center mb-6">
+                    <Truck size={22} />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-3 tracking-tight">
+                    Delivery Nationwide
+                  </h3>
+                  <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed mb-8">
+                    We deliver nationwide across Malaysia for purchases above RM 1,500, arranged at no additional charges.
+                  </p>
+                </div>
+                <Link to="/contact" className="inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-900 hover:text-[#e11d48] transition-colors group/link mt-auto">
+                  Learn More <ArrowRight size={16} className="group-hover/link:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* Laptop Section */}
       {laptopProducts.length > 0 && (
         <section className="py-6 md:py-10 bg-slate-50 border-t border-slate-100">
@@ -1265,30 +1346,32 @@ const Home: React.FC = () => {
       )}
 
       {/* VISIT OUR STORE Section */}
-      <section className="bg-white py-20 md:py-32 overflow-hidden border-t border-slate-50 font-sans">
+      <section className="bg-white py-14 md:py-20 overflow-hidden border-t border-slate-50 font-sans">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
-          <h2 className="text-3xl md:text-5xl font-black text-black tracking-tighter uppercase mb-12">
+          <h2 className="text-3xl md:text-5xl font-black text-black tracking-tighter uppercase mb-8 md:mb-10">
             {homeSettings?.store_section_title || "Visit Our Store."}
           </h2>
-          <div className="flex flex-col lg:flex-row gap-8">
+          <div className="flex flex-col lg:flex-row gap-6 md:gap-8 items-stretch">
             {/* Left Card */}
-            <div className="lg:w-1/3 bg-[#f3f4f6] rounded-2xl p-8 flex flex-col justify-between min-h-[400px] shadow-sm font-sans">
-              <div className="flex flex-col justify-start gap-8">
-                <h3 className="text-2xl md:text-3xl font-bold text-black leading-tight text-left uppercase tracking-tight whitespace-pre-line">
-                  {homeSettings?.store_card_title || "View All Meadow\nComputer Mega Store\nLocation."}
+            <div className="lg:w-1/3 bg-[#f3f4f6] rounded-2xl p-6 md:p-8 flex flex-col justify-between min-h-[300px] md:min-h-[340px] shadow-sm font-sans">
+              <div className="flex flex-col justify-start gap-4">
+                <h3 className="text-xl md:text-2xl font-bold text-black leading-tight text-left uppercase tracking-tight whitespace-pre-line">
+                  {(homeSettings?.store_card_title || "View All Meadow\nComputer All Locations.")
+                    .replace(/Mega\s*Store\s*Location\.?/gi, 'All Locations.')
+                    .replace(/Mega\s*Store/gi, 'All Locations')}
                 </h3>
               </div>
               
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-4">
                 <Link 
                   to={homeSettings?.store_btn_link || "/our-stores"} 
-                  className="inline-flex items-center justify-center w-fit max-w-full px-6 md:px-8 py-4 whitespace-nowrap bg-white border-2 border-black rounded-xl text-xs font-black uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all shadow-sm text-center"
+                  className="inline-flex items-center justify-center w-fit max-w-full px-6 md:px-7 py-3 md:py-3.5 whitespace-nowrap bg-white border-2 border-black rounded-xl text-xs font-black uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all shadow-sm text-center"
                 >
                   {homeSettings?.store_btn_text || "Our Store"}
                 </Link>
-                <div className="border-t border-black/20 pt-6">
-                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-[#333] mb-2">
-                    {homeSettings?.store_media_type === 'image' ? 'LOCATION DISPLAYING' : 'VIDEO DISPLAYING'} <ArrowRight size={16} />
+                <div className="border-t border-black/20 pt-4">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-[#333] mb-1.5">
+                    {homeSettings?.store_media_type === 'image' ? 'LOCATION DISPLAYING' : 'VIDEO DISPLAYING'} <ArrowRight size={14} />
                   </div>
                   <p className="text-xs font-black uppercase tracking-[0.2em] text-[#333]">
                     {homeSettings?.store_video_label || "TAMAN PELANGI ASUS STORE"}
@@ -1298,7 +1381,7 @@ const Home: React.FC = () => {
             </div>
 
             {/* Right Card (Video or Image) */}
-            <div className="lg:flex-1 aspect-video md:aspect-auto md:h-[500px] rounded-2xl overflow-hidden shadow-2xl border border-slate-100 relative bg-black">
+            <div className="lg:flex-1 h-[260px] sm:h-[300px] md:h-[340px] lg:h-[350px] rounded-2xl overflow-hidden shadow-xl border border-slate-100 relative bg-black">
               {homeSettings?.store_media_type === 'image' ? (
                 <img 
                   src={homeSettings?.store_media_url || "https://illuminatelabs.space/assets/locator_vd.mp4"}
@@ -1316,87 +1399,6 @@ const Home: React.FC = () => {
                 />
               )}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* WHAT WE DO / Support Beyond the Purchase Section */}
-      <section className="bg-[#FAF9FB] py-20 md:py-28 border-t border-slate-100 font-sans">
-        <div className="max-w-[1440px] mx-auto px-4 md:px-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
-            
-            {/* Left Header Info */}
-            <div className="lg:col-span-4 flex flex-col justify-center pr-0 lg:pr-6">
-              <span className="text-xs font-black uppercase tracking-[0.25em] text-[#e11d48] mb-3">
-                WHAT WE DO
-              </span>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
-                Support Beyond the Purchase
-              </h2>
-              <p className="text-sm md:text-base text-slate-500 font-medium leading-relaxed max-w-md">
-                Practical, ongoing support and added convenience that go beyond your purchase.
-              </p>
-            </div>
-
-            {/* Right 3 Cards Grid */}
-            <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-              
-              {/* Card 1: Workshop Services */}
-              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
-                <div>
-                  <div className="w-12 h-12 rounded-full bg-rose-50 text-[#e11d48] flex items-center justify-center mb-6">
-                    <Wrench size={22} />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-3 tracking-tight">
-                    Workshop Services
-                  </h3>
-                  <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed mb-8">
-                    Dust cleaning, basic maintenance, problem diagnosis, formatting and data backup.
-                  </p>
-                </div>
-                <Link to="/contact" className="inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-900 hover:text-[#e11d48] transition-colors group/link mt-auto">
-                  Learn More <ArrowRight size={16} className="group-hover/link:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-
-              {/* Card 2: Warranty & RMA Support */}
-              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
-                <div>
-                  <div className="w-12 h-12 rounded-full bg-rose-50 text-[#e11d48] flex items-center justify-center mb-6">
-                    <ShieldCheck size={22} />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-3 tracking-tight">
-                    Warranty & RMA Support
-                  </h3>
-                  <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed mb-8">
-                    We manage the claim process from start to finish.
-                  </p>
-                </div>
-                <Link to="/contact" className="inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-900 hover:text-[#e11d48] transition-colors group/link mt-auto">
-                  View Support <ArrowRight size={16} className="group-hover/link:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-
-              {/* Card 3: Delivery Nationwide */}
-              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
-                <div>
-                  <div className="w-12 h-12 rounded-full bg-rose-50 text-[#e11d48] flex items-center justify-center mb-6">
-                    <Truck size={22} />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-3 tracking-tight">
-                    Delivery Nationwide
-                  </h3>
-                  <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed mb-8">
-                    We deliver nationwide across Malaysia for purchases above RM 1,500, arranged at no additional charges.
-                  </p>
-                </div>
-                <Link to="/contact" className="inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-900 hover:text-[#e11d48] transition-colors group/link mt-auto">
-                  Learn More <ArrowRight size={16} className="group-hover/link:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-
-            </div>
-
           </div>
         </div>
       </section>

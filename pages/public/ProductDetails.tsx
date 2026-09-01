@@ -517,154 +517,150 @@ const ProductDetails: React.FC = () => {
         <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="max-w-[1550px] mx-auto px-4 md:px-10 relative z-10">
-          <div className="grid lg:grid-cols-12 gap-10 md:gap-16 items-start">
-            
-            {/* Left Header Box */}
-            <div className="lg:col-span-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 text-red-600 text-[11px] font-black uppercase tracking-widest mb-3 border border-red-100">
-                <ShieldCheck size={14} className="text-red-600" />
-                Product Information
-              </div>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                <span className="w-2.5 h-8 md:h-10 bg-red-600 rounded-full inline-block shrink-0"></span>
-                Additional Details
-              </h2>
-              <p className="text-slate-500 font-medium text-base md:text-lg leading-relaxed mt-4">
-                Detailed metrics, specifications, and quality guarantees for this unit.
-              </p>
+          {/* Centered Header Box */}
+          <div className="max-w-3xl mx-auto text-center flex flex-col items-center mb-10 md:mb-14">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-50 text-red-600 text-[11px] font-black uppercase tracking-widest mb-4 border border-red-100 shadow-sm">
+              <ShieldCheck size={14} className="text-red-600" />
+              Product Information
             </div>
+            <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight flex items-center justify-center gap-3">
+              <span className="w-2.5 h-6 md:h-8 bg-red-600 rounded-full inline-block shrink-0"></span>
+              Additional Details
+            </h2>
+            <p className="text-slate-500 font-medium text-base md:text-lg leading-relaxed mt-3 max-w-xl">
+              Detailed metrics, specifications, and quality guarantees for this unit.
+            </p>
+          </div>
 
-            {/* Right Details Container */}
-            <div className="lg:col-span-8">
-              {(() => {
-                const addDetails = product?.additional_details || product?.specs?.additional_details || '';
-                if (!addDetails || !addDetails.trim()) {
-                  return (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {[
-                        { label: 'Thermal Efficiency', val: 'Vortex Airflow Cooling & Optimized Heat Dissipation', icon: Zap },
-                        { label: 'System Logic', val: 'Engineered V-Series Performance Architecture', icon: Cpu },
-                        { label: 'Durability Matrix', val: 'Military-Grade Certified Materials', icon: ShieldCheck },
-                        { label: 'Quality Assurance', val: '100% Genuine Certified Stock & Local Warranty', icon: CheckCircle }
-                      ].map((spec, i) => (
-                        <div key={i} className="flex gap-5 p-5 bg-white rounded-2xl shadow-sm border border-slate-200/80 group hover:border-red-500/40 hover:shadow-md transition-all">
-                          <div className="w-14 h-14 bg-red-50 rounded-xl border border-red-100 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all shrink-0">
-                            <spec.icon size={24} />
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-xs font-black uppercase tracking-wider text-red-600">{spec.label}</p>
-                            <p className="text-base font-bold text-slate-900 tracking-tight leading-snug">{spec.val}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                }
-
-                // Render rich additional details with text paragraphs, bold headers, and images
-                const lines = addDetails.split('\n').map(l => l.trim()).filter(Boolean);
-
+          {/* Details Container (below header) */}
+          <div className="max-w-5xl mx-auto">
+            {(() => {
+              const addDetails = product?.additional_details || product?.specs?.additional_details || '';
+              if (!addDetails || !addDetails.trim()) {
                 return (
-                  <div className="bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-slate-200/80 space-y-6 text-slate-800 font-sans">
-                    <h3 className="text-2xl md:text-3xl font-bold text-[#0072ce] tracking-tight pb-2 border-b border-slate-100">
-                      Additional Details
-                    </h3>
-                    <div className="space-y-5 text-sm md:text-base leading-relaxed">
-                      {lines.map((line, idx) => {
-                        // Image Detection
-                        const markdownImgMatch = line.match(/^!\[(.*?)\]\((.*?)\)$/);
-                        const imageTagMatch = line.match(/^<img\s+.*?src=["'](.*?)["'].*?>$/i);
-                        const imageCustomMatch = line.match(/^\[image:\s*(.*?)\]$/i);
-                        const isDirectImgUrl = /^https?:\/\/.*\.(png|jpg|jpeg|webp|gif|svg)(\?.*)?$/i.test(line);
-
-                        let imgUrl = '';
-                        let imgAlt = '';
-
-                        if (markdownImgMatch) {
-                          imgAlt = markdownImgMatch[1];
-                          imgUrl = markdownImgMatch[2];
-                        } else if (imageTagMatch) {
-                          imgUrl = imageTagMatch[1];
-                        } else if (imageCustomMatch) {
-                          imgUrl = imageCustomMatch[1];
-                        } else if (isDirectImgUrl) {
-                          imgUrl = line;
-                        }
-
-                        if (imgUrl) {
-                          return (
-                            <div key={idx} className="my-6 overflow-hidden rounded-2xl border border-slate-200/80 shadow-sm bg-slate-50 flex items-center justify-center p-3">
-                              <img 
-                                src={imgUrl} 
-                                alt={imgAlt || "Product Detail Illustration"} 
-                                className="max-h-[500px] w-full object-contain rounded-xl"
-                                loading="lazy"
-                                onError={(e) => {
-                                  (e.target as HTMLElement).style.display = 'none';
-                                }}
-                              />
-                            </div>
-                          );
-                        }
-
-                        // Explicit markdown bold **Text**
-                        if (line.includes('**')) {
-                          const parts = line.split(/(\*\*.*?\*\*)/g);
-                          return (
-                            <p key={idx} className="text-slate-800 text-sm md:text-base leading-relaxed font-normal">
-                              {parts.map((part, pIdx) => {
-                                if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
-                                  return (
-                                    <strong key={pIdx} className="font-extrabold text-slate-900">
-                                      {part.slice(2, -2)}
-                                    </strong>
-                                  );
-                                }
-                                return part;
-                              })}
-                            </p>
-                          );
-                        }
-
-                        // Heading with dash: "Title - Description"
-                        if (line.includes(' - ')) {
-                          const dashIdx = line.indexOf(' - ');
-                          const title = line.slice(0, dashIdx).trim();
-                          const rest = line.slice(dashIdx);
-                          return (
-                            <p key={idx} className="text-slate-800 text-sm md:text-base leading-relaxed font-normal">
-                              <strong className="font-extrabold text-slate-900">{title}</strong>
-                              {rest}
-                            </p>
-                          );
-                        }
-
-                        // Key-Value with colon: "Label: Value"
-                        if (line.includes(':')) {
-                          const colonIdx = line.indexOf(':');
-                          const title = line.slice(0, colonIdx).trim();
-                          const rest = line.slice(colonIdx);
-                          return (
-                            <p key={idx} className="text-slate-800 text-sm md:text-base leading-relaxed font-normal">
-                              <strong className="font-extrabold text-slate-900">{title}</strong>
-                              {rest}
-                            </p>
-                          );
-                        }
-
-                        // Regular paragraph
-                        return (
-                          <p key={idx} className="text-slate-800 text-sm md:text-base leading-relaxed font-normal">
-                            {line}
-                          </p>
-                        );
-                      })}
-                    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[
+                      { label: 'Thermal Efficiency', val: 'Vortex Airflow Cooling & Optimized Heat Dissipation', icon: Zap },
+                      { label: 'System Logic', val: 'Engineered V-Series Performance Architecture', icon: Cpu },
+                      { label: 'Durability Matrix', val: 'Military-Grade Certified Materials', icon: ShieldCheck },
+                      { label: 'Quality Assurance', val: '100% Genuine Certified Stock & Local Warranty', icon: CheckCircle }
+                    ].map((spec, i) => (
+                      <div key={i} className="flex gap-5 p-5 bg-white rounded-2xl shadow-sm border border-slate-200/80 group hover:border-red-500/40 hover:shadow-md transition-all">
+                        <div className="w-14 h-14 bg-red-50 rounded-xl border border-red-100 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all shrink-0">
+                          <spec.icon size={24} />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-black uppercase tracking-wider text-red-600">{spec.label}</p>
+                          <p className="text-base font-bold text-slate-900 tracking-tight leading-snug">{spec.val}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 );
-              })()}
-            </div>
+              }
 
+              // Render rich additional details with text paragraphs, bold headers, and images
+              const lines = addDetails.split('\n').map(l => l.trim()).filter(Boolean);
+
+              return (
+                <div className="bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-slate-200/80 space-y-6 text-slate-800 font-sans">
+                  <h3 className="text-2xl md:text-3xl font-bold text-[#0072ce] tracking-tight pb-2 border-b border-slate-100">
+                    Additional Details
+                  </h3>
+                  <div className="space-y-5 text-sm md:text-base leading-relaxed">
+                    {lines.map((line, idx) => {
+                      // Image Detection
+                      const markdownImgMatch = line.match(/^!\[(.*?)\]\((.*?)\)$/);
+                      const imageTagMatch = line.match(/^<img\s+.*?src=["'](.*?)["'].*?>$/i);
+                      const imageCustomMatch = line.match(/^\[image:\s*(.*?)\]$/i);
+                      const isDirectImgUrl = /^https?:\/\/.*\.(png|jpg|jpeg|webp|gif|svg)(\?.*)?$/i.test(line);
+
+                      let imgUrl = '';
+                      let imgAlt = '';
+
+                      if (markdownImgMatch) {
+                        imgAlt = markdownImgMatch[1];
+                        imgUrl = markdownImgMatch[2];
+                      } else if (imageTagMatch) {
+                        imgUrl = imageTagMatch[1];
+                      } else if (imageCustomMatch) {
+                        imgUrl = imageCustomMatch[1];
+                      } else if (isDirectImgUrl) {
+                        imgUrl = line;
+                      }
+
+                      if (imgUrl) {
+                        return (
+                          <div key={idx} className="my-6 overflow-hidden rounded-2xl border border-slate-200/80 shadow-sm bg-slate-50 flex items-center justify-center p-3">
+                            <img 
+                              src={imgUrl} 
+                              alt={imgAlt || "Product Detail Illustration"} 
+                              className="max-h-[500px] w-full object-contain rounded-xl"
+                              loading="lazy"
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        );
+                      }
+
+                      // Explicit markdown bold **Text**
+                      if (line.includes('**')) {
+                        const parts = line.split(/(\*\*.*?\*\*)/g);
+                        return (
+                          <p key={idx} className="text-slate-800 text-sm md:text-base leading-relaxed font-normal">
+                            {parts.map((part, pIdx) => {
+                              if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
+                                return (
+                                  <strong key={pIdx} className="font-extrabold text-slate-900">
+                                    {part.slice(2, -2)}
+                                  </strong>
+                                );
+                              }
+                              return part;
+                            })}
+                          </p>
+                        );
+                      }
+
+                      // Heading with dash: "Title - Description"
+                      if (line.includes(' - ')) {
+                        const dashIdx = line.indexOf(' - ');
+                        const title = line.slice(0, dashIdx).trim();
+                        const rest = line.slice(dashIdx);
+                        return (
+                          <p key={idx} className="text-slate-800 text-sm md:text-base leading-relaxed font-normal">
+                            <strong className="font-extrabold text-slate-900">{title}</strong>
+                            {rest}
+                          </p>
+                        );
+                      }
+
+                      // Key-Value with colon: "Label: Value"
+                      if (line.includes(':')) {
+                        const colonIdx = line.indexOf(':');
+                        const title = line.slice(0, colonIdx).trim();
+                        const rest = line.slice(colonIdx);
+                        return (
+                          <p key={idx} className="text-slate-800 text-sm md:text-base leading-relaxed font-normal">
+                            <strong className="font-extrabold text-slate-900">{title}</strong>
+                            {rest}
+                          </p>
+                        );
+                      }
+
+                      // Regular paragraph
+                      return (
+                        <p key={idx} className="text-slate-800 text-sm md:text-base leading-relaxed font-normal">
+                          {line}
+                        </p>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </section>
@@ -689,8 +685,8 @@ const ProductDetails: React.FC = () => {
                       <Cpu size={14} className="text-red-600" />
                       Hardware Architecture
                     </div>
-                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                      <span className="w-2.5 h-8 md:h-10 bg-red-600 rounded-full inline-block shrink-0"></span>
+                    <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                      <span className="w-2.5 h-6 md:h-8 bg-red-600 rounded-full inline-block shrink-0"></span>
                       System Specification
                     </h2>
                   </div>
@@ -791,8 +787,8 @@ const ProductDetails: React.FC = () => {
                 {/* Additional Information Box */}
                 <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200/80">
                   <div className="flex items-center gap-3 pb-4 border-b border-slate-100 mb-6">
-                    <span className="w-2.5 h-8 md:h-10 bg-red-600 rounded-full inline-block shrink-0"></span>
-                    <h3 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">Additional Information</h3>
+                    <span className="w-2.5 h-6 md:h-8 bg-red-600 rounded-full inline-block shrink-0"></span>
+                    <h3 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight">Additional Information</h3>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-100 hover:bg-slate-100/80 transition-colors">
@@ -821,8 +817,8 @@ const ProductDetails: React.FC = () => {
                 <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200/80 w-full flex flex-col justify-between sticky top-28">
                   <div>
                     <div className="flex items-center gap-3 pb-4 border-b border-slate-100 mb-6">
-                      <span className="w-2.5 h-8 md:h-10 bg-red-600 rounded-full inline-block shrink-0"></span>
-                      <h3 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">Feature Specification</h3>
+                      <span className="w-2.5 h-6 md:h-8 bg-red-600 rounded-full inline-block shrink-0"></span>
+                      <h3 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight">Feature Specification</h3>
                     </div>
                     <div className="space-y-5">
                       <div className="border-l-2 border-red-600/40 hover:border-red-600 transition-colors pl-4 py-1">
@@ -862,10 +858,9 @@ const ProductDetails: React.FC = () => {
       {/* Related Products */}
       <section className="py-20 md:py-32 bg-white overflow-hidden">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
-           <div className="flex items-center justify-between mb-16 md:mb-20">
+           <div className="flex items-center justify-between mb-10 md:mb-14">
               <div>
-                 <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase">Cross-Referenced Assets</h2>
-                 <p className="text-xs text-slate-300 font-black uppercase tracking-[0.3em] mt-3">Recommended Deployments</p>
+                 <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">Customer Also Viewed</h2>
               </div>
            </div>
 

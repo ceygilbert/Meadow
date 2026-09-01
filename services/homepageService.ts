@@ -42,7 +42,7 @@ export const DEFAULT_HOMEPAGE_SETTINGS: HomePageSettings = {
   custom_pc_btn_link: '/customised',
   custom_pc_bg_image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80',
   store_section_title: 'Visit Our Store.',
-  store_card_title: 'View All Meadow\nComputer Mega Store\nLocation.',
+  store_card_title: 'View All Meadow\nComputer All Locations.',
   store_btn_text: 'Our Store',
   store_btn_link: '/our-stores',
   store_video_label: 'TAMAN PELANGI ASUS STORE',
