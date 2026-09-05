@@ -10,11 +10,15 @@ import {
   AlertCircle, 
   Upload,
   Check,
-  Image as ImageIcon,
-  AlertTriangle 
+  Image as ImageIcon, 
+  AlertTriangle,
+  SlidersHorizontal,
+  ArrowDownAZ,
+  MoreHorizontal
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Brand } from '../../types';
+import { AdminTablePagination } from '../../components/AdminTablePagination';
 
 const BrandManagement: React.FC = () => {
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -29,6 +33,13 @@ const BrandManagement: React.FC = () => {
   // Upload states
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Reference Table Pattern States
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [actionDropdownId, setActionDropdownId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -157,90 +168,230 @@ const BrandManagement: React.FC = () => {
   const filtered = brands.filter(b => 
     b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (b.description && b.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  ).sort((a, b) => {
+    if (sortOrder === 'asc') return a.name.localeCompare(b.name);
+    return b.name.localeCompare(a.name);
+  });
+
+  const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+  const paginatedBrands = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === paginatedBrands.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(paginatedBrands.map(b => b.id));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(item => item !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Brand Management</h1>
-          <p className="text-slate-500 text-sm">Manage partner brands and manufacturers.</p>
-        </div>
+    <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
+      {/* Top Header Row Matching Screenshot */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Brands</h1>
         <button 
           onClick={() => {
             setEditingId(null);
             setFormData({ name: '', description: '', logo_url: '' });
             setIsModalOpen(true);
-          }}
-          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 font-bold transition-all shadow-lg shadow-blue-600/20"
+          }} 
+          className="bg-slate-950 text-white rounded-full px-5 py-2.5 text-xs font-semibold hover:bg-slate-800 transition-all shadow-xs flex items-center gap-2"
         >
-          <Plus size={18} />
-          New Brand
+          <Plus size={15} />
+          <span>Add Brand</span>
         </button>
       </div>
 
-      <div className="relative max-w-md">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-        <input 
-          type="text"
-          placeholder="Search brands..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
-        />
+      {/* Filter & Search Bar Row Matching Screenshot */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        {/* Search Pill Input */}
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+          <input 
+            type="text"
+            placeholder="Search brands..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200/90 rounded-full text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 shadow-xs transition-all font-medium"
+          />
+        </div>
+
+        {/* Filter & Sort Pills */}
+        <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto">
+          {/* Sort Pill */}
+          <button
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="bg-white border border-slate-200/90 hover:border-slate-300 text-slate-700 px-4 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 shadow-xs transition-all"
+          >
+            <ArrowDownAZ size={14} className="text-slate-500" />
+            <span>Sort by name {sortOrder === 'asc' ? 'A-Z' : 'Z-A'}</span>
+          </button>
+        </div>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-600" size={40} /></div>
+        <div className="flex flex-col items-center justify-center py-32 gap-3">
+          <Loader2 className="animate-spin text-slate-800" size={36} />
+          <p className="text-slate-400 font-semibold text-xs tracking-wider uppercase">Loading Brands...</p>
+        </div>
       ) : error ? (
-        <div className="p-8 bg-red-50 text-red-600 rounded-2xl text-center border border-red-100">
-          <AlertCircle className="mx-auto mb-3" />
-          <p className="font-bold">{error}</p>
-          <button onClick={fetchBrands} className="mt-4 text-sm font-bold underline">Retry</button>
+        <div className="p-8 bg-red-50 text-red-600 rounded-2xl text-center border border-red-100 shadow-xs">
+          <AlertCircle className="mx-auto mb-3" size={32} />
+          <h3 className="text-sm font-bold mb-1">Error Loading Brands</h3>
+          <p className="text-xs font-medium opacity-80 mb-4">{error}</p>
+          <button onClick={fetchBrands} className="px-4 py-1.5 bg-red-600 text-white rounded-xl text-xs font-semibold">Retry</button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filtered.map((brand) => (
-            <div key={brand.id} className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/30 group hover:shadow-blue-500/10 transition-all p-8 flex flex-col relative overflow-hidden">
-              <div className="flex items-center gap-6 mb-6">
-                <div className="w-20 h-20 rounded-[1.5rem] bg-slate-50 border border-slate-100 p-2 overflow-hidden flex items-center justify-center shrink-0">
-                  {brand.logo_url ? (
-                    <img src={brand.logo_url} alt={brand.name} className="w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500" />
-                  ) : (
-                    <Copyright size={32} className="text-slate-200" />
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-xl font-bold text-slate-900 truncate">{brand.name}</h3>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-500">Official Partner</p>
-                </div>
-              </div>
-              
-              <p className="text-slate-500 text-sm line-clamp-2 mb-8 min-h-[40px]">
-                {brand.description || 'Global technology manufacturer delivering high-performance IT solutions.'}
-              </p>
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <th className="py-4 pl-6 pr-3 w-10">
+                      <input 
+                        type="checkbox"
+                        checked={paginatedBrands.length > 0 && selectedIds.length === paginatedBrands.length}
+                        onChange={toggleSelectAll}
+                        className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer"
+                      />
+                    </th>
+                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">Brand</th>
+                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">Status</th>
+                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">Description</th>
+                    <th className="py-4 pr-6 pl-4 w-12 text-right"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {paginatedBrands.map((brand) => {
+                    const isSelected = selectedIds.includes(brand.id);
 
-              <div className="mt-auto pt-6 border-t border-slate-50 flex items-center gap-3">
-                <button 
-                  onClick={() => handleEdit(brand)}
-                  className="flex-1 py-2.5 px-4 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2"
-                >
-                  <Edit2 size={14} /> Edit
-                </button>
-                <button 
-                  onClick={() => setItemToDelete(brand)}
-                  className="p-2.5 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-600 hover:text-white transition-all"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
+                    return (
+                      <tr 
+                        key={brand.id} 
+                        className={`hover:bg-slate-50/70 transition-colors ${isSelected ? 'bg-slate-50/50' : ''}`}
+                      >
+                        {/* Checkbox */}
+                        <td className="py-4 pl-6 pr-3">
+                          <input 
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleSelectOne(brand.id)}
+                            className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer"
+                          />
+                        </td>
+
+                        {/* Brand Logo + Name */}
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-3.5 min-w-[200px]">
+                            <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200/70 p-1.5 overflow-hidden flex items-center justify-center shrink-0">
+                              {brand.logo_url ? (
+                                <img src={brand.logo_url} alt={brand.name} className="w-full h-full object-contain" />
+                              ) : (
+                                <Copyright size={20} className="text-slate-300" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <span className="block text-xs font-bold text-slate-900 truncate">
+                                {brand.name}
+                              </span>
+                              <span className="text-[11px] font-medium text-slate-400">
+                                ID: {brand.id.slice(0, 8)}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Status Pill Badge */}
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <span className="px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/40">
+                            Active Partner
+                          </span>
+                        </td>
+
+                        {/* Description */}
+                        <td className="py-4 px-4">
+                          <span className="text-xs text-slate-500 line-clamp-1 max-w-md">
+                            {brand.description || 'Global technology manufacturer delivering high-performance IT solutions.'}
+                          </span>
+                        </td>
+
+                        {/* Actions (••• button with dropdown) */}
+                        <td className="py-4 pr-6 pl-4 text-right relative">
+                          <div className="flex items-center justify-end">
+                            <button 
+                              onClick={() => setActionDropdownId(actionDropdownId === brand.id ? null : brand.id)}
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/60 transition-all"
+                              title="Options"
+                            >
+                              <MoreHorizontal size={15} />
+                            </button>
+                          </div>
+
+                          {actionDropdownId === brand.id && (
+                            <div className="absolute right-6 top-12 w-32 bg-white border border-slate-200/90 rounded-2xl shadow-lg py-1.5 z-20 text-left animate-in fade-in zoom-in-95 duration-100">
+                              <button
+                                onClick={() => {
+                                  setActionDropdownId(null);
+                                  handleEdit(brand);
+                                }}
+                                className="w-full px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors"
+                              >
+                                <Edit2 size={13} />
+                                <span>Edit</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setActionDropdownId(null);
+                                  setItemToDelete(brand);
+                                }}
+                                className="w-full px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors"
+                              >
+                                <Trash2 size={13} />
+                                <span>Delete</span>
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+
+                  {paginatedBrands.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="py-16 text-center text-xs font-medium text-slate-400">
+                        No brands found matching your search.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
-          ))}
-          {filtered.length === 0 && (
-            <div className="col-span-full py-20 text-center bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200">
-              <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No Brands Registered</p>
-            </div>
-          )}
+          </div>
+
+          {/* Bottom Pagination Bar */}
+          <AdminTablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={filtered.length}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setCurrentPage(1);
+            }}
+          />
         </div>
       )}
 

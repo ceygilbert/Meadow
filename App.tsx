@@ -84,13 +84,14 @@ const AppContent: React.FC = () => {
       
       <Route 
         path="/admin/login" 
-        element={isAdmin ? <Navigate to="/admin/dashboard" /> : <AdminLogin onLogin={() => {}} />} 
+        element={isAdmin ? <Navigate to="/admin/dashboard" replace /> : <AdminLogin onLogin={() => {}} />} 
       />
 
       <Route 
-        path="/admin/*" 
-        element={isAdmin ? <AdminLayout onLogout={signOut} /> : <Navigate to="/admin/login" />}
+        path="/admin" 
+        element={isAdmin ? <AdminLayout onLogout={signOut} /> : <Navigate to="/admin/login" replace />}
       >
+        <Route index element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="homepage" element={<HomePageSettingsPage />} />
         <Route path="our-story" element={<OurStorySettingsPage />} />
@@ -102,7 +103,7 @@ const AppContent: React.FC = () => {
         <Route path="subcategories" element={<SubCategoryManagement />} />
         <Route path="brands" element={<BrandManagement />} />
         <Route path="units" element={<UnitManagement />} />
-        <Route path="*" element={<Navigate to="dashboard" />} />
+        <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
       </Route>
 
       <Route 

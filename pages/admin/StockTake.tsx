@@ -13,10 +13,14 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Info,
-  AlertTriangle
+  AlertTriangle,
+  SlidersHorizontal,
+  ArrowDownAZ,
+  MoreHorizontal
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Product, StockLog } from '../../types';
+import { AdminTablePagination } from '../../components/AdminTablePagination';
 
 interface AuditItem extends Product {
   actual_count: number;
@@ -35,6 +39,13 @@ const StockTake: React.FC = () => {
   
   // Custom Modal States
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  // Reference Table Design Pattern States
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'variance' | 'in_sync'>('all');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     fetchInventory();
@@ -128,31 +139,62 @@ const StockTake: React.FC = () => {
     }
   };
 
-  const filtered = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Filter, sort and pagination matching reference pattern
+  const filtered = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+    if (!matchesSearch) return false;
+
+    const variance = p.actual_count - p.stock;
+    if (statusFilter === 'variance') return variance !== 0;
+    if (statusFilter === 'in_sync') return variance === 0;
+    return true;
+  }).sort((a, b) => {
+    if (sortOrder === 'asc') return a.name.localeCompare(b.name);
+    return b.name.localeCompare(a.name);
+  });
+
   const totalModifications = products.filter(p => p.actual_count !== p.stock).length;
+  const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+  const paginatedItems = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === paginatedItems.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(paginatedItems.map(p => p.id));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(item => item !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
+      {/* Top Header Row Matching Screenshot */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Stock Take Audit</h1>
-          <p className="text-slate-500 text-sm">Perform physical inventory checks and sync database records.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Stock Take</h1>
         </div>
-        <div className="flex gap-3 w-full md:w-auto">
+        <div className="flex items-center gap-2.5">
           <button 
             onClick={() => { setHistoryOpen(true); fetchLogs(); }}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200 font-bold transition-all"
+            className="bg-white border border-slate-200/90 text-slate-700 rounded-full px-4 py-2.5 text-xs font-semibold hover:bg-slate-50 transition-all shadow-xs flex items-center gap-1.5"
           >
-            <History size={18} />
-            View History
+            <History size={14} className="text-slate-500" />
+            <span>Audit History</span>
           </button>
           <button 
             onClick={handleAuditRequest}
             disabled={submitting || totalModifications === 0}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-2xl hover:bg-emerald-700 font-bold transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-50"
+            className="bg-slate-950 text-white rounded-full px-5 py-2.5 text-xs font-semibold hover:bg-slate-800 transition-all shadow-xs flex items-center gap-2 disabled:opacity-40"
           >
-            {submitting ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
-            Commit Audit {totalModifications > 0 && `(${totalModifications})`}
+            {submitting ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+            <span>Commit Audit {totalModifications > 0 && `(${totalModifications})`}</span>
           </button>
         </div>
       </div>
@@ -162,124 +204,218 @@ const StockTake: React.FC = () => {
           statusMsg.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-rose-50 border-rose-100 text-rose-800'
         }`}>
           <div className="flex items-center gap-3">
-            {statusMsg.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
-            <span className="font-bold text-sm">{statusMsg.text}</span>
+            {statusMsg.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+            <span className="font-semibold text-xs">{statusMsg.text}</span>
           </div>
           <button onClick={() => setStatusMsg(null)} className="p-1 hover:bg-black/5 rounded-full">
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
       )}
 
-      <div className="flex gap-4">
+      {/* Filter & Search Bar Row Matching Screenshot */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        {/* Search Pill Input */}
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input 
             type="text"
             placeholder="Search hardware asset..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200/90 rounded-full text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 shadow-xs transition-all font-medium"
           />
         </div>
-        <button 
-          onClick={fetchInventory}
-          className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-colors"
-          title="Refresh Data"
-        >
-          <RotateCcw size={20} />
-        </button>
+
+        {/* Filter & Sort Pills */}
+        <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto">
+          {/* Status Filter Pill */}
+          <button
+            onClick={() => {
+              const next = statusFilter === 'all' ? 'variance' : statusFilter === 'variance' ? 'in_sync' : 'all';
+              setStatusFilter(next);
+              setCurrentPage(1);
+            }}
+            className="bg-white border border-slate-200/90 hover:border-slate-300 text-slate-700 px-4 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 shadow-xs transition-all"
+          >
+            <SlidersHorizontal size={14} className="text-slate-500" />
+            <span>{statusFilter === 'all' ? 'Show All Products' : statusFilter === 'variance' ? 'Variances Only' : 'In Sync Only'}</span>
+          </button>
+
+          {/* Sort Pill */}
+          <button
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="bg-white border border-slate-200/90 hover:border-slate-300 text-slate-700 px-4 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 shadow-xs transition-all"
+          >
+            <ArrowDownAZ size={14} className="text-slate-500" />
+            <span>Sort {sortOrder === 'asc' ? 'A-Z' : 'Z-A'}</span>
+          </button>
+        </div>
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-24 gap-4">
-          <Loader2 className="animate-spin text-blue-600" size={40} />
-          <p className="text-slate-400 font-medium">Fetching Catalog Data...</p>
+        <div className="flex flex-col items-center justify-center py-32 gap-3">
+          <Loader2 className="animate-spin text-slate-800" size={36} />
+          <p className="text-slate-400 font-semibold text-xs tracking-wider uppercase">Loading Audit Data...</p>
         </div>
       ) : error ? (
-        <div className="p-12 bg-red-50 text-red-600 rounded-[2.5rem] text-center border border-red-100 shadow-sm">
-          <AlertCircle className="mx-auto mb-4" size={48} />
-          <h3 className="text-xl font-bold mb-2">Sync Error</h3>
-          <p className="font-medium opacity-80 mb-6">{error}</p>
-          <button onClick={fetchInventory} className="px-6 py-2 bg-red-600 text-white rounded-xl font-bold">Retry Sync</button>
+        <div className="p-8 bg-red-50 text-red-600 rounded-2xl text-center border border-red-100 shadow-xs">
+          <AlertCircle className="mx-auto mb-3" size={32} />
+          <h3 className="text-sm font-bold mb-1">Sync Error</h3>
+          <p className="text-xs font-medium opacity-80 mb-4">{error}</p>
+          <button onClick={fetchInventory} className="px-4 py-1.5 bg-red-600 text-white rounded-xl text-xs font-semibold">Retry Sync</button>
         </div>
       ) : (
-        <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/20 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-slate-50/50 border-b border-slate-100">
-                <tr>
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Hardware Asset</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">System Count</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Actual Physical Count</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Variance</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {filtered.map((p) => {
-                  const variance = p.actual_count - p.stock;
-                  return (
-                    <tr key={p.id} className={`transition-colors ${variance !== 0 ? 'bg-amber-50/20' : 'hover:bg-slate-50/50'}`}>
-                      <td className="px-8 py-5">
-                        <div className="flex items-center gap-4">
-                           <div className="w-10 h-10 rounded-xl bg-slate-100 overflow-hidden border border-slate-200 flex items-center justify-center shrink-0">
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <th className="py-4 pl-6 pr-3 w-10">
+                      <input 
+                        type="checkbox"
+                        checked={paginatedItems.length > 0 && selectedIds.length === paginatedItems.length}
+                        onChange={toggleSelectAll}
+                        className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer"
+                      />
+                    </th>
+                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">Product</th>
+                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">Status</th>
+                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">System Count</th>
+                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">Physical Count</th>
+                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">Variance</th>
+                    <th className="py-4 pr-6 pl-4 w-12 text-right"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {paginatedItems.map((p) => {
+                    const variance = p.actual_count - p.stock;
+                    const isSelected = selectedIds.includes(p.id);
+
+                    return (
+                      <tr 
+                        key={p.id} 
+                        className={`hover:bg-slate-50/70 transition-colors ${variance !== 0 ? 'bg-amber-50/15' : ''} ${isSelected ? 'bg-slate-50/50' : ''}`}
+                      >
+                        {/* Checkbox */}
+                        <td className="py-4 pl-6 pr-3">
+                          <input 
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleSelectOne(p.id)}
+                            className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer"
+                          />
+                        </td>
+
+                        {/* Product Thumbnail + Name */}
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-3.5 min-w-[220px]">
+                            <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden border border-slate-200/70 flex items-center justify-center shrink-0">
                               {p.image_url ? (
                                 <img src={p.image_url} className="w-full h-full object-cover" alt="" />
                               ) : (
                                 <Package size={20} className="text-slate-300" />
                               )}
-                           </div>
-                           <div>
-                            <span className="block font-bold text-slate-900 truncate max-w-[250px]">{p.name}</span>
-                            {variance !== 0 && <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Awaiting Sync</span>}
-                           </div>
-                        </div>
-                      </td>
-                      <td className="px-8 py-5">
-                        <span className="text-sm font-black text-slate-400">{p.stock} Units</span>
-                      </td>
-                      <td className="px-8 py-5">
-                        <div className="flex items-center gap-3">
+                            </div>
+                            <div className="min-w-0">
+                              <span className="block text-xs font-bold text-slate-900 truncate">
+                                {p.name}
+                              </span>
+                              <span className="text-[11px] font-medium text-slate-400">
+                                SKU: {p.id.slice(0, 8)}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Status Pill Badge */}
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          {variance === 0 ? (
+                            <span className="px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/40">
+                              In Sync
+                            </span>
+                          ) : variance > 0 ? (
+                            <span className="px-3 py-1 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-600 border border-blue-200/40">
+                              Surplus (+{variance})
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-600 border border-rose-200/40">
+                              Deficit ({variance})
+                            </span>
+                          )}
+                        </td>
+
+                        {/* System Count */}
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <span className="text-xs font-semibold text-slate-900">
+                            {p.stock} Units
+                          </span>
+                        </td>
+
+                        {/* Physical Count Input */}
+                        <td className="py-4 px-4 whitespace-nowrap">
                           <input 
                             type="number"
-                            className={`w-28 px-4 py-2.5 rounded-xl border-2 font-bold transition-all outline-none ${
-                              variance === 0 
-                                ? 'border-slate-100 bg-white focus:border-blue-500' 
-                                : variance > 0 
-                                  ? 'border-emerald-200 bg-emerald-50 text-emerald-700 focus:border-emerald-500' 
-                                  : 'border-rose-200 bg-rose-50 text-rose-700 focus:border-rose-500'
-                            }`}
+                            className="w-24 px-3 py-1.5 rounded-full border border-slate-200/90 text-xs font-bold text-slate-900 focus:outline-none focus:border-slate-400 bg-white transition-all shadow-2xs"
                             value={p.actual_count}
                             onChange={(e) => handleCountChange(p.id, e.target.value)}
                           />
-                        </div>
-                      </td>
-                      <td className="px-8 py-5">
-                         {variance === 0 ? (
-                           <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">In Sync</span>
-                         ) : (
-                           <div className={`flex items-center gap-1.5 font-black text-sm ${variance > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                             {variance > 0 ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
-                             {variance > 0 ? `+${variance}` : variance}
-                           </div>
-                         )}
+                        </td>
+
+                        {/* Variance Indicator */}
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          {variance === 0 ? (
+                            <span className="text-xs font-medium text-slate-400">0</span>
+                          ) : (
+                            <div className={`flex items-center gap-1 font-bold text-xs ${variance > 0 ? 'text-blue-600' : 'text-rose-600'}`}>
+                              {variance > 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                              {variance > 0 ? `+${variance}` : variance}
+                            </div>
+                          )}
+                        </td>
+
+                        {/* Options */}
+                        <td className="py-4 pr-6 pl-4 text-right">
+                          <button 
+                            onClick={() => handleCountChange(p.id, String(p.stock))}
+                            className="w-8 h-8 rounded-full inline-flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/60 transition-all"
+                            title="Reset count to system"
+                          >
+                            <RotateCcw size={13} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+
+                  {paginatedItems.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="py-16 text-center text-xs font-medium text-slate-400">
+                        No matching hardware items found.
                       </td>
                     </tr>
-                  );
-                })}
-                {filtered.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="px-8 py-24 text-center">
-                      <div className="max-w-xs mx-auto">
-                        <Package className="mx-auto text-slate-200 mb-4" size={48} strokeWidth={1} />
-                        <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No matching hardware in local stock.</p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
+
+          {/* Bottom Pagination Bar */}
+          <AdminTablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={filtered.length}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setCurrentPage(1);
+            }}
+          />
         </div>
       )}
 

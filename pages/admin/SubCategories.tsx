@@ -1,8 +1,24 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Search, Edit2, Trash2, Layers, Image as ImageIcon, X, Loader2, AlertCircle, AlertTriangle, Upload } from 'lucide-react';
+import { 
+  Plus, 
+  Search, 
+  Edit2, 
+  Trash2, 
+  Layers, 
+  Image as ImageIcon, 
+  X, 
+  Loader2, 
+  AlertCircle, 
+  AlertTriangle, 
+  Upload,
+  SlidersHorizontal,
+  ArrowDownAZ,
+  MoreHorizontal
+} from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Category, SubCategory } from '../../types';
+import { AdminTablePagination } from '../../components/AdminTablePagination';
 
 const SubCategoryManagement: React.FC = () => {
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
@@ -17,6 +33,14 @@ const SubCategoryManagement: React.FC = () => {
   
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Reference Table Pattern States
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [actionDropdownId, setActionDropdownId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -154,80 +178,265 @@ const SubCategoryManagement: React.FC = () => {
 
   const getCategoryName = (id: string) => categories.find(c => c.id === id)?.name || 'Unknown';
 
-  const filtered = subCategories.filter(s => 
-    s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    getCategoryName(s.category_id).toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filtered = subCategories.filter(s => {
+    const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getCategoryName(s.category_id).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (s.description && s.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    if (!matchesSearch) return false;
+
+    if (categoryFilter !== 'all' && s.category_id !== categoryFilter) return false;
+    return true;
+  }).sort((a, b) => {
+    if (sortOrder === 'asc') return a.name.localeCompare(b.name);
+    return b.name.localeCompare(a.name);
+  });
+
+  const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+  const paginatedSubCategories = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === paginatedSubCategories.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(paginatedSubCategories.map(s => s.id));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(item => item !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Sub-categories</h1>
-          <p className="text-slate-500 text-sm">Targeted niches for specific hardware deployments.</p>
-        </div>
+    <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
+      {/* Top Header Row Matching Screenshot */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Sub-categories</h1>
         <button 
           onClick={() => {
             if (categories.length === 0) return alert("Please create a Category first.");
             setEditingId(null);
             setFormData(prev => ({ ...prev, name: '', description: '', image_url: '', category_id: categories[0].id }));
             setIsModalOpen(true);
-          }}
-          className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 font-bold transition-all shadow-lg shadow-indigo-600/20"
+          }} 
+          className="bg-slate-950 text-white rounded-full px-5 py-2.5 text-xs font-semibold hover:bg-slate-800 transition-all shadow-xs flex items-center gap-2"
         >
-          <Plus size={18} />
-          New Sub-category
+          <Plus size={15} />
+          <span>Add Sub-category</span>
         </button>
       </div>
 
-      <div className="relative max-w-md">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-        <input 
-          type="text"
-          placeholder="Filter sub-categories..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-medium"
-        />
+      {/* Filter & Search Bar Row Matching Screenshot */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        {/* Search Pill Input */}
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+          <input 
+            type="text"
+            placeholder="Search sub-categories..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200/90 rounded-full text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 shadow-xs transition-all font-medium"
+          />
+        </div>
+
+        {/* Filter & Sort Pills */}
+        <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto">
+          {/* Category Filter Pill */}
+          <div className="relative">
+            <select
+              value={categoryFilter}
+              onChange={(e) => {
+                setCategoryFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="appearance-none bg-white border border-slate-200/90 hover:border-slate-300 text-slate-700 pl-4 pr-9 py-2.5 rounded-full text-xs font-semibold shadow-xs focus:outline-none cursor-pointer"
+            >
+              <option value="all">All Categories</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+            <SlidersHorizontal size={13} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          </div>
+
+          {/* Sort Pill */}
+          <button
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="bg-white border border-slate-200/90 hover:border-slate-300 text-slate-700 px-4 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 shadow-xs transition-all"
+          >
+            <ArrowDownAZ size={14} className="text-slate-500" />
+            <span>Sort {sortOrder === 'asc' ? 'A-Z' : 'Z-A'}</span>
+          </button>
+        </div>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20"><Loader2 className="animate-spin text-indigo-600" size={40} /></div>
+        <div className="flex flex-col items-center justify-center py-32 gap-3">
+          <Loader2 className="animate-spin text-slate-800" size={36} />
+          <p className="text-slate-400 font-semibold text-xs tracking-wider uppercase">Loading Sub-categories...</p>
+        </div>
       ) : error ? (
-        <div className="p-8 bg-red-50 text-red-600 rounded-2xl text-center border border-red-100">
-          <AlertCircle className="mx-auto mb-3" />
-          <p className="font-bold">{error}</p>
-          <button onClick={fetchData} className="mt-4 text-sm font-bold underline">Retry</button>
+        <div className="p-8 bg-red-50 text-red-600 rounded-2xl text-center border border-red-100 shadow-xs">
+          <AlertCircle className="mx-auto mb-3" size={32} />
+          <h3 className="text-sm font-bold mb-1">Error Loading Sub-categories</h3>
+          <p className="text-xs font-medium opacity-80 mb-4">{error}</p>
+          <button onClick={fetchData} className="px-4 py-1.5 bg-red-600 text-white rounded-xl text-xs font-semibold">Retry</button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filtered.map((sub) => (
-            <div key={sub.id} className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/30 group hover:shadow-indigo-500/10 transition-all overflow-hidden flex flex-col relative">
-              <div className="aspect-video w-full bg-slate-100 relative overflow-hidden">
-                {sub.image_url ? (
-                  <img src={sub.image_url} alt={sub.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
-                    <Layers size={48} strokeWidth={1} />
-                    <span className="text-[10px] font-bold uppercase tracking-widest mt-2">Default Header</span>
-                  </div>
-                )}
-                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                  <button onClick={() => handleEdit(sub)} className="p-2.5 bg-white/95 backdrop-blur-md text-slate-900 rounded-xl shadow-lg hover:bg-indigo-600 hover:text-white transition-all"><Edit2 size={16} /></button>
-                  <button onClick={() => setItemToDelete(sub)} className="p-2.5 bg-white/95 backdrop-blur-md text-rose-600 rounded-xl shadow-lg hover:bg-rose-600 hover:text-white transition-all"><Trash2 size={16} /></button>
-                </div>
-              </div>
-              <div className="p-8">
-                <div className="mb-4">
-                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-indigo-500 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
-                    {getCategoryName(sub.category_id)}
-                  </span>
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">{sub.name}</h3>
-                <p className="text-slate-500 text-sm line-clamp-2 mb-6 min-h-[40px]">{sub.description || 'Specialized unit configuration within parent architecture.'}</p>
-              </div>
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <th className="py-4 pl-6 pr-3 w-10">
+                      <input 
+                        type="checkbox"
+                        checked={paginatedSubCategories.length > 0 && selectedIds.length === paginatedSubCategories.length}
+                        onChange={toggleSelectAll}
+                        className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer"
+                      />
+                    </th>
+                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">Sub-category</th>
+                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">Status</th>
+                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">Category</th>
+                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">Description</th>
+                    <th className="py-4 pr-6 pl-4 w-12 text-right"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {paginatedSubCategories.map((sub) => {
+                    const isSelected = selectedIds.includes(sub.id);
+
+                    return (
+                      <tr 
+                        key={sub.id} 
+                        className={`hover:bg-slate-50/70 transition-colors ${isSelected ? 'bg-slate-50/50' : ''}`}
+                      >
+                        {/* Checkbox */}
+                        <td className="py-4 pl-6 pr-3">
+                          <input 
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleSelectOne(sub.id)}
+                            className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer"
+                          />
+                        </td>
+
+                        {/* Sub-category Thumbnail + Name */}
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-3.5 min-w-[200px]">
+                            <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden border border-slate-200/70 flex items-center justify-center shrink-0">
+                              {sub.image_url ? (
+                                <img src={sub.image_url} className="w-full h-full object-cover" alt={sub.name} />
+                              ) : (
+                                <Layers className="text-slate-300" size={20} />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <span className="block text-xs font-bold text-slate-900 truncate">
+                                {sub.name}
+                              </span>
+                              <span className="text-[11px] font-medium text-slate-400">
+                                ID: {sub.id.slice(0, 8)}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Status Pill Badge */}
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <span className="px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/40">
+                            Active
+                          </span>
+                        </td>
+
+                        {/* Parent Category */}
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <span className="text-xs font-semibold text-slate-900 bg-slate-100/70 px-2.5 py-1 rounded-full border border-slate-200/60">
+                            {getCategoryName(sub.category_id)}
+                          </span>
+                        </td>
+
+                        {/* Description */}
+                        <td className="py-4 px-4">
+                          <span className="text-xs text-slate-500 line-clamp-1 max-w-sm">
+                            {sub.description || 'Specialized unit configuration within parent architecture.'}
+                          </span>
+                        </td>
+
+                        {/* Actions (••• button with dropdown) */}
+                        <td className="py-4 pr-6 pl-4 text-right relative">
+                          <div className="flex items-center justify-end">
+                            <button 
+                              onClick={() => setActionDropdownId(actionDropdownId === sub.id ? null : sub.id)}
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/60 transition-all"
+                              title="Options"
+                            >
+                              <MoreHorizontal size={15} />
+                            </button>
+                          </div>
+
+                          {actionDropdownId === sub.id && (
+                            <div className="absolute right-6 top-12 w-32 bg-white border border-slate-200/90 rounded-2xl shadow-lg py-1.5 z-20 text-left animate-in fade-in zoom-in-95 duration-100">
+                              <button
+                                onClick={() => {
+                                  setActionDropdownId(null);
+                                  handleEdit(sub);
+                                }}
+                                className="w-full px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors"
+                              >
+                                <Edit2 size={13} />
+                                <span>Edit</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setActionDropdownId(null);
+                                  setItemToDelete(sub);
+                                }}
+                                className="w-full px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors"
+                              >
+                                <Trash2 size={13} />
+                                <span>Delete</span>
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+
+                  {paginatedSubCategories.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="py-16 text-center text-xs font-medium text-slate-400">
+                        No sub-categories found matching your search.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
-          ))}
+          </div>
+
+          {/* Bottom Pagination Bar */}
+          <AdminTablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={filtered.length}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setCurrentPage(1);
+            }}
+          />
         </div>
       )}
 

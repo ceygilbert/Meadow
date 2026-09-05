@@ -42,10 +42,57 @@ if (!isSupabaseConfigured) {
   console.log(`Supabase initialized with URL: ${supabaseUrl.substring(0, 15)}...`);
 }
 
+/**
+ * Resilient fetch wrapper with automatic retry for transient network dropouts,
+ * iframe request interruptions, and "TypeError: Failed to fetch".
+ */
+const resilientFetch: typeof fetch = async (input, init) => {
+  const maxRetries = 2;
+  let lastError: any;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      if (init?.signal?.aborted) {
+        throw new DOMException('Aborted', 'AbortError');
+      }
+
+      const response = await fetch(input, init);
+      return response;
+    } catch (err: any) {
+      lastError = err;
+
+      if (err.name === 'AbortError' || init?.signal?.aborted) {
+        throw err;
+      }
+
+      const errMsg = String(err?.message || err || '');
+      const isTransientNetworkIssue =
+        err.name === 'TypeError' ||
+        errMsg.includes('Failed to fetch') ||
+        errMsg.includes('NetworkError') ||
+        errMsg.includes('Load failed') ||
+        errMsg.includes('aborted');
+
+      if (attempt < maxRetries && isTransientNetworkIssue) {
+        const delay = (attempt + 1) * 600;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+
+      throw err;
+    }
+  }
+
+  throw lastError;
+};
+
 // Initialize the client with the detected or fallback values
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
+  },
+  global: {
+    fetch: resilientFetch
   }
 });

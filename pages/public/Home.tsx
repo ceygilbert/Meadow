@@ -129,9 +129,39 @@ const TICKER_ITEMS = [
   "RAZER", "MSI GAMING", "MICROSOFT SURFACE", "ACER PREDATOR", "GIGABYTE", "HUAWEI"
 ];
 
+const CACHE_KEY_HOME_PRODUCTS = 'meadow_home_cached_products';
+const CACHE_KEY_HOME_BRANDS = 'meadow_home_cached_brands';
+
+const getStoredHomeProducts = (): Product[] => {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY_HOME_PRODUCTS);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  return [];
+};
+
+const getStoredHomeBrands = (): Brand[] => {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY_HOME_BRANDS);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  return [];
+};
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+
+  const initialProducts = useRef(getStoredHomeProducts()).current;
+  const initialBrands = useRef(getStoredHomeBrands()).current;
+  const isFetchingRef = useRef(false);
+
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [promoProducts, setPromoProducts] = useState<Product[]>([]);
@@ -139,9 +169,9 @@ const Home: React.FC = () => {
   const [laptopProducts, setLaptopProducts] = useState<Product[]>([]);
   const [pcComponentProducts, setPcComponentProducts] = useState<Product[]>([]);
   const [displayProducts, setDisplayProducts] = useState<Product[]>([]);
-  const [brands, setBrands] = useState<Brand[]>([]);
+  const [brands, setBrands] = useState<Brand[]>(initialBrands);
   const [homeSettings, setHomeSettings] = useState<HomePageSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(initialProducts.length === 0);
   const [error, setError] = useState<string | null>(null);
   
   // UI States
@@ -266,33 +296,64 @@ const Home: React.FC = () => {
     }
   };
 
+  const distributeProducts = (allProducts: (Product & { categories?: any })[]) => {
+    setTrendingProducts(allProducts);
+    const featured = allProducts.filter(p => p.is_featured === true);
+    setFeaturedProducts(featured.length > 0 ? featured : allProducts.slice(0, 12));
+    const promo = allProducts.filter(p => p.is_Promo === true);
+    setPromoProducts(promo);
+    setNewArrivalProducts(allProducts.slice(0, 12));
+
+    const laptops = allProducts.filter(p => 
+      p.categories?.name?.toLowerCase().includes('laptop') || 
+      p.categories?.slug === 'laptop'
+    );
+    setLaptopProducts(laptops);
+
+    const pcComponents = allProducts.filter(p => 
+      p.categories?.name?.toLowerCase().includes('pc component') || 
+      p.categories?.slug === 'pc-component'
+    );
+    setPcComponentProducts(pcComponents);
+
+    const displays = allProducts.filter(p => 
+      p.categories?.name?.toLowerCase().includes('display') || 
+      p.categories?.name?.toLowerCase().includes('monitor') || 
+      p.categories?.slug === 'display' ||
+      p.categories?.slug === 'displays' ||
+      p.categories?.slug === 'monitors' ||
+      p.categories?.slug === 'monitor'
+    );
+    setDisplayProducts(displays);
+  };
+
   useEffect(() => {
-    // Safety timeout to prevent getting stuck on loading screen
-    const safetyTimeout = setTimeout(() => {
-      setLoading(current => {
-        if (current) {
-          console.warn("Home data fetch timed out, showing page with cached or empty data.");
-          return false;
-        }
-        return false;
-      });
-    }, 10000);
+    // If cached products exist, immediately populate the UI
+    if (initialProducts.length > 0) {
+      distributeProducts(initialProducts);
+      setLoading(false);
+    }
 
     fetchData();
-    
+
+    const savedCart = localStorage.getItem('meadow_cart');
+    if (savedCart) {
+      try {
+        setCart(JSON.parse(savedCart));
+      } catch (e) {
+        console.warn("Failed to parse cart:", e);
+      }
+    }
+  }, []);
+
+  // Keep customer info in sync with auth user without re-fetching public catalog
+  useEffect(() => {
     if (user) {
       setCustomerInfo({ 
         name: user.user_metadata?.full_name || '', 
         email: user.email || '' 
       });
     }
-
-    const savedCart = localStorage.getItem('meadow_cart');
-    if (savedCart) setCart(JSON.parse(savedCart));
-
-    return () => {
-      clearTimeout(safetyTimeout);
-    };
   }, [user]);
 
   // Auto-slide effect for hero banner (7 seconds)
@@ -348,66 +409,76 @@ const Home: React.FC = () => {
   };
 
   const fetchData = async () => {
-    setLoading(true);
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+
+    // Only set full-page loading if we don't already have products in state
+    const hasInitialProducts = trendingProducts.length > 0 || initialProducts.length > 0;
+    if (!hasInitialProducts) {
+      setLoading(true);
+    }
     setError(null);
+
     try {
-      const [prodRes, brandRes, catRes, homeSettingsRes] = await Promise.all([
+      const results = await Promise.allSettled([
         supabase.from('products').select('*').order('created_at', { ascending: false }),
         supabase.from('brands').select('*'),
         supabase.from('categories').select('*'),
         fetchHomePageSettings()
       ]);
 
-      if (homeSettingsRes) {
-        setHomeSettings(homeSettingsRes);
+      const prodOutcome = results[0];
+      const brandOutcome = results[1];
+      const catOutcome = results[2];
+      const homeSettingsOutcome = results[3];
+
+      if (homeSettingsOutcome.status === 'fulfilled' && homeSettingsOutcome.value) {
+        setHomeSettings(homeSettingsOutcome.value);
       }
 
-      if (prodRes.error) throw prodRes.error;
+      if (brandOutcome.status === 'fulfilled' && brandOutcome.value.data) {
+        setBrands(brandOutcome.value.data);
+        try {
+          localStorage.setItem(CACHE_KEY_HOME_BRANDS, JSON.stringify(brandOutcome.value.data));
+        } catch (e) {}
+      }
 
-      if (prodRes.data) {
-        const categoriesList = catRes.data || [];
+      if (prodOutcome.status === 'fulfilled' && prodOutcome.value.data) {
+        const prodData = prodOutcome.value.data;
+        const categoriesList = (catOutcome.status === 'fulfilled' && catOutcome.value.data) ? catOutcome.value.data : [];
         const categoriesMap = new Map(categoriesList.map((c: any) => [c.id, c]));
-        const allProducts = (prodRes.data || []).map((p: any) => ({
+
+        const allProducts = (prodData || []).map((p: any) => ({
           ...p,
           categories: p.category_id ? categoriesMap.get(p.category_id) : undefined
         })) as (Product & { categories?: any })[];
 
-        setTrendingProducts(allProducts);
-        const featured = allProducts.filter(p => p.is_featured === true);
-        setFeaturedProducts(featured.length > 0 ? featured : allProducts.slice(0, 12));
-        const promo = allProducts.filter(p => p.is_Promo === true);
-        setPromoProducts(promo);
-        setNewArrivalProducts(allProducts.slice(0, 12));
+        distributeProducts(allProducts);
 
-        // Filter by categories for Laptop and PC Component
-        const laptops = allProducts.filter(p => 
-          p.categories?.name?.toLowerCase().includes('laptop') || 
-          p.categories?.slug === 'laptop'
-        );
-        setLaptopProducts(laptops);
+        try {
+          localStorage.setItem(CACHE_KEY_HOME_PRODUCTS, JSON.stringify(allProducts));
+        } catch (e) {}
 
-        const pcComponents = allProducts.filter(p => 
-          p.categories?.name?.toLowerCase().includes('pc component') || 
-          p.categories?.slug === 'pc-component'
-        );
-        setPcComponentProducts(pcComponents);
+        setError(null);
+      } else {
+        const prodErr = prodOutcome.status === 'rejected' ? prodOutcome.reason : prodOutcome.value?.error;
+        console.warn("Product fetch issue:", prodErr);
 
-        const displays = allProducts.filter(p => 
-          p.categories?.name?.toLowerCase().includes('display') || 
-          p.categories?.name?.toLowerCase().includes('monitor') || 
-          p.categories?.slug === 'display' ||
-          p.categories?.slug === 'displays' ||
-          p.categories?.slug === 'monitors' ||
-          p.categories?.slug === 'monitor'
-        );
-        setDisplayProducts(displays);
+        const hasExisting = trendingProducts.length > 0 || initialProducts.length > 0;
+        if (!hasExisting) {
+          const msg = prodErr?.message || "Service temporarily unreachable";
+          setError(`Unable to connect to database (${msg}). Please check your connection.`);
+        }
       }
-      if (brandRes.data) setBrands(brandRes.data);
     } catch (err: any) {
-      console.error("Data fetch error detail:", err);
-      const msg = err.message || "Unknown error";
-      setError(`Unable to connect to the terminal (${msg}). Please check your connection or Supabase settings.`);
+      console.warn("Data fetch error detail:", err);
+      const hasExisting = trendingProducts.length > 0 || initialProducts.length > 0;
+      if (!hasExisting) {
+        const msg = err?.message || "Service temporarily unreachable";
+        setError(`Unable to connect (${msg}). Please check your connection.`);
+      }
     } finally {
+      isFetchingRef.current = false;
       setLoading(false);
     }
   };
@@ -506,9 +577,17 @@ const Home: React.FC = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white p-10 text-center">
         <AlertCircle className="text-rose-500 mb-6" size={64} strokeWidth={1} />
-        <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-4">Connection Failed</h2>
-        <p className="text-slate-500 max-w-xs mb-10 font-medium">{error}</p>
-        <button onClick={() => window.location.reload()} className="px-10 py-4 bg-slate-900 text-white rounded-full font-black text-[11px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl">Retry Connection</button>
+        <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-4">Connection Issue</h2>
+        <p className="text-slate-500 max-w-sm mb-8 font-medium text-sm leading-relaxed">{error}</p>
+        <button 
+          onClick={() => {
+            setError(null);
+            fetchData();
+          }} 
+          className="px-10 py-4 bg-slate-900 text-white rounded-full font-black text-[11px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl cursor-pointer"
+        >
+          Try Again
+        </button>
       </div>
     );
   }

@@ -73,7 +73,7 @@ const AdminLogin: React.FC<LoginProps> = ({ onLogin }) => {
       if (data.session) {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('role')
+          .select('*')
           .eq('id', data.session.user.id)
           .single();
 
@@ -89,6 +89,15 @@ const AdminLogin: React.FC<LoginProps> = ({ onLogin }) => {
           await supabase.auth.signOut();
           setError('Access Denied: You do not have administrative privileges.');
           return;
+        }
+
+        // Cache the verified admin profile immediately for synchronous authentication
+        try {
+          localStorage.setItem(`meadow_auth_profile_${data.session.user.id}`, JSON.stringify(profile));
+          localStorage.setItem('meadow_auth_profile_current', JSON.stringify(profile));
+          localStorage.setItem('meadow_last_active_user_id', data.session.user.id);
+        } catch (e) {
+          console.warn("Failed to cache profile in localStorage:", e);
         }
 
         onLogin(true);

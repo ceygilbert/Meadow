@@ -35,12 +35,16 @@ import {
   Gift,
   FileText,
   Sliders,
-  Eye
+  Eye,
+  SlidersHorizontal,
+  ArrowDownAZ,
+  MoreHorizontal
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { generateProductDescription } from '../../services/geminiService';
 import { Product, Category, Brand, Unit, SubCategory } from '../../types';
 import { supabase } from '../../lib/supabase';
+import { AdminTablePagination } from '../../components/AdminTablePagination';
 
 const ProductManagement: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -57,6 +61,14 @@ const ProductManagement: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
+
+  // Table pagination and filter states matching reference screenshot
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'out_of_stock'>('all');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [actionDropdownId, setActionDropdownId] = useState<string | null>(null);
   
   const [isUploading, setIsUploading] = useState(false);
   const [showDetailsPreview, setShowDetailsPreview] = useState(false);
@@ -340,10 +352,40 @@ const ProductManagement: React.FC = () => {
     return price;
   };
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    categories.find(c => c.id === p.category_id)?.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter, sort and pagination calculations matching reference pattern
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = 
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      categories.find(c => c.id === p.category_id)?.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (!matchesSearch) return false;
+
+    if (statusFilter === 'published') return p.stock > 0;
+    if (statusFilter === 'out_of_stock') return p.stock === 0;
+    return true;
+  }).sort((a, b) => {
+    if (sortOrder === 'asc') return a.name.localeCompare(b.name);
+    return b.name.localeCompare(a.name);
+  });
+
+  const totalPages = Math.ceil(filteredProducts.length / pageSize) || 1;
+  const paginatedProducts = filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === paginatedProducts.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(paginatedProducts.map(p => p.id));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(item => item !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
 
   const availableSubCategories = subCategories.filter(s => s.category_id === formData.category_id);
   const selectedSubCategory = subCategories.find(s => s.id === formData.subcategory_id);
@@ -377,139 +419,239 @@ const ProductManagement: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Inventory Management</h1>
-          <p className="text-slate-500 text-sm">Manage hardware, pricing, units and customisations.</p>
-        </div>
+    <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
+      {/* Top Header Row Matching Screenshot */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Products</h1>
         <button 
           onClick={() => {
             setEditingId(null);
             resetForm();
             setIsModalOpen(true);
           }} 
-          className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 font-bold transition-all shadow-lg shadow-blue-600/20"
+          className="bg-slate-950 text-white rounded-full px-5 py-2.5 text-xs font-semibold hover:bg-slate-800 transition-all shadow-xs flex items-center gap-2"
         >
-          <Plus size={18} /> Add Product
+          <Plus size={15} />
+          <span>Add Product</span>
         </button>
       </div>
 
-      <div className="flex gap-4 items-center">
+      {/* Filter & Search Bar Row Matching Screenshot */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        {/* Search Pill Input */}
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input 
             type="text"
-            placeholder="Search inventory..."
+            placeholder="Search products"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200/90 rounded-full text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 shadow-xs transition-all font-medium"
           />
+        </div>
+
+        {/* Filter & Sort Pills */}
+        <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto">
+          {/* Status Filter Pill */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                const nextFilter = statusFilter === 'all' ? 'published' : statusFilter === 'published' ? 'out_of_stock' : 'all';
+                setStatusFilter(nextFilter);
+                setCurrentPage(1);
+              }}
+              className="bg-white border border-slate-200/90 hover:border-slate-300 text-slate-700 px-4 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 shadow-xs transition-all"
+            >
+              <SlidersHorizontal size={14} className="text-slate-500" />
+              <span>{statusFilter === 'all' ? 'Show All Products' : statusFilter === 'published' ? 'Published Only' : 'Out of Stock'}</span>
+            </button>
+          </div>
+
+          {/* Sort Pill */}
+          <button
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="bg-white border border-slate-200/90 hover:border-slate-300 text-slate-700 px-4 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 shadow-xs transition-all"
+          >
+            <ArrowDownAZ size={14} className="text-slate-500" />
+            <span>Sort by name {sortOrder === 'asc' ? 'A-Z' : 'Z-A'}</span>
+          </button>
         </div>
       </div>
 
+      {/* Main Table Container */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-24 gap-4">
-          <Loader2 className="animate-spin text-blue-600" size={40} />
-          <p className="text-slate-400 font-medium animate-pulse">Syncing Active Catalog...</p>
+        <div className="flex flex-col items-center justify-center py-32 gap-3">
+          <Loader2 className="animate-spin text-slate-800" size={36} />
+          <p className="text-slate-400 font-semibold text-xs tracking-wider uppercase">Loading Products...</p>
         </div>
       ) : error ? (
-        <div className="p-12 bg-red-50 text-red-600 rounded-[2.5rem] text-center border border-red-100 shadow-xl shadow-red-100/10">
-          <AlertCircle className="mx-auto mb-4" size={48} />
-          <h3 className="text-xl font-bold mb-2">Sync Error</h3>
-          <p className="font-medium opacity-80 mb-6">{error}</p>
-          <button onClick={fetchData} className="px-6 py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors">Retry Sync</button>
+        <div className="p-8 bg-red-50 text-red-600 rounded-2xl text-center border border-red-100 shadow-xs">
+          <AlertCircle className="mx-auto mb-3" size={32} />
+          <h3 className="text-sm font-bold mb-1">Error Loading Products</h3>
+          <p className="text-xs font-medium opacity-80 mb-4">{error}</p>
+          <button onClick={fetchData} className="px-4 py-1.5 bg-red-600 text-white rounded-xl text-xs font-semibold">Retry</button>
         </div>
       ) : (
-        <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/20 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-slate-50/50 border-b border-slate-100">
-                <tr>
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Product Details</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Category Hierarchy</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Pricing (RM)</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Stock Level</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {filteredProducts.map((p) => {
-                  const cat = categories.find(c => c.id === p.category_id);
-                  const sub = subCategories.find(s => s.id === p.subcategory_id);
-                  const brand = brands.find(b => b.id === p.brand_id);
-                  const unit = units.find(u => u.id === p.unit_id);
-                  const isLowStock = p.stock < 10;
-                  const finalPrice = calculateDiscountedPrice(p.price, p.discount_type, p.discount_value);
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <th className="py-4 pl-6 pr-3 w-10">
+                      <input 
+                        type="checkbox"
+                        checked={paginatedProducts.length > 0 && selectedIds.length === paginatedProducts.length}
+                        onChange={toggleSelectAll}
+                        className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer"
+                      />
+                    </th>
+                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">Product</th>
+                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">Status</th>
+                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">Price</th>
+                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">Inventory</th>
+                    <th className="py-4 pr-6 pl-4 w-12 text-right"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {paginatedProducts.map((p) => {
+                    const brand = brands.find(b => b.id === p.brand_id);
+                    const unit = units.find(u => u.id === p.unit_id);
+                    const finalPrice = calculateDiscountedPrice(p.price, p.discount_type, p.discount_value);
+                    const isSelected = selectedIds.includes(p.id);
+                    const isOutOfStock = p.stock === 0;
 
-                  return (
-                    <tr key={p.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="px-8 py-5">
-                        <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 rounded-2xl bg-slate-100 overflow-hidden border border-slate-200 flex items-center justify-center shrink-0">
-                            {p.image_url ? (
-                              <img src={p.image_url} className="w-full h-full object-cover" alt={p.name} />
-                            ) : (
-                              <ImageIcon className="text-slate-300" size={24} />
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="block font-bold text-slate-900 truncate max-w-[200px]">{p.name}</span>
-                              {p.is_customised && (
-                                <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[8px] font-black uppercase rounded-md border border-indigo-100">Custom</span>
+                    return (
+                      <tr 
+                        key={p.id} 
+                        className={`hover:bg-slate-50/70 transition-colors ${isSelected ? 'bg-slate-50/50' : ''}`}
+                      >
+                        {/* Checkbox */}
+                        <td className="py-4 pl-6 pr-3">
+                          <input 
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleSelectOne(p.id)}
+                            className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer"
+                          />
+                        </td>
+
+                        {/* Product Thumbnail + Name */}
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-3.5 min-w-[220px]">
+                            <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden border border-slate-200/70 flex items-center justify-center shrink-0">
+                              {p.image_url ? (
+                                <img src={p.image_url} className="w-full h-full object-cover" alt={p.name} />
+                              ) : (
+                                <ImageIcon className="text-slate-300" size={20} />
                               )}
                             </div>
-                            <span className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">{brand?.name || 'Generic'}</span>
+                            <div className="min-w-0">
+                              <span className="block text-xs font-bold text-slate-900 truncate">
+                                {p.name}
+                              </span>
+                              <span className="text-[11px] font-medium text-slate-400">
+                                {brand?.name || 'Standard'} {p.is_customised ? '• Custom' : ''}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-8 py-5">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md self-start uppercase tracking-wider">{cat?.name || 'Uncategorized'}</span>
-                          {sub && (
-                            <span className="text-[9px] font-bold text-slate-400 px-2 flex items-center gap-1 italic">
-                              <ArrowRight size={8} /> {sub.name} {p.ddr_type && <span className="ml-1 text-blue-500 font-black not-italic">[{p.ddr_type}]</span>}
+                        </td>
+
+                        {/* Status Pill Badge */}
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          {isOutOfStock ? (
+                            <span className="px-3 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-600 border border-rose-200/40">
+                              Sold out
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/40">
+                              Published
                             </span>
                           )}
-                        </div>
-                      </td>
-                      <td className="px-8 py-5">
-                        <div className="flex flex-col">
-                          {p.discount_type !== 'none' ? (
-                            <>
-                              <span className="text-lg font-black text-emerald-600">RM{finalPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                              <span className="text-xs text-slate-400 line-through font-bold">RM{p.price.toLocaleString()}</span>
-                            </>
-                          ) : (
-                            <span className="text-lg font-black text-slate-900">RM{p.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-8 py-5">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${p.stock > 0 ? (isLowStock ? 'bg-amber-500' : 'bg-emerald-500') : 'bg-rose-500'}`} />
-                          <span className={`text-sm font-bold ${p.stock > 0 ? (isLowStock ? 'text-amber-600' : 'text-emerald-600') : 'text-rose-600'}`}>
-                            {p.stock} <span className="text-[10px] opacity-70 uppercase tracking-tighter">{unit?.name || 'PCS'}</span>
+                        </td>
+
+                        {/* Price */}
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <span className="text-xs font-semibold text-slate-900">
+                            RM{finalPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                           </span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-5 text-right">
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => handleEdit(p)} className="p-2.5 bg-slate-100 text-slate-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm">
-                            <Edit2 size={16} />
-                          </button>
-                          <button onClick={() => setItemToDelete(p)} className="p-2.5 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-600 hover:text-white transition-all shadow-sm">
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
+                        </td>
+
+                        {/* Inventory */}
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <span className="text-xs font-medium text-slate-600">
+                            {p.stock} stock for 1 variants
+                          </span>
+                        </td>
+
+                        {/* Actions (••• button with dropdown) */}
+                        <td className="py-4 pr-6 pl-4 text-right relative">
+                          <div className="flex items-center justify-end">
+                            <button 
+                              onClick={() => setActionDropdownId(actionDropdownId === p.id ? null : p.id)}
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/60 transition-all"
+                              title="Options"
+                            >
+                              <MoreHorizontal size={15} />
+                            </button>
+                          </div>
+
+                          {actionDropdownId === p.id && (
+                            <div className="absolute right-6 top-12 w-32 bg-white border border-slate-200/90 rounded-2xl shadow-lg py-1.5 z-20 text-left animate-in fade-in zoom-in-95 duration-100">
+                              <button
+                                onClick={() => {
+                                  setActionDropdownId(null);
+                                  handleEdit(p);
+                                }}
+                                className="w-full px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors"
+                              >
+                                <Edit2 size={13} />
+                                <span>Edit</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setActionDropdownId(null);
+                                  setItemToDelete(p);
+                                }}
+                                className="w-full px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors"
+                              >
+                                <Trash2 size={13} />
+                                <span>Delete</span>
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+
+                  {paginatedProducts.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="py-16 text-center text-xs font-medium text-slate-400">
+                        No products found matching your search.
                       </td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
+
+          {/* Bottom Pagination Bar */}
+          <AdminTablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={filteredProducts.length}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setCurrentPage(1);
+            }}
+          />
         </div>
       )}
 

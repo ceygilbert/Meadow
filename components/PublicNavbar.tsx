@@ -21,7 +21,6 @@ import {
   Keyboard,
   Speaker,
   Laptop,
-  ShieldCheck,
   Menu,
   X,
   Sparkles,
@@ -256,17 +255,6 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
               >
                 <Search size={17} />
               </button>
-
-              {/* Desktop Admin Link */}
-              {!user && (
-                <Link 
-                  to="/admin/login" 
-                  className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900 transition-all border border-slate-200 rounded-full hover:bg-slate-50"
-                >
-                  <ShieldCheck size={13} className="text-slate-400" />
-                  Admin
-                </Link>
-              )}
 
               {/* User / Profile Icon */}
               {!user ? (
