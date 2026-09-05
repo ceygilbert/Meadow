@@ -497,7 +497,7 @@ const Home: React.FC = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-6">
         <Loader2 className="animate-spin text-slate-900" size={48} />
-        <p className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-400">Initializing Terminal...</p>
+        <p className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-400">Loading...</p>
       </div>
     );
   }
@@ -728,41 +728,41 @@ const Home: React.FC = () => {
       </header>
 
       {/* CATEGORIES Section */}
-      <section className="px-4 md:px-10 pt-16 md:pt-24 pb-20 md:pb-32 max-w-[1440px] mx-auto">
-        <div className="flex flex-col md:flex-row items-end justify-between mb-8 gap-6">
-          <div className="flex flex-col">
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-3">Categories</h2>
-            <p className="text-xs text-slate-400 font-black uppercase tracking-[0.4em]">EXPLORE BY PRODUCT CATEGORIES</p>
+      <section className="px-4 md:px-10 pt-10 md:pt-24 pb-14 md:pb-32 max-w-[1440px] mx-auto text-left">
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-6 md:mb-8 gap-4 md:gap-6">
+          <div className="flex flex-col items-start text-left">
+            <h2 className="text-2xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-2 md:mb-3 text-left">Categories</h2>
+            <p className="text-[10px] md:text-xs text-slate-400 font-black uppercase tracking-[0.4em] text-left">EXPLORE BY PRODUCT CATEGORIES</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center justify-start gap-3 md:gap-4 flex-wrap">
             <button 
               onClick={() => {
                 const container = document.getElementById('categories-container');
-                if (container) container.scrollBy({ left: -350, behavior: 'smooth' });
+                if (container) container.scrollBy({ left: -300, behavior: 'smooth' });
               }}
-              className="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all"
+              className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-slate-200 flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all"
             >
-              <ChevronLeft size={20} />
+              <ChevronLeft size={18} />
             </button>
             <button 
               onClick={() => {
                 const container = document.getElementById('categories-container');
-                if (container) container.scrollBy({ left: 350, behavior: 'smooth' });
+                if (container) container.scrollBy({ left: 300, behavior: 'smooth' });
               }}
-              className="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all"
+              className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-slate-200 flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all"
             >
-              <ChevronRight size={20} />
+              <ChevronRight size={18} />
             </button>
-            <Link to="/products" className="group flex items-center gap-4 text-xs font-black uppercase tracking-widest text-slate-900 hover:text-blue-600 transition-colors ml-4">
+            <Link to="/products" className="group flex items-center gap-2 md:gap-4 text-xs font-black uppercase tracking-widest text-slate-900 hover:text-blue-600 transition-colors">
               View All Products
-              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all">
-                <ArrowUpRight size={16} />
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-slate-200 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all">
+                <ArrowUpRight size={14} />
               </div>
             </Link>
           </div>
         </div>
 
-        <div id="categories-container" className="flex overflow-x-auto snap-x snap-mandatory gap-6 md:gap-8 pb-10 scrollbar-hide">
+        <div id="categories-container" className="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-8 pb-6 md:pb-10 scrollbar-hide">
           {(homeSettings?.categories && homeSettings.categories.length > 0 
             ? homeSettings.categories.filter(c => c.is_active !== false)
             : [
@@ -779,7 +779,7 @@ const Home: React.FC = () => {
             <Link 
               key={cat.slug || cat.name}
               to={`/products?category=${cat.slug}`}
-              className="group relative flex-shrink-0 w-[85vw] md:w-[350px] aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-xl border border-slate-100 flex flex-col justify-end p-8 snap-start"
+              className="group relative flex-shrink-0 w-[70vw] sm:w-[50vw] md:w-[350px] aspect-[16/11] sm:aspect-[4/3] md:aspect-[4/5] rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-lg border border-slate-100 flex flex-col justify-end p-5 md:p-8 snap-start"
             >
               <img 
                 src={cat.image_url} 
@@ -787,11 +787,11 @@ const Home: React.FC = () => {
                 alt={cat.name} 
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/85 via-slate-900/30 to-transparent opacity-70 group-hover:opacity-90 transition-opacity"></div>
               
               <div className="relative z-10">
-                <h3 className="text-2xl font-black text-white uppercase tracking-tighter leading-none mb-2 group-hover:translate-x-2 transition-transform duration-500">{cat.name}</h3>
-                <div className="flex items-center gap-2 text-[10px] font-black text-white/60 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
+                <h3 className="text-lg md:text-2xl font-black text-white uppercase tracking-tighter leading-tight mb-1 md:mb-2 group-hover:translate-x-2 transition-transform duration-500">{cat.name}</h3>
+                <div className="flex items-center gap-1.5 md:gap-2 text-[10px] font-black text-white/70 uppercase tracking-widest opacity-90 md:opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-0 md:translate-y-4 md:group-hover:translate-y-0">
                   Explore <ArrowRight size={12} />
                 </div>
               </div>
@@ -801,33 +801,35 @@ const Home: React.FC = () => {
       </section>
 
       {/* BUILD YOUR OWN PC Section */}
-      <section className="px-4 md:px-10 py-0 max-w-[1440px] mx-auto">
-        <div className="relative aspect-video md:aspect-[21/9] rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-2xl group border border-slate-100">
+      <section className="px-4 md:px-10 py-4 md:py-0 max-w-[1440px] mx-auto">
+        <div className="relative min-h-[400px] sm:min-h-[440px] md:min-h-[480px] md:aspect-[21/9] rounded-2xl sm:rounded-3xl md:rounded-[3.5rem] overflow-hidden shadow-2xl group border border-slate-100 flex flex-col justify-center">
            <img 
              src={homeSettings?.custom_pc_bg_image || "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80"} 
              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
              alt="Build Your Own PC"
              referrerPolicy="no-referrer"
            />
-           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
+           <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/95 via-black/75 to-black/40 md:via-black/50 md:to-transparent z-0"></div>
            
-           <div className="absolute inset-0 flex flex-col justify-center p-8 md:p-20">
+           <div className="relative z-10 flex flex-col justify-center p-6 sm:p-10 md:p-20">
              <div className="max-w-2xl animate-in fade-in slide-in-from-bottom duration-1000">
-               <div className="flex items-center gap-3 mb-6">
-                 <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-[#e11d48]">CUSTOM PC BUILDS</span>
+               <div className="flex items-center gap-3 mb-3 md:mb-5">
+                 <span className="inline-flex items-center gap-1.5 text-[10px] md:text-xs font-black uppercase tracking-[0.25em] md:tracking-[0.4em] text-rose-400 bg-rose-500/20 backdrop-blur-xs px-3 py-1 rounded-full border border-rose-500/30">
+                   CUSTOM PC BUILDS
+                 </span>
                </div>
-               <h2 className="text-4xl md:text-7xl font-black text-white tracking-tighter uppercase leading-[0.9] mb-8">
+               <h2 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight md:tracking-tighter uppercase leading-[1.1] md:leading-[0.95] mb-3 md:mb-5">
                  {homeSettings?.custom_pc_title || "Build Your Own PC."}
                </h2>
-               <p className="text-sm md:text-lg text-white/70 font-medium max-w-md leading-relaxed mb-10">
+               <p className="text-xs sm:text-sm md:text-base lg:text-lg text-slate-200 font-medium max-w-lg leading-relaxed mb-6 md:mb-8">
                  {homeSettings?.custom_pc_subtitle || "Pick your parts step by step to build your dream PC that suits your budget and needs. Support and after-sales guidance assurance."}
                </p>
                <Link 
                  to={homeSettings?.custom_pc_btn_link || "/customised"} 
-                 className="inline-flex items-center gap-4 px-10 py-4 bg-[#e11d48] text-white rounded-full font-black text-sm uppercase tracking-widest hover:bg-white hover:text-slate-900 transition-all shadow-xl group/btn w-fit"
+                 className="inline-flex items-center gap-3 px-6 py-3 md:px-9 md:py-4 bg-[#e11d48] hover:bg-rose-700 text-white rounded-full font-black text-xs md:text-sm uppercase tracking-wider md:tracking-widest hover:scale-105 transition-all shadow-xl group/btn w-fit active:scale-95"
                >
-                 {homeSettings?.custom_pc_btn_text || "Start Building"}
-                 <ArrowRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
+                 <span>{homeSettings?.custom_pc_btn_text || "Start Building"}</span>
+                 <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
                </Link>
              </div>
            </div>
@@ -864,15 +866,15 @@ const Home: React.FC = () => {
           >
             {/* Product Cards */}
             {featuredProducts.map((p) => (
-              <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+              <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
                  <button 
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                     className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
                  >
                     <Heart size={14} />
                  </button>
-                 <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-3 relative flex items-center justify-center">
-                     <img src={p.image_url || undefined} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
+                 <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
+                     <img src={p.image_url || undefined} className="w-full h-full object-contain p-2 md:p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                  </div>
                  <div className="mb-1">
                      <h3 className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 truncate">{p.name}</h3>
@@ -915,15 +917,15 @@ const Home: React.FC = () => {
             {/* Product Cards */}
 
             {promoProducts.map((p) => (
-              <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+              <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
                  <button 
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                     className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
                  >
                     <Heart size={14} />
                  </button>
-                 <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-3 relative flex items-center justify-center">
-                     <img src={p.image_url || undefined} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
+                 <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
+                     <img src={p.image_url || undefined} className="w-full h-full object-contain p-2 md:p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                  </div>
                  <div className="mb-1">
                      <h3 className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 truncate">{p.name}</h3>
@@ -964,15 +966,15 @@ const Home: React.FC = () => {
           >
             {/* Product Cards */}
             {newArrivalProducts.map((p) => (
-              <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-slate-50 rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+              <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-slate-50 rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
                  <button 
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                     className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
                  >
                     <Heart size={14} />
                  </button>
-                 <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-3 relative flex items-center justify-center">
-                     <img src={p.image_url || undefined} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
+                 <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
+                     <img src={p.image_url || undefined} className="w-full h-full object-contain p-2 md:p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                  </div>
                  <div className="mb-1">
                      <h3 className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 truncate">{p.name}</h3>
@@ -1046,10 +1048,10 @@ const Home: React.FC = () => {
                   <Link 
                     key={i} 
                     to="/prebuilt"
-                    className="flex-shrink-0 !w-[18.4117647059rem] h-[480px] rounded-[2rem] md:rounded-[2.5rem] bg-white overflow-hidden shadow-2xl border border-slate-100 flex flex-col snap-start group"
+                    className="flex-shrink-0 !w-[18.4117647059rem] h-[410px] sm:h-[440px] md:h-[480px] rounded-[2rem] md:rounded-[2.5rem] bg-white overflow-hidden shadow-2xl border border-slate-100 flex flex-col snap-start group"
                   >
-                    <div className="p-6 pt-8 text-center shrink-0">
-                       <h3 className="text-lg font-black text-slate-900 tracking-tighter uppercase mb-2 group-hover:text-rose-600 transition-colors">{item.title}</h3>
+                    <div className="p-4 pt-6 md:p-6 md:pt-8 text-center shrink-0">
+                       <h3 className="text-base md:text-lg font-black text-slate-900 tracking-tighter uppercase mb-1 md:mb-2 group-hover:text-rose-600 transition-colors">{item.title}</h3>
                        <p className="text-[9px] font-black tracking-[0.2em] text-slate-400">
                          <span className="text-rose-600">{item.cpu}</span> <span className="mx-2 opacity-50">+</span> <span className="text-emerald-500">{item.gpu}</span>
                        </p>
@@ -1062,10 +1064,10 @@ const Home: React.FC = () => {
                         </span>
                       </div>
                     </div>
-                    <div className="p-6 flex flex-col gap-4 bg-white shrink-0 mt-auto">
-                      <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <div className="p-4 md:p-6 flex flex-col gap-4 bg-white shrink-0 mt-auto">
+                      <div className="pt-3 md:pt-4 border-t border-slate-100 flex items-center justify-between">
                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">View all</span>
-                         <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center group-hover:bg-rose-600 transition-colors">
+                         <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-900 text-white flex items-center justify-center group-hover:bg-rose-600 transition-colors">
                             <ArrowRight size={16} />
                          </div>
                       </div>
@@ -1215,15 +1217,15 @@ const Home: React.FC = () => {
               className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10"
             >
               {laptopProducts.map((p) => (
-                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
                    <button 
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                       className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
                    >
                       <Heart size={14} />
                    </button>
-                   <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-3 relative flex items-center justify-center">
-                       <img src={p.image_url || undefined} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
+                   <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
+                       <img src={p.image_url || undefined} className="w-full h-full object-contain p-2 md:p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                    </div>
                    <div className="mb-1">
                        <h3 className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 truncate">{p.name}</h3>
@@ -1268,15 +1270,15 @@ const Home: React.FC = () => {
               className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10"
             >
               {pcComponentProducts.map((p) => (
-                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-slate-50 rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-slate-50 rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
                    <button 
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                       className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
                    >
                       <Heart size={14} />
                    </button>
-                   <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-3 relative flex items-center justify-center">
-                       <img src={p.image_url || undefined} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
+                   <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
+                       <img src={p.image_url || undefined} className="w-full h-full object-contain p-2 md:p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                    </div>
                    <div className="mb-1">
                        <h3 className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 truncate">{p.name}</h3>
@@ -1321,15 +1323,15 @@ const Home: React.FC = () => {
               className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10"
             >
               {displayProducts.map((p) => (
-                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
                    <button 
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                       className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
                    >
                       <Heart size={14} />
                    </button>
-                   <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-3 relative flex items-center justify-center">
-                       <img src={p.image_url || undefined} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
+                   <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
+                       <img src={p.image_url || undefined} className="w-full h-full object-contain p-2 md:p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                    </div>
                    <div className="mb-1">
                        <h3 className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 truncate">{p.name}</h3>

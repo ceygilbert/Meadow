@@ -276,18 +276,13 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', className = '' }) => {
         </div>
 
         {/* Bottom bar */}
-        <div className={`flex flex-col md:flex-row justify-between items-center gap-6 pt-10 border-t ${
+        <div className={`flex flex-col items-center justify-center pt-10 border-t ${
           isDark ? 'border-white/15' : 'border-slate-200'
         }`}>
            <p className={`text-[11px] font-bold uppercase tracking-[0.35em] text-center ${
              isDark ? 'text-white/70' : 'text-slate-500'
            }`}>
              © {new Date().getFullYear()} Meadow IT — ALL RIGHTS RESERVED
-           </p>
-           <p className={`text-[11px] font-bold uppercase tracking-[0.35em] ${
-             isDark ? 'text-white/70' : 'text-slate-500'
-           }`}>
-             Core Operational Status: Nominal
            </p>
         </div>
       </div>

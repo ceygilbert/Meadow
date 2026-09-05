@@ -35,7 +35,8 @@ import {
   Download,
   BadgeCheck,
   X,
-  Maximize2
+  Maximize2,
+  Play
 } from 'lucide-react';
 import StudioNavbar from '../../components/StudioNavbar';
 import WaveGradient from '../../components/WaveGradient';
@@ -411,13 +412,13 @@ const Customised: React.FC = () => {
       </section>
 
       {/* Cinematic Video Section */}
-      <section className="px-8 md:px-20 py-4 max-w-[1600px] mx-auto relative z-10">
-        <div className="relative w-full aspect-video rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl group">
-          <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all duration-700 z-10 pointer-events-none flex flex-col items-center justify-center">
-             <div className="w-24 h-24 rounded-full bg-rose-600/80 backdrop-blur-md flex items-center justify-center text-white shadow-2xl group-hover:scale-110 transition-transform duration-500">
-                <div className="w-0 h-0 border-t-[12px] border-t-transparent border-l-[20px] border-l-white border-b-[12px] border-b-transparent ml-2"></div>
+      <section className="px-4 sm:px-8 md:px-20 py-4 md:py-8 max-w-[1600px] mx-auto relative z-10">
+        <div className="relative w-full aspect-video rounded-2xl sm:rounded-3xl md:rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl group">
+          <div className="absolute inset-0 bg-black/35 group-hover:bg-black/20 transition-all duration-700 z-10 pointer-events-none flex flex-col items-center justify-center">
+             <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-rose-600/85 backdrop-blur-md flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform duration-500">
+                <Play className="w-5 h-5 sm:w-7 sm:h-7 md:w-8 md:h-8 fill-white ml-0.5" />
              </div>
-             <p className="mt-8 text-[12px] font-black uppercase tracking-[0.6em] text-white/60 transition-opacity duration-500">Watch Our Craft</p>
+             <p className="mt-2.5 sm:mt-4 md:mt-5 text-[9px] sm:text-[11px] md:text-[12px] font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] text-white/70 transition-opacity duration-500">Watch Our Craft</p>
           </div>
           <iframe 
             className="absolute inset-0 w-full h-full"
@@ -431,12 +432,12 @@ const Customised: React.FC = () => {
       </section>
 
       {/* Explore Our Range Section */}
-      <section className="px-8 md:px-20 pt-20 pb-12 max-w-[1600px] mx-auto relative z-10 border-t border-white/5">
-        <div className="mt-4 mb-4">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-4">
-            <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter">Explore <br /> Our Range</h2>
+      <section className="px-4 sm:px-8 md:px-20 pt-12 md:pt-20 pb-10 md:pb-12 max-w-[1600px] mx-auto relative z-10 border-t border-white/5">
+        <div className="mt-2 md:mt-4 mb-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8 mb-6 md:mb-8">
+            <h2 className="text-3xl sm:text-4xl md:text-6xl font-black text-white uppercase tracking-tighter">Explore <br className="hidden md:block" /> Our Range</h2>
             
-            <div className="flex flex-wrap gap-x-8 gap-y-4 border-b border-white/5 pb-4">
+            <div className="flex flex-wrap gap-x-6 sm:gap-x-8 gap-y-3 border-b border-white/5 pb-3 md:pb-4">
               {rangeCategories.map((cat) => (
                 <button
                   key={cat.id}
@@ -457,7 +458,7 @@ const Customised: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-8">
             <AnimatePresence mode="wait">
               {rangeProducts[activeRangeTab]?.map((product, idx) => (
                 <motion.div
@@ -468,16 +469,16 @@ const Customised: React.FC = () => {
                   transition={{ duration: 0.5, delay: idx * 0.1 }}
                   className="group"
                 >
-                  <div className="bg-[#0a0b0c] border border-white/10 rounded-[2rem] overflow-hidden transition-all duration-500 hover:border-rose-600/30 hover:shadow-[0_20px_80px_rgba(225,29,72,0.1)]">
-                    <div className="p-8 text-center bg-gradient-to-b from-white/[0.03] to-transparent">
-                      <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">{product.name}</h3>
-                      <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">{product.subtitle}</p>
+                  <div className="bg-[#0a0b0c] border border-white/10 rounded-2xl sm:rounded-3xl md:rounded-[2rem] overflow-hidden transition-all duration-500 hover:border-rose-600/30 hover:shadow-[0_20px_80px_rgba(225,29,72,0.1)]">
+                    <div className="p-4 sm:p-6 md:p-8 text-center bg-gradient-to-b from-white/[0.03] to-transparent">
+                      <h3 className="text-lg sm:text-xl md:text-2xl font-black text-white uppercase tracking-tight md:tracking-tighter mb-1 md:mb-2">{product.name}</h3>
+                      <p className="text-[9px] sm:text-[10px] font-black text-white/40 uppercase tracking-widest">{product.subtitle}</p>
                     </div>
-                    <div className="relative aspect-square overflow-hidden">
+                    <div className="relative aspect-[16/10] sm:aspect-[4/3] md:aspect-square overflow-hidden">
                       <img 
                         src={product.image} 
                         alt={product.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         referrerPolicy="no-referrer"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
