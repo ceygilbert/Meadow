@@ -84,7 +84,7 @@ const AdminLogin: React.FC<LoginProps> = ({ onLogin }) => {
           return;
         }
 
-        if (profile.role !== 'admin') {
+        if (profile.role !== 'admin' && profile.role !== 'superadmin') {
           console.warn("Unauthorized access attempt by non-admin:", cleanEmail);
           await supabase.auth.signOut();
           setError('Access Denied: You do not have administrative privileges.');

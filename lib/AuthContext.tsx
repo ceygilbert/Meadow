@@ -10,6 +10,7 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   isCustomer: boolean;
+  isSuperAdmin?: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -350,7 +351,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     profile,
     loading,
-    isAdmin: profile?.role === 'admin',
+    isAdmin: profile?.role === 'admin' || profile?.role === 'superadmin',
+    isSuperAdmin: profile?.role === 'superadmin',
     isCustomer: profile?.role === 'customer',
     signOut,
     refreshProfile

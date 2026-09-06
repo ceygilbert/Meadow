@@ -73,7 +73,7 @@ export interface Profile {
   phone: string;
   address: string;
   avatar_url: string;
-  role: 'admin' | 'customer';
+  role: 'admin' | 'customer' | 'superadmin';
   created_at: string;
   total_spent?: number;
   order_count?: number;
@@ -102,7 +102,7 @@ export interface OrderItem {
 export interface User {
   id: string;
   email: string;
-  role: 'admin' | 'customer';
+  role: 'admin' | 'customer' | 'superadmin';
 }
 
 export interface DashboardStats {

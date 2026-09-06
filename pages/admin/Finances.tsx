@@ -22,7 +22,7 @@ import {
 import { supabase } from '../../lib/supabase';
 import { Order } from '../../types';
 
-const Orders: React.FC = () => {
+const Finances: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,6 +82,29 @@ const Orders: React.FC = () => {
     }
   };
 
+  
+  const getPaymentStatusColor = (status: Order['status']) => {
+    switch (status) {
+      case 'pending': return 'bg-amber-100 text-amber-700 border-amber-200';
+      case 'processing': return 'bg-emerald-100 text-emerald-700 border-emerald-200'; // paid
+      case 'shipped': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+      case 'completed': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+      case 'cancelled': return 'bg-rose-100 text-rose-700 border-rose-200'; // refunded/void
+      default: return 'bg-slate-100 text-slate-700 border-slate-200';
+    }
+  };
+
+  const getPaymentStatusText = (status: Order['status']) => {
+    switch (status) {
+      case 'pending': return 'Unpaid';
+      case 'processing':
+      case 'shipped':
+      case 'completed': return 'Paid';
+      case 'cancelled': return 'Refunded';
+      default: return 'Unknown';
+    }
+  };
+
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
       case 'pending': return 'bg-amber-100 text-amber-700 border-amber-200';
@@ -113,8 +136,8 @@ const Orders: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Orders</h1>
-          <p className="text-slate-500 text-sm">Monitor customer orders and manage fulfillment status.</p>
+          <h1 className="text-2xl font-bold text-slate-900">Finances</h1>
+          <p className="text-slate-500 text-sm">Track payments, invoices, and revenue records.</p>
         </div>
       </div>
 
@@ -147,7 +170,7 @@ const Orders: React.FC = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-100">
-                  <th className="py-4 px-6 text-xs font-semibold text-slate-900">Order ID</th>
+                  <th className="py-4 px-6 text-xs font-semibold text-slate-900">Invoice ID</th>
                   <th className="py-4 px-4 text-xs font-semibold text-slate-900">Customer</th>
                   <th className="py-4 px-4 text-xs font-semibold text-slate-900">Date</th>
                   <th className="py-4 px-4 text-xs font-semibold text-slate-900">Amount</th>
@@ -174,9 +197,9 @@ const Orders: React.FC = () => {
                       RM{order.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </td>
                     <td className="py-4 px-4 whitespace-nowrap">
-                      <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-semibold ${getStatusColor(order.status)}`}>
+                      <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-semibold ${getPaymentStatusColor(order.status)}`}>
                         {getStatusIcon(order.status)}
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        {getPaymentStatusText(order.status)}
                       </div>
                     </td>
                     <td className="py-4 pr-6 pl-4 text-right relative">
@@ -203,7 +226,7 @@ const Orders: React.FC = () => {
                   <tr>
                     <td colSpan={6} className="p-12 text-center text-slate-400 font-medium">
                       <Receipt className="mx-auto text-slate-200 mb-4" size={48} strokeWidth={1} />
-                      No orders found.
+                      No financial records found.
                     </td>
                   </tr>
                 )}
@@ -220,7 +243,7 @@ const Orders: React.FC = () => {
             <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <div>
                 <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Order Details</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-1">Order ID: {selectedOrder.id}</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-1">Invoice / Order ID: {selectedOrder.id}</p>
               </div>
               <button onClick={() => setSelectedOrder(null)} className="p-3 text-slate-400 hover:bg-white rounded-full transition-colors">
                 <X size={24} />
@@ -312,7 +335,7 @@ const Orders: React.FC = () => {
                 onClick={() => setSelectedOrder(null)}
                 className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-slate-900/20"
               >
-                Close Order
+                Close Transaction
               </button>
             </div>
           </div>
@@ -322,4 +345,4 @@ const Orders: React.FC = () => {
   );
 };
 
-export default Orders;
+export default Finances;

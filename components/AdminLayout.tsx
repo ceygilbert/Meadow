@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home,
@@ -15,6 +15,8 @@ import {
   ChevronsRight,
   ClipboardCheck,
   Receipt,
+  DollarSign,
+  ShoppingCart,
   Users,
   Ruler,
   BookOpen,
@@ -38,6 +40,16 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
+  const [profile, setProfile] = useState<any>(null);
+  
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('meadow_auth_profile_current');
+      if (stored) {
+        setProfile(JSON.parse(stored));
+      }
+    } catch (e) {}
+  }, []);
 
   const handleLogoutClick = async () => {
     await onLogout();
@@ -207,7 +219,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout }) => {
                 )}
               </div>
 
-              {/* Finances / Transactions */}
+              {/* Orders */}
               <Link
                 to="/admin/orders"
                 className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
@@ -215,9 +227,23 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout }) => {
                     ? 'bg-slate-100 text-slate-900 font-bold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
-                title="Finances / Orders"
+                title="Orders"
               >
-                <Receipt size={17} className={isCurrent('/admin/orders') ? 'text-slate-900' : 'text-slate-500'} />
+                <ShoppingCart size={17} className={isCurrent('/admin/orders') ? 'text-slate-900' : 'text-slate-500'} />
+                {isSidebarOpen && <span>Orders</span>}
+              </Link>
+
+              {/* Finances */}
+              <Link
+                to="/admin/finances"
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  isCurrent('/admin/finances')
+                    ? 'bg-slate-100 text-slate-900 font-bold'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+                title="Finances"
+              >
+                <DollarSign size={17} className={isCurrent('/admin/finances') ? 'text-slate-900' : 'text-slate-500'} />
                 {isSidebarOpen && <span>Finances</span>}
               </Link>
 
@@ -234,6 +260,22 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout }) => {
                 <Users size={17} className={isCurrent('/admin/customers') ? 'text-slate-900' : 'text-slate-500'} />
                 {isSidebarOpen && <span>Customers</span>}
               </Link>
+
+              {/* Staff / Admins (Superadmin only) */}
+              {profile?.role === 'superadmin' && (
+                <Link
+                  to="/admin/users"
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                    isCurrent('/admin/users')
+                      ? 'bg-purple-50 text-purple-900 font-bold'
+                      : 'text-slate-600 hover:text-purple-900 hover:bg-purple-50/50'
+                  }`}
+                  title="Admin Staff"
+                >
+                  <Sparkles size={17} className={isCurrent('/admin/users') ? 'text-purple-900' : 'text-slate-500'} />
+                  {isSidebarOpen && <span>Staff</span>}
+                </Link>
+              )}
 
               {/* Store Content / Pages (Collapsible) */}
               <div>
@@ -278,30 +320,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout }) => {
                   </div>
                 )}
               </div>
-            </nav>
-          </div>
-
-          {/* Sales Channels Group */}
-          <div>
-            {isSidebarOpen && (
-              <div className="px-3 mb-2 flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                <span>Sales Channels</span>
-              </div>
-            )}
-            <nav className="space-y-1">
-              <Link
-                to="/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all"
-                title="Online Store"
-              >
-                <div className="flex items-center gap-3">
-                  <Globe size={17} className="text-slate-500" />
-                  {isSidebarOpen && <span>Online Store</span>}
-                </div>
-                {isSidebarOpen && <span className="text-[10px] text-slate-400">↗</span>}
-              </Link>
             </nav>
           </div>
         </div>
@@ -372,15 +390,15 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout }) => {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link
-              to="/"
+            <a
+              href="/"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-slate-950 hover:bg-slate-800 text-white px-5 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 shadow-xs transition-all"
             >
               <Globe size={14} />
               <span>Open Site</span>
-            </Link>
+            </a>
           </div>
         </header>
 

@@ -1,34 +1,9 @@
-import "dotenv/config";
-import express from "express";
-import path from "path";
-import fs from "fs";
-import { createServer as createViteServer } from "vite";
-import { createClient } from "@supabase/supabase-js";
+with open('server.ts', 'r') as f:
+    content = f.read()
 
+import_statement = 'import { createClient } from "@supabase/supabase-js";\n'
 
-async function startServer() {
-  const app = express();
-  const PORT = 3000;
-
-  app.use(express.json());
-
-  // API Route for logging login events
-  app.post("/api/log-login", (req, res) => {
-    try {
-      const { email, role, timestamp, ip, userAgent } = req.body;
-      const logEntry = `[${timestamp}] - User: ${email} | Role: ${role} | IP: ${ip || 'N/A'} | UserAgent: ${userAgent || 'N/A'}\n`;
-      
-      const logFilePath = path.join(process.cwd(), "login_logs.txt");
-      fs.appendFileSync(logFilePath, logEntry, "utf8");
-      
-      res.json({ success: true, message: "Log saved successfully" });
-    } catch (error) {
-      console.error("Error writing to log file:", error);
-      res.status(500).json({ success: false, error: "Failed to write log" });
-    }
-  });
-
-
+new_endpoints = """
   // API Route for admin to create user in Auth
   app.post("/api/admin/create-user", async (req, res) => {
     try {
@@ -62,17 +37,17 @@ async function startServer() {
       
       if (authError) throw authError;
       
-      // Create or update profile in public.profiles
+      // Create profile in public.profiles
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
-        .upsert([{
+        .insert([{
           id: authData.user.id,
           email,
           full_name,
           phone,
           address,
           role: role || 'customer'
-        }], { onConflict: 'id' });
+        }]);
         
       if (profileError) throw profileError;
       
@@ -128,26 +103,13 @@ async function startServer() {
       res.status(400).json({ success: false, error: error.message });
     }
   });
+"""
 
-  // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    // For Express 4
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
-  }
+# Insert import
+content = content.replace('import { createServer as createViteServer } from "vite";', 'import { createServer as createViteServer } from "vite";\n' + import_statement)
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
-}
+# Insert endpoints before Vite middleware
+content = content.replace('  // Vite middleware for development', new_endpoints + '\n  // Vite middleware for development')
 
-startServer();
+with open('server.ts', 'w') as f:
+    f.write(content)

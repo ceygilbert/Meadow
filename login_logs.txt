@@ -1,1 +1,2 @@
 [2026-09-06T00:00:00.000Z] - User: test@test.com | Role: admin | IP: N/A | UserAgent: curl
+[2026-09-06T00:00:00.000Z] - User: super@test.com | Role: superadmin | IP: N/A | UserAgent: curl

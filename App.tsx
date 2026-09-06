@@ -33,7 +33,9 @@ import BrandManagement from './pages/admin/Brands';
 import UnitManagement from './pages/admin/Units';
 import StockTake from './pages/admin/StockTake';
 import Orders from './pages/admin/Orders';
+import Finances from './pages/admin/Finances';
 import Customers from './pages/admin/Customers';
+import UsersPage from './pages/admin/Users';
 import AdminLayout from './components/AdminLayout';
 import CustomerLayout from './components/CustomerLayout';
 import CustomerDashboard from './pages/customer/Dashboard';
@@ -98,7 +100,9 @@ const AppContent: React.FC = () => {
         <Route path="products" element={<ProductManagement />} />
         <Route path="stock-take" element={<StockTake />} />
         <Route path="orders" element={<Orders />} />
+        <Route path="finances" element={<Finances />} />
         <Route path="customers" element={<Customers />} />
+        <Route path="users" element={<UsersPage />} />
         <Route path="categories" element={<CategoryManagement />} />
         <Route path="subcategories" element={<SubCategoryManagement />} />
         <Route path="brands" element={<BrandManagement />} />
