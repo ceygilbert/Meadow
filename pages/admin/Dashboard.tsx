@@ -132,37 +132,6 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
-      {/* Notice / Promo Banner (Matching Screenshot) */}
-      {showBanner && (
-        <div className="bg-white border border-slate-200/90 rounded-2xl px-5 py-3.5 flex items-center justify-between shadow-xs transition-all">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="text-slate-900">
-              <Crown size={19} />
-            </div>
-            <p className="text-xs md:text-sm font-semibold text-slate-900 truncate">
-              Upgrade your plan to unlock advanced features
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-3 shrink-0 ml-4">
-            <Link
-              to="/admin/homepage"
-              className="px-4 py-1.5 rounded-full text-xs font-semibold text-slate-900 hover:bg-slate-100 border border-slate-200/80 transition-all flex items-center gap-1.5"
-            >
-              <span>Select Plan</span>
-              <span className="text-[11px]">↗</span>
-            </Link>
-            <button 
-              onClick={() => setShowBanner(false)}
-              className="text-slate-400 hover:text-slate-700 p-1 rounded-lg"
-              title="Dismiss"
-            >
-              <X size={15} />
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Main 2-Column Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         

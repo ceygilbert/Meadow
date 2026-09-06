@@ -100,6 +100,23 @@ const AdminLogin: React.FC<LoginProps> = ({ onLogin }) => {
           console.warn("Failed to cache profile in localStorage:", e);
         }
 
+        // --- NEW: Log login to txt file via backend API ---
+        try {
+          fetch('/api/log-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: cleanEmail,
+              role: profile.role,
+              timestamp: new Date().toISOString(),
+              userAgent: navigator.userAgent
+            })
+          }).catch(err => console.warn("Failed to send login log:", err));
+        } catch (e) {
+          console.warn("Error calling log api", e);
+        }
+        // ------------------------------------------------
+
         onLogin(true);
         navigate('/admin/dashboard');
       } else {

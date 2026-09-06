@@ -55,7 +55,7 @@ const BrandManagement: React.FC = () => {
     setLoading(true);
     try {
       const { data, error: sbError } = await supabase
-        .from('brands')
+        .from('products')
         .select('*')
         .order('name');
       if (sbError) throw sbError;
@@ -85,14 +85,14 @@ const BrandManagement: React.FC = () => {
 
       // Upload to Supabase Storage bucket 'brands'
       const { data, error: uploadError } = await supabase.storage
-        .from('brands')
+        .from('products')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       // Get Public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('brands')
+        .from('products')
         .getPublicUrl(filePath);
 
       setFormData(prev => ({ ...prev, logo_url: publicUrl }));
@@ -108,13 +108,13 @@ const BrandManagement: React.FC = () => {
     try {
       if (editingId) {
         const { error: updateError } = await supabase
-          .from('brands')
+          .from('products')
           .update(formData)
           .eq('id', editingId);
         if (updateError) throw updateError;
       } else {
         const { error: insertError } = await supabase
-          .from('brands')
+          .from('products')
           .insert([formData]);
         if (insertError) throw insertError;
       }
@@ -144,7 +144,7 @@ const BrandManagement: React.FC = () => {
     setIsDeleting(id);
     try {
       const { data, error: delError } = await supabase
-        .from('brands')
+        .from('products')
         .delete()
         .eq('id', id)
         .select();
@@ -420,25 +420,28 @@ const BrandManagement: React.FC = () => {
 
       {/* Manage Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-6">
-          <div className="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-            <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <div>
-                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">
-                  {editingId ? 'Edit Brand' : 'New Brand'}
-                </h3>
-                <p className="text-xs text-slate-400 font-medium mt-1 uppercase tracking-widest">Partner Relations</p>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 sm:p-6">
+          <div className="bg-slate-50 w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col animate-in fade-in zoom-in duration-200">
+            <div className="px-6 md:px-8 py-5 bg-white border-b border-slate-200 flex flex-wrap gap-4 items-center justify-between shrink-0">
+              <h3 className="text-xl md:text-2xl font-semibold text-slate-900">
+                {editingId ? 'Edit Brand' : 'Add New Brand'}
+              </h3>
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-medium rounded-full hover:bg-slate-50 transition-colors text-sm">
+                  Discard
+                </button>
+                <button type="submit" form="brand-form" className="px-8 py-2.5 bg-slate-900 text-white font-medium rounded-full hover:bg-slate-800 transition-all text-sm">
+                  Save
+                </button>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="p-3 text-slate-400 hover:bg-white rounded-full transition-colors shadow-sm">
-                <X size={20} />
-              </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              <div className="space-y-6">
+            
+            <form id="brand-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 md:p-8">
+              <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
                 <div>
-                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Brand Name</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Brand Name</label>
                   <input 
-                    className="w-full px-5 py-4 bg-slate-100/50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 font-bold text-slate-900" 
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 placeholder:text-slate-400 transition-all" 
                     required
                     value={formData.name || ''}
                     onChange={e => setFormData({...formData, name: e.target.value})}
@@ -447,58 +450,43 @@ const BrandManagement: React.FC = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Logo Upload</label>
-                  <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 rounded-3xl bg-slate-100 border-2 border-dashed border-slate-200 flex items-center justify-center relative overflow-hidden group">
-                      {formData.logo_url ? (
-                        <img src={formData.logo_url} className="w-full h-full object-contain p-2" alt="Logo Preview" />
-                      ) : (
-                        <ImageIcon className="text-slate-300" size={32} />
-                      )}
-                      {isUploading && (
-                        <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-                          <Loader2 className="animate-spin text-blue-600" size={24} />
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Logo</label>
+                  <div className="w-full rounded-2xl bg-white border border-dashed border-slate-300 flex flex-col items-center justify-center p-8 relative overflow-hidden group transition-all hover:border-slate-400">
+                    {formData.logo_url ? (
+                      <>
+                        <img src={formData.logo_url} className="w-full max-h-48 object-contain p-2" alt="Preview" />
+                        <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm">
+                          <Upload size={32} className="text-slate-400 mb-3" />
+                          <button type="button" onClick={() => fileInputRef.current?.click()} className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-full font-medium text-sm shadow-sm hover:bg-slate-50">Browse File</button>
                         </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <input 
-                        type="file" 
-                        ref={fileInputRef} 
-                        onChange={handleFileUpload} 
-                        className="hidden" 
-                        accept="image/*" 
-                      />
-                      <button 
-                        type="button" 
-                        onClick={() => fileInputRef.current?.click()}
-                        className="px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm"
-                      >
-                        <Upload size={14} /> {formData.logo_url ? 'Change Logo' : 'Choose File'}
-                      </button>
-                      <p className="text-[10px] text-slate-400 mt-2 uppercase tracking-widest">Recommended: Square PNG / SVG</p>
-                    </div>
+                      </>
+                    ) : (
+                      <div className="text-center flex flex-col items-center">
+                        <Upload className="text-slate-900 mb-4" size={32} />
+                        <p className="text-sm text-slate-900 font-medium mb-1">Choose a file or drag & drop it here</p>
+                        <p className="text-xs text-slate-400 mb-6">JPG or PNG formats, up to 5MB (Square recommended)</p>
+                        <button type="button" onClick={() => fileInputRef.current?.click()} className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-full font-medium text-sm shadow-sm hover:bg-slate-50 transition-all">Browse File</button>
+                      </div>
+                    )}
+                    {isUploading && (
+                      <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
+                        <Loader2 className="animate-spin text-slate-900" size={24} />
+                        <span className="text-sm font-medium text-slate-900">Uploading...</span>
+                      </div>
+                    )}
                   </div>
+                  <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Description</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Description</label>
                   <textarea 
-                    rows={3}
-                    className="w-full px-5 py-4 bg-slate-100/50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 font-medium text-slate-600"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-600 text-sm leading-relaxed min-h-[120px]"
                     value={formData.description || ''}
                     onChange={e => setFormData({...formData, description: e.target.value})}
-                    placeholder="Industry-leading components for gaming enthusiasts..."
+                    placeholder="Brand description..."
                   ></textarea>
                 </div>
-              </div>
-              <div className="pt-4 flex gap-4">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition-colors uppercase tracking-widest text-[10px]">
-                  Cancel
-                </button>
-                <button type="submit" className="flex-1 py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 uppercase tracking-widest text-[10px]">
-                  {editingId ? 'Save Changes' : 'Register Brand'}
-                </button>
               </div>
             </form>
           </div>

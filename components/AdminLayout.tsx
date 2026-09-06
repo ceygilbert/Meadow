@@ -75,14 +75,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout }) => {
         <div className="p-5 pb-3 flex items-center justify-between">
           <div className="flex items-center gap-3 overflow-hidden">
             <Link to="/admin/dashboard" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-xs tracking-tighter">
-                M
-              </div>
-              {isSidebarOpen && (
-                <span className="font-extrabold text-lg tracking-tight text-slate-900">
-                  MEADOW
-                </span>
-              )}
+              <img src={isSidebarOpen ? "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/Red%20Full%20Logo.png" : "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/Red%20Full%20Logo.png"} className={`transition-all duration-300 ${isSidebarOpen ? 'h-7 object-contain' : 'h-8 w-8 object-cover object-left'}`} alt="Meadow" style={{ objectPosition: isSidebarOpen ? 'center' : '0 50%' }} />
             </Link>
           </div>
           
@@ -167,7 +160,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout }) => {
                 title="Home / Dashboard"
               >
                 <Home size={17} className={isCurrent('/admin/dashboard') ? 'text-slate-900' : 'text-slate-500'} />
-                {isSidebarOpen && <span>Home</span>}
+                {isSidebarOpen && <span>Dashboard</span>}
               </Link>
 
               {/* Catalog (Collapsible) */}

@@ -124,13 +124,13 @@ const HomePageSettingsPage: React.FC = () => {
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('generals')
+        .from('products')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('generals')
+        .from('products')
         .getPublicUrl(filePath);
 
       if (type === 'banner' && id) {

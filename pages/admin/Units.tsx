@@ -354,26 +354,35 @@ const UnitManagement: React.FC = () => {
 
       {/* Add/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-6">
-          <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl animate-in fade-in zoom-in duration-300 overflow-hidden">
-            <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">{editingId ? 'Edit Unit' : 'New Unit'}</h3>
-              <button onClick={() => setIsModalOpen(false)} className="p-3 text-slate-400 hover:bg-white rounded-full transition-colors"><X size={20} /></button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Unit Name</label>
-                <input 
-                  className="w-full px-5 py-4 bg-slate-100/50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-900" 
-                  required 
-                  value={formData.name} 
-                  onChange={e => setFormData({ name: e.target.value })} 
-                  placeholder="e.g. PCS"
-                />
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 sm:p-6">
+          <div className="bg-slate-50 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col animate-in fade-in zoom-in duration-200">
+            <div className="px-6 md:px-8 py-5 bg-white border-b border-slate-200 flex flex-wrap gap-4 items-center justify-between shrink-0">
+              <h3 className="text-xl md:text-2xl font-semibold text-slate-900">
+                {editingId ? 'Edit Unit' : 'Add New Unit'}
+              </h3>
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-medium rounded-full hover:bg-slate-50 transition-colors text-sm">
+                  Discard
+                </button>
+                <button type="submit" form="unit-form" className="px-8 py-2.5 bg-slate-900 text-white font-medium rounded-full hover:bg-slate-800 transition-all text-sm">
+                  Save
+                </button>
               </div>
-              <button type="submit" className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all uppercase tracking-widest text-[10px]">
-                {editingId ? 'Save Changes' : 'Register Unit'}
-              </button>
+            </div>
+            
+            <form id="unit-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 md:p-8">
+              <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Unit Name</label>
+                  <input 
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 placeholder:text-slate-400 transition-all" 
+                    required 
+                    value={formData.name} 
+                    onChange={e => setFormData({ name: e.target.value })} 
+                    placeholder="e.g. PCS"
+                  />
+                </div>
+              </div>
             </form>
           </div>
         </div>

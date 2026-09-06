@@ -3,7 +3,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Plus, 
   Search, 
-  Upload, 
+  Upload,
+  CloudUpload,
   Edit2, 
   Trash2, 
   Check, 
@@ -680,23 +681,25 @@ const ProductManagement: React.FC = () => {
 
       {/* Form Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-6">
-          <div className="bg-white w-full max-w-5xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[95vh] flex flex-col animate-in fade-in zoom-in duration-300">
-            <div className="p-8 md:p-10 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
-              <div>
-                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">
-                  {editingId ? 'Edit Product' : 'Register New Hardware'}
-                </h3>
-                <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-[0.2em]">Active Inventory Management</p>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 sm:p-6">
+          <div className="bg-slate-50 w-full max-w-6xl rounded-3xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col animate-in fade-in zoom-in duration-200">
+            <div className="px-6 md:px-8 py-5 bg-white border-b border-slate-200 flex flex-wrap gap-4 items-center justify-between shrink-0">
+              <h3 className="text-xl md:text-2xl font-semibold text-slate-900">
+                {editingId ? 'Edit Product' : 'Add New Product'}
+              </h3>
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-medium rounded-full hover:bg-slate-50 transition-colors text-sm">
+                  Discard
+                </button>
+                <button type="submit" form="product-form" className="px-8 py-2.5 bg-slate-900 text-white font-medium rounded-full hover:bg-slate-800 transition-all text-sm">
+                  {editingId ? 'Save Changes' : 'Save'}
+                </button>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="p-3 text-slate-400 hover:bg-white hover:text-slate-900 rounded-full transition-all shadow-sm">
-                <X size={24} />
-              </button>
             </div>
             
-            <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-8 md:p-10 space-y-10">
+            <form id="product-form" onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 md:p-8">
               {modalError && (
-                <div className="p-6 bg-rose-50 border border-rose-100 rounded-3xl flex items-center gap-4 text-rose-600 animate-in fade-in slide-in-from-top-4 duration-300">
+                <div className="mb-6 p-6 bg-rose-50 border border-rose-100 rounded-3xl flex items-center gap-4 text-rose-600 animate-in fade-in slide-in-from-top-4 duration-300">
                   <AlertCircle size={24} className="shrink-0" />
                   <div className="flex-1">
                     <p className="font-bold text-sm uppercase tracking-wider">Critical Fault Detected</p>
@@ -707,71 +710,394 @@ const ProductManagement: React.FC = () => {
                   </div>
                 </div>
               )}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-14">
-                {/* Basic Info */}
-                <div className="space-y-8">
-                  <div>
-                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Hardware Name</label>
-                    <input 
-                      className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-900 placeholder:text-slate-300 transition-all" 
-                      required 
-                      value={formData.name || ''} 
-                      onChange={e => setFormData({...formData, name: e.target.value})}
-                      placeholder="e.g. ASUS ROG Strix Laptop"
-                    />
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+                {/* Left Column */}
+                <div className="lg:col-span-2 space-y-6 md:space-y-8">
+                  
+                  {/* Product */}
+                  <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                    <h4 className="text-lg font-semibold text-slate-900">Product</h4>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Product Name</label>
+                      <input 
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 placeholder:text-slate-400 transition-all" 
+                        required 
+                        value={formData.name || ''} 
+                        onChange={e => setFormData({...formData, name: e.target.value})}
+                        placeholder="Enter title"
+                      />
+                    </div>
+                    
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-medium text-slate-700">Description</label>
+                        <button 
+                          type="button"
+                          onClick={handleGenerateAI}
+                          disabled={isGenerating || !formData.name}
+                          className="flex items-center gap-1.5 text-slate-500 hover:text-slate-900 text-xs font-medium transition-all"
+                        >
+                          {isGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                          Auto-Generate
+                        </button>
+                      </div>
+                      <textarea 
+                        rows={6}
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-600 text-sm leading-relaxed"
+                        placeholder="Product description..."
+                        value={formData.description || ''}
+                        onChange={e => setFormData({...formData, description: e.target.value})}
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <label className="text-sm font-medium text-slate-700">
+                          Additional Details (Text & Images)
+                        </label>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <button type="button" onClick={insertSampleDetails} className="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg transition-all border border-slate-200">+ Sample</button>
+                          <button type="button" onClick={insertFeatureLine} className="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg transition-all border border-slate-200">+ Bold</button>
+                          <button type="button" onClick={insertImageTemplate} className="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg transition-all border border-slate-200">+ Image</button>
+                          <button type="button" onClick={() => setShowDetailsPreview(!showDetailsPreview)} className={`px-3 py-1 text-xs font-medium rounded-lg transition-all flex items-center gap-1 border border-slate-200 ${showDetailsPreview ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 hover:bg-slate-50'}`}>
+                            <Eye size={12} /> {showDetailsPreview ? 'Edit Text' : 'Preview'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {showDetailsPreview ? (
+                        <div className="p-4 bg-white border border-slate-200 rounded-xl min-h-[180px] space-y-4">
+                          <div className="text-xs font-semibold text-slate-500 pb-2 border-b border-slate-100">Live Preview</div>
+                          {formData.additional_details ? (
+                            <div className="space-y-3.5 text-sm text-slate-800 leading-relaxed font-sans">
+                              {formData.additional_details.split('\n').map((line, idx) => {
+                                const lineTrim = line.trim();
+                                if (!lineTrim) return null;
+                                const imgMatch = lineTrim.match(/^!\[(.*?)\]\((.*?)\)$/) || lineTrim.match(/^\[image:\s*(.*?)\]$/i);
+                                const isDirectImg = /^https?:\/\/.*\.(png|jpg|jpeg|webp|gif|svg)(\?.*)?$/i.test(lineTrim);
+                                const url = imgMatch ? (imgMatch[2] || imgMatch[1]) : (isDirectImg ? lineTrim : '');
+                                if (url) {
+                                  return (
+                                    <div key={idx} className="my-3 p-2 bg-slate-50 border border-slate-200 rounded-xl flex justify-center">
+                                      <img src={url} alt="Preview" className="max-h-56 object-contain rounded-lg" />
+                                    </div>
+                                  );
+                                }
+                                if (lineTrim.includes('**')) {
+                                  const parts = lineTrim.split(/(\*\*.*?\*\*)/g);
+                                  return (
+                                    <p key={idx}>
+                                      {parts.map((p, pI) => p.startsWith('**') && p.endsWith('**') ? <strong key={pI} className="font-bold text-slate-900">{p.slice(2, -2)}</strong> : p)}
+                                    </p>
+                                  );
+                                }
+                                if (lineTrim.includes(' - ')) {
+                                  const dIdx = lineTrim.indexOf(' - ');
+                                  return (
+                                    <p key={idx}>
+                                      <strong className="font-bold text-slate-900">{lineTrim.slice(0, dIdx)}</strong>
+                                      {lineTrim.slice(dIdx)}
+                                    </p>
+                                  );
+                                }
+                                if (lineTrim.includes(':')) {
+                                  const cIdx = lineTrim.indexOf(':');
+                                  return (
+                                    <p key={idx}>
+                                      <strong className="font-bold text-slate-900">{lineTrim.slice(0, cIdx)}</strong>
+                                      {lineTrim.slice(cIdx)}
+                                    </p>
+                                  );
+                                }
+                                return <p key={idx}>{lineTrim}</p>;
+                              })}
+                            </div>
+                          ) : (
+                            <p className="text-slate-400 text-xs italic">No details entered.</p>
+                          )}
+                        </div>
+                      ) : (
+                        <textarea 
+                          rows={8}
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-600 text-sm leading-relaxed"
+                          placeholder="Supports **Bold Title** - Description or ![Image](https://...)"
+                          value={formData.additional_details || ''}
+                          onChange={e => setFormData({...formData, additional_details: e.target.value})}
+                        />
+                      )}
+                    </div>
                   </div>
 
-                  <div className="space-y-6 bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-                       <Layers size={14} /> Classification
-                    </h4>
-                    
+                  {/* Media */}
+                  <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                    <h4 className="text-lg font-semibold text-slate-900">Media</h4>
+                    <div className="w-full rounded-2xl bg-white border border-dashed border-slate-300 flex flex-col items-center justify-center p-10 relative overflow-hidden group transition-all hover:border-slate-400">
+                      {formData.image_url ? (
+                        <>
+                          <img src={formData.image_url} className="w-full max-h-64 object-contain p-2" alt="Preview" />
+                          <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm">
+                            <CloudUpload size={32} className="text-slate-400 mb-3" />
+                            <button type="button" onClick={() => fileInputRef.current?.click()} className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-full font-medium text-sm shadow-sm hover:bg-slate-50">Browse File</button>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center flex flex-col items-center">
+                          <CloudUpload className="text-slate-900 mb-4" size={32} />
+                          <p className="text-sm text-slate-900 font-medium mb-1">Choose a file or drag & drop it here</p>
+                          <p className="text-xs text-slate-400 mb-6">JPG or PNG formats, up to 5MB</p>
+                          <button type="button" onClick={() => fileInputRef.current?.click()} className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-full font-medium text-sm shadow-sm hover:bg-slate-50 transition-all">Browse File</button>
+                        </div>
+                      )}
+                      {isUploading && (
+                        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
+                          <Loader2 className="animate-spin text-slate-900" size={24} />
+                          <span className="text-sm font-medium text-slate-900">Uploading...</span>
+                        </div>
+                      )}
+                    </div>
+                    <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
+                  </div>
+
+                  {/* Pricing */}
+                  <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                    <h4 className="text-lg font-semibold text-slate-900">Pricing</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Main Category</label>
-                        <select 
-                          className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-900 transition-all"
-                          value={formData.category_id || ''}
-                          onChange={e => setFormData({...formData, category_id: e.target.value, subcategory_id: ''})}
-                          required
-                        >
-                          <option value="">Select Category</option>
-                          {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </select>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Base Price</label>
+                        <input 
+                          type="number" 
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all" 
+                          required 
+                          value={formData.price || 0} 
+                          onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})} 
+                        />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Sub-category</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Discount Type</label>
                         <select 
-                          className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-900 transition-all disabled:opacity-50"
-                          value={formData.subcategory_id || ''}
-                          onChange={e => {
-                            const subId = e.target.value;
-                            const sub = subCategories.find(s => s.id === subId);
-                            const isDDRCategory = sub && ['ram', 'motherboard', 'processor'].includes(sub.name.toLowerCase());
-                            setFormData({
-                              ...formData, 
-                              subcategory_id: subId,
-                              ddr_type: isDDRCategory ? formData.ddr_type : ''
-                            });
-                          }}
-                          disabled={!formData.category_id || availableSubCategories.length === 0}
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all"
+                          value={formData.discount_type || 'none'}
+                          onChange={e => setFormData({...formData, discount_type: e.target.value as any})}
                         >
-                          <option value="">No Sub-category</option>
-                          {availableSubCategories.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                          <option value="none">No Discount</option>
+                          <option value="percentage">Percentage (%)</option>
+                          <option value="fixed">Fixed Amount</option>
                         </select>
-                        {!formData.category_id ? (
-                           <p className="text-[9px] text-slate-400 mt-2 font-medium italic">Select a category first</p>
-                        ) : availableSubCategories.length === 0 ? (
-                           <p className="text-[9px] text-slate-400 mt-2 font-medium italic">No sub-categories for this group</p>
-                        ) : null}
                       </div>
+                      {formData.discount_type !== 'none' && (
+                        <div className="sm:col-span-2">
+                          <label className="block text-sm font-medium text-slate-700 mb-2">Discount Value</label>
+                          <input 
+                            type="number" 
+                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all" 
+                            value={formData.discount_value || 0} 
+                            onChange={e => setFormData({...formData, discount_value: parseFloat(e.target.value)})} 
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Variation */}
+                  <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                    <h4 className="text-lg font-semibold text-slate-900">Variation</h4>
+                    
+                    <label className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-all">
+                      <div>
+                        <span className="block font-medium text-slate-900 text-sm">Allow Customised Options</span>
+                        <span className="text-xs text-slate-500">Enable unique hardware variations</span>
+                      </div>
+                      <button type="button" onClick={() => setFormData({...formData, is_customised: !formData.is_customised})}>
+                        {formData.is_customised ? <ToggleRight size={28} className="text-slate-900" /> : <ToggleLeft size={28} className="text-slate-300" />}
+                      </button>
+                    </label>
+
+                    {isDesktopOrLaptopCategory && (
+                      <div className="pt-6 border-t border-slate-100 space-y-6 mt-6">
+                        <h4 className="text-sm font-semibold text-slate-900 mb-6">1. SYSTEM SPECIFICATION</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                          {[
+                            {l: 'PROCESSOR (CPU)', k: 'Processor', placeholder: 'e.g. AMD Ryzen™ 5 7535HS Processor'},
+                            {l: 'GRAPHICS (GPU)', k: 'Graphics', placeholder: 'e.g. AMD Radeon™ 660M'},
+                            {l: 'DISPLAY / SCREEN', k: 'Display', placeholder: 'e.g. 15.6-inch, FHD (1920x1080) 144Hz'},
+                            {l: 'MEMORY (RAM)', k: 'Memory', placeholder: 'e.g. 16GB DDR5 SO-DIMM, Max 64GB'},
+                            {l: 'STORAGE (SSD / HDD)', k: 'Storage', placeholder: 'e.g. 512GB M.2 NVMe PCIe 4.0 SSD'},
+                            {l: 'SECURITY', k: 'Security', placeholder: 'e.g. Firmware TPM, Fingerprint'}
+                          ].map(spec => (
+                            <div key={spec.k}>
+                              <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">{spec.l}</label>
+                              <input 
+                                type="text"
+                                placeholder={spec.placeholder}
+                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-slate-900 transition-all placeholder:text-slate-400"
+                                value={getSpecValue(spec.k)}
+                                onChange={e => updateSpecField(spec.k, e.target.value)}
+                              />
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="my-8 border-t border-slate-100"></div>
+                        <h4 className="text-sm font-semibold text-slate-900 mb-6 flex items-center gap-2">
+                          <svg className="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                          2. ADDITIONAL INFORMATION
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                          {[
+                            {l: 'OPERATING SYSTEM', k: 'Operating System', placeholder: 'e.g. Windows 11 Home'},
+                            {l: 'COLOR', k: 'Color', placeholder: 'e.g. Misty Grey / Eclipse Gray'},
+                            {l: 'INCLUDED SOFTWARE', k: 'Included Software', placeholder: 'e.g. Microsoft Office Home 2024'},
+                            {l: "WHAT'S INCLUDED?", k: 'Included Items', placeholder: 'e.g. Backpack, 65W Power Adapter'}
+                          ].map(spec => (
+                            <div key={spec.k}>
+                              <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">{spec.l}</label>
+                              <input 
+                                type="text"
+                                placeholder={spec.placeholder}
+                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-slate-900 transition-all placeholder:text-slate-400"
+                                value={getSpecValue(spec.k)}
+                                onChange={e => updateSpecField(spec.k, e.target.value)}
+                              />
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="my-8 border-t border-slate-100"></div>
+                        <h4 className="text-sm font-semibold text-slate-900 mb-6 flex items-center gap-2">
+                          <svg className="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+                          3. ADDITIONAL SPECIFICATION / FEATURE SPECIFICATION
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {[
+                            {l: 'TOTAL WEIGHT', k: 'Total Weight', placeholder: 'e.g. 1.60 kg'},
+                            {l: 'BATTERY & CHARGING', k: 'Battery', placeholder: 'e.g. 50WHrs, 3-cell Li-ion'},
+                            {l: 'PORTS & SLOTS', k: 'Ports', placeholder: 'e.g. 2x USB Type-C, 1x HDMI, 1x RJ45'},
+                            {l: 'WEB CAMERA', k: 'Web Camera', placeholder: 'e.g. 720P HD camera'},
+                            {l: 'KEYBOARD', k: 'Keyboard', placeholder: 'e.g. Backlit Chiclet Keyboard'},
+                            {l: 'WIRELESS CONNECTIVITY', k: 'Wireless', placeholder: 'e.g. Wi-Fi 6E(802.11ax) (Dual band) 2*2 + Bluetooth® 5.3'}
+                          ].map(spec => (
+                            <div key={spec.k}>
+                              <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">{spec.l}</label>
+                              {spec.k === 'Ports' || spec.k === 'Wireless' ? (
+                                <textarea 
+                                  rows={2}
+                                  placeholder={spec.placeholder}
+                                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-slate-900 transition-all placeholder:text-slate-400"
+                                  value={getSpecValue(spec.k)}
+                                  onChange={e => updateSpecField(spec.k, e.target.value)}
+                                />
+                              ) : (
+                                <input 
+                                  type="text"
+                                  placeholder={spec.placeholder}
+                                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-slate-900 transition-all placeholder:text-slate-400"
+                                  value={getSpecValue(spec.k)}
+                                  onChange={e => updateSpecField(spec.k, e.target.value)}
+                                />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-6 md:space-y-8">
+                  {/* Organization */}
+                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                    <h4 className="text-lg font-semibold text-slate-900">Organization</h4>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Main Category</label>
+                      <select 
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all appearance-none"
+                        value={formData.category_id || ''}
+                        onChange={e => setFormData({...formData, category_id: e.target.value, subcategory_id: ''})}
+                        required
+                      >
+                        <option value="">Select Category</option>
+                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Sub-category</label>
+                      <select 
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all appearance-none disabled:bg-slate-50 disabled:text-slate-400"
+                        value={formData.subcategory_id || ''}
+                        onChange={e => {
+                          const subId = e.target.value;
+                          const sub = subCategories.find(s => s.id === subId);
+                          const isDDRCategory = sub && ['ram', 'motherboard', 'processor'].includes(sub.name.toLowerCase());
+                          setFormData({
+                            ...formData, 
+                            subcategory_id: subId,
+                            ddr_type: isDDRCategory ? formData.ddr_type : ''
+                          });
+                        }}
+                        disabled={!formData.category_id || availableSubCategories.length === 0}
+                      >
+                        <option value="">No Sub-category</option>
+                        {availableSubCategories.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Manufacturer</label>
+                      <select 
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all appearance-none"
+                        value={formData.brand_id || ''}
+                        onChange={e => setFormData({...formData, brand_id: e.target.value})}
+                        required
+                      >
+                        <option value="">Brand</option>
+                        {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Inventory & Tags */}
+                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                    <h4 className="text-lg font-semibold text-slate-900">Inventory</h4>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Initial Stock</label>
+                      <input 
+                        type="number" 
+                        disabled={!!editingId}
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all disabled:bg-slate-50 disabled:text-slate-400" 
+                        required 
+                        value={formData.stock || 0} 
+                        onChange={e => setFormData({...formData, stock: parseInt(e.target.value)})} 
+                      />
+                      {editingId && (
+                        <p className="text-xs text-slate-500 mt-2">
+                          Use the Stock Take Module to adjust inventory.
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Stock Unit</label>
+                      <select 
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all appearance-none"
+                        value={formData.unit_id || ''}
+                        onChange={e => setFormData({...formData, unit_id: e.target.value})}
+                        required
+                      >
+                        <option value="">Select Unit</option>
+                        {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                      </select>
                     </div>
 
                     {showDDRDropdown && (
                       <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Memory Standard (DDR)</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Memory Standard (DDR)</label>
                         <select 
-                          className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-900 transition-all"
+                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all appearance-none"
                           value={formData.ddr_type || ''}
                           onChange={e => setFormData({...formData, ddr_type: e.target.value as any})}
                           required
@@ -782,516 +1108,9 @@ const ProductManagement: React.FC = () => {
                         </select>
                       </div>
                     )}
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Manufacturer</label>
-                        <select 
-                          className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-900 transition-all"
-                          value={formData.brand_id || ''}
-                          onChange={e => setFormData({...formData, brand_id: e.target.value})}
-                          required
-                        >
-                          <option value="">Brand</option>
-                          {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Stock Unit</label>
-                        <select 
-                          className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-900 transition-all"
-                          value={formData.unit_id || ''}
-                          onChange={e => setFormData({...formData, unit_id: e.target.value})}
-                          required
-                        >
-                          <option value="">Select Unit</option>
-                          {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                        </select>
-                      </div>
-                    </div>
                   </div>
 
-                  {/* Pricing Section */}
-                  <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-6">
-                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Pricing & Stock</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Base Price (RM)</label>
-                        <div className="relative">
-                           <Banknote size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                           <input 
-                            type="number" 
-                            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-100 rounded-xl font-bold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20" 
-                            required 
-                            value={formData.price || 0} 
-                            onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})} 
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Initial Stock</label>
-                        <div className="relative">
-                          <Package size={16} className={`absolute left-4 top-1/2 -translate-y-1/2 ${editingId ? 'text-slate-300' : 'text-slate-400'}`} />
-                          <input 
-                            type="number" 
-                            disabled={!!editingId}
-                            className={`w-full pl-10 pr-4 py-3 bg-white border border-slate-100 rounded-xl font-bold outline-none focus:ring-2 focus:ring-blue-500/20 transition-all ${editingId ? 'text-slate-400 bg-slate-50/50 cursor-not-allowed border-slate-200' : 'text-slate-900'}`} 
-                            required 
-                            value={formData.stock || 0} 
-                            onChange={e => setFormData({...formData, stock: parseInt(e.target.value)})} 
-                          />
-                        </div>
-                        {editingId && (
-                          <div className="mt-2 flex items-start gap-2 p-3 bg-blue-50/50 border border-blue-100 rounded-xl">
-                            <Info size={12} className="text-blue-500 shrink-0 mt-0.5" />
-                            <p className="text-[9px] text-blue-600 font-bold leading-tight uppercase tracking-tight">
-                              Stock edits disabled. Use the <Link to="/admin/stock-take" className="underline hover:text-blue-800 flex items-center gap-1 inline-flex">Stock Take Module <ArrowRight size={8}/></Link> for adjustments.
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200/50">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Discount Type</label>
-                        <select 
-                          className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl font-bold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20"
-                          value={formData.discount_type || 'none'}
-                          onChange={e => setFormData({...formData, discount_type: e.target.value as any})}
-                        >
-                          <option value="none">No Discount</option>
-                          <option value="percentage">Percentage (%)</option>
-                          <option value="fixed">Fixed Amount (RM)</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Discount Value</label>
-                        <div className="relative">
-                          {formData.discount_type === 'percentage' ? (
-                            <Percent size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                          ) : (
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">RM</span>
-                          )}
-                          <input 
-                            type="number" 
-                            disabled={formData.discount_type === 'none'}
-                            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-100 rounded-xl font-bold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50" 
-                            value={formData.discount_value || 0} 
-                            onChange={e => setFormData({...formData, discount_value: parseFloat(e.target.value)})} 
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Options */}
-                  <div className="flex flex-col gap-4">
-                     <label className="flex items-center justify-between p-5 bg-indigo-50/30 border border-indigo-100 rounded-3xl cursor-pointer group hover:bg-indigo-50/50 transition-all">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-indigo-600 shadow-sm">
-                            <Settings2 size={20} />
-                          </div>
-                          <div>
-                            <span className="block font-bold text-indigo-900 text-sm">Allow Customised Options</span>
-                            <span className="text-[10px] text-indigo-500 font-medium uppercase tracking-widest">Enable unique hardware variations</span>
-                          </div>
-                        </div>
-                        <button 
-                          type="button"
-                          onClick={() => setFormData({...formData, is_customised: !formData.is_customised})}
-                        >
-                          {formData.is_customised ? <ToggleRight size={32} className="text-indigo-600" /> : <ToggleLeft size={32} className="text-slate-300" />}
-                        </button>
-                     </label>
-                  </div>
                 </div>
-
-                {/* Media & AI */}
-                <div className="space-y-8">
-                  <div>
-                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Product Media</label>
-                    <div className="aspect-video w-full rounded-[2rem] bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center relative overflow-hidden group transition-all hover:border-blue-400">
-                      {formData.image_url ? (
-                        <>
-                          <img src={formData.image_url} className="w-full h-full object-contain p-4" alt="Preview" />
-                          <div className="absolute inset-0 bg-slate-900/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-[2px]">
-                            <button type="button" onClick={() => fileInputRef.current?.click()} className="px-8 py-3 bg-white text-slate-900 rounded-2xl font-bold text-sm shadow-2xl">Change Visual</button>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="text-center p-8">
-                          <ImageIcon className="mx-auto text-slate-300 mb-4" size={48} strokeWidth={1} />
-                          <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">Drop assets here</p>
-                          <button type="button" onClick={() => fileInputRef.current?.click()} className="mt-6 px-8 py-3 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold text-sm shadow-sm hover:bg-slate-50 transition-all">Upload File</button>
-                        </div>
-                      )}
-                      {isUploading && (
-                        <div className="absolute inset-0 bg-white/90 backdrop-blur-md flex flex-col items-center justify-center gap-4">
-                          <Loader2 className="animate-spin text-blue-600" size={32} />
-                          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600">Uploading...</span>
-                        </div>
-                      )}
-                    </div>
-                    <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">AI Description</label>
-                      <button 
-                        type="button"
-                        onClick={handleGenerateAI}
-                        disabled={isGenerating || !formData.name}
-                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-black text-[10px] uppercase tracking-widest disabled:opacity-30 transition-all"
-                      >
-                        {isGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                        Auto-Generate
-                      </button>
-                    </div>
-                    <textarea 
-                      rows={6}
-                      className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-600 text-sm leading-relaxed"
-                      placeholder="Hardware specs, capabilities, and highlights..."
-                      value={formData.description || ''}
-                      onChange={e => setFormData({...formData, description: e.target.value})}
-                    />
-                  </div>
-
-                  <div>
-                    <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <FileText size={14} className="text-blue-600" /> Additional Details (Text & Images)
-                      </label>
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <button 
-                          type="button"
-                          onClick={insertSampleDetails}
-                          className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-bold rounded-lg transition-all border border-blue-200/60"
-                          title="Populate sample format matching layout"
-                        >
-                          + Sample Format
-                        </button>
-                        <button 
-                          type="button"
-                          onClick={insertFeatureLine}
-                          className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-lg transition-all"
-                          title="Add bold feature title line"
-                        >
-                          + Bold Feature
-                        </button>
-                        <button 
-                          type="button"
-                          onClick={insertImageTemplate}
-                          className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-lg transition-all"
-                          title="Insert image markdown"
-                        >
-                          + Add Image
-                        </button>
-                        <button 
-                          type="button"
-                          onClick={() => setShowDetailsPreview(!showDetailsPreview)}
-                          className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1 ${
-                            showDetailsPreview ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-900'
-                          }`}
-                        >
-                          <Eye size={12} /> {showDetailsPreview ? 'Edit Text' : 'Live Preview'}
-                        </button>
-                      </div>
-                    </div>
-
-                    {showDetailsPreview ? (
-                      <div className="p-6 bg-white border border-slate-200 rounded-2xl min-h-[180px] space-y-4 shadow-sm">
-                        <div className="text-[10px] font-black uppercase text-blue-600 tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
-                          <span>Live Preview (Product Page Rendering)</span>
-                          <span className="text-slate-400 font-normal">Switch to Edit Text to make changes</span>
-                        </div>
-                        {formData.additional_details ? (
-                          <div className="space-y-3.5 text-sm text-slate-800 leading-relaxed font-sans">
-                            {formData.additional_details.split('\n').map((line, idx) => {
-                              const lineTrim = line.trim();
-                              if (!lineTrim) return null;
-
-                              const imgMatch = lineTrim.match(/^!\[(.*?)\]\((.*?)\)$/) || lineTrim.match(/^\[image:\s*(.*?)\]$/i);
-                              const isDirectImg = /^https?:\/\/.*\.(png|jpg|jpeg|webp|gif|svg)(\?.*)?$/i.test(lineTrim);
-                              const url = imgMatch ? (imgMatch[2] || imgMatch[1]) : (isDirectImg ? lineTrim : '');
-
-                              if (url) {
-                                return (
-                                  <div key={idx} className="my-3 p-2 bg-slate-50 border border-slate-200 rounded-xl flex justify-center">
-                                    <img src={url} alt="Preview" className="max-h-56 object-contain rounded-lg" />
-                                  </div>
-                                );
-                              }
-
-                              if (lineTrim.includes('**')) {
-                                const parts = lineTrim.split(/(\*\*.*?\*\*)/g);
-                                return (
-                                  <p key={idx}>
-                                    {parts.map((p, pI) => p.startsWith('**') && p.endsWith('**') ? (
-                                      <strong key={pI} className="font-extrabold text-slate-900">{p.slice(2, -2)}</strong>
-                                    ) : p)}
-                                  </p>
-                                );
-                              }
-
-                              if (lineTrim.includes(' - ')) {
-                                const dIdx = lineTrim.indexOf(' - ');
-                                return (
-                                  <p key={idx}>
-                                    <strong className="font-extrabold text-slate-900">{lineTrim.slice(0, dIdx)}</strong>
-                                    {lineTrim.slice(dIdx)}
-                                  </p>
-                                );
-                              }
-
-                              if (lineTrim.includes(':')) {
-                                const cIdx = lineTrim.indexOf(':');
-                                return (
-                                  <p key={idx}>
-                                    <strong className="font-extrabold text-slate-900">{lineTrim.slice(0, cIdx)}</strong>
-                                    {lineTrim.slice(cIdx)}
-                                  </p>
-                                );
-                              }
-
-                              return <p key={idx}>{lineTrim}</p>;
-                            })}
-                          </div>
-                        ) : (
-                          <p className="text-slate-400 text-xs italic">No additional details entered yet. Click "+ Sample Format" above to test!</p>
-                        )}
-                      </div>
-                    ) : (
-                      <textarea 
-                        rows={8}
-                        className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-600 text-sm leading-relaxed"
-                        placeholder="Enter plain text paragraphs, bold feature headings (e.g. **Title** - description), or image URLs / markdown ![Alt](https://...)"
-                        value={formData.additional_details || ''}
-                        onChange={e => setFormData({...formData, additional_details: e.target.value})}
-                      />
-                    )}
-
-                    <p className="text-[11px] text-slate-400 font-bold mt-2 flex items-center justify-between">
-                      <span>Supports plain text paragraphs, <code>**Bold Title** - Description</code>, and image links <code>![Image](https://...)</code></span>
-                      <span className="text-blue-600">Renders on Product Details Page</span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Laptop & Desktop Specifications Section */}
-              {isDesktopOrLaptopCategory && (
-                <div className="space-y-8 bg-slate-50/80 p-6 md:p-8 rounded-[2.5rem] border border-slate-200/80 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                  <div className="flex items-center justify-between pb-4 border-b border-slate-200">
-                    <div className="flex items-center gap-3">
-                      <span className="w-2.5 h-8 bg-red-600 rounded-full inline-block"></span>
-                      <div>
-                        <h4 className="text-xl font-black text-slate-900 tracking-tight">Laptop & Desktop Specification Fields</h4>
-                        <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-0.5">Parameters stored in database & shown on single product page</p>
-                      </div>
-                    </div>
-                    <span className="px-3 py-1 bg-red-100 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-red-200">
-                      System Specs Enabled
-                    </span>
-                  </div>
-
-                  {/* 1. System Specifications */}
-                  <div className="space-y-4">
-                    <h5 className="text-xs font-black text-red-600 uppercase tracking-widest flex items-center gap-2">
-                      <Cpu size={16} /> 1. System Specification
-                    </h5>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Processor (CPU)</label>
-                        <input 
-                          type="text"
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
-                          placeholder="e.g. AMD Ryzen™ 5 7535HS Processor"
-                          value={getSpecValue('Processor')}
-                          onChange={e => updateSpecField('Processor', e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Graphics (GPU)</label>
-                        <input 
-                          type="text"
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
-                          placeholder="e.g. AMD Radeon™ 660M"
-                          value={getSpecValue('Graphics')}
-                          onChange={e => updateSpecField('Graphics', e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Display / Screen</label>
-                        <input 
-                          type="text"
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
-                          placeholder="e.g. 15.6-inch, FHD (1920x1080) 144Hz"
-                          value={getSpecValue('Display')}
-                          onChange={e => updateSpecField('Display', e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Memory (RAM)</label>
-                        <input 
-                          type="text"
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
-                          placeholder="e.g. 16GB DDR5 SO-DIMM, Max 64GB"
-                          value={getSpecValue('Memory')}
-                          onChange={e => updateSpecField('Memory', e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Storage (SSD / HDD)</label>
-                        <input 
-                          type="text"
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
-                          placeholder="e.g. 512GB M.2 NVMe PCIe 4.0 SSD"
-                          value={getSpecValue('Storage')}
-                          onChange={e => updateSpecField('Storage', e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Security</label>
-                        <input 
-                          type="text"
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
-                          placeholder="e.g. Firmware TPM, Fingerprint"
-                          value={getSpecValue('Security')}
-                          onChange={e => updateSpecField('Security', e.target.value)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 2. Additional Information */}
-                  <div className="space-y-4 pt-4 border-t border-slate-200">
-                    <h5 className="text-xs font-black text-red-600 uppercase tracking-widest flex items-center gap-2">
-                      <FileText size={16} /> 2. Additional Information
-                    </h5>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Operating System</label>
-                        <input 
-                          type="text"
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
-                          placeholder="e.g. Windows 11 Home"
-                          value={getSpecValue('Operating System')}
-                          onChange={e => updateSpecField('Operating System', e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Color</label>
-                        <input 
-                          type="text"
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
-                          placeholder="e.g. Misty Grey / Eclipse Gray"
-                          value={getSpecValue('Color')}
-                          onChange={e => updateSpecField('Color', e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Included Software</label>
-                        <input 
-                          type="text"
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
-                          placeholder="e.g. Microsoft Office Home 2024"
-                          value={getSpecValue('Included Software')}
-                          onChange={e => updateSpecField('Included Software', e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">What's Included?</label>
-                        <input 
-                          type="text"
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
-                          placeholder="e.g. Backpack, 65W Power Adapter"
-                          value={getSpecValue('Whats Included')}
-                          onChange={e => updateSpecField('Whats Included', e.target.value)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 3. Feature Specifications */}
-                  <div className="space-y-4 pt-4 border-t border-slate-200">
-                    <h5 className="text-xs font-black text-red-600 uppercase tracking-widest flex items-center gap-2">
-                      <Sparkles size={16} /> 3. Additional Specification / Feature Specification
-                    </h5>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Total Weight</label>
-                        <input 
-                          type="text"
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
-                          placeholder="e.g. 1.60 kg"
-                          value={getSpecValue('Total Weight')}
-                          onChange={e => updateSpecField('Total Weight', e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Battery & Charging</label>
-                        <input 
-                          type="text"
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
-                          placeholder="e.g. 50WHrs, 3-cell Li-ion"
-                          value={getSpecValue('Battery & Charging')}
-                          onChange={e => updateSpecField('Battery & Charging', e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Ports & Slots</label>
-                        <textarea 
-                          rows={2}
-                          className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
-                          placeholder="e.g. 2x USB Type-C, 1x HDMI, 1x RJ45"
-                          value={getSpecValue('Ports & Slots')}
-                          onChange={e => updateSpecField('Ports & Slots', e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Web Camera</label>
-                        <input 
-                          type="text"
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
-                          placeholder="e.g. 720p HD camera with privacy shutter"
-                          value={getSpecValue('Web Camera')}
-                          onChange={e => updateSpecField('Web Camera', e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Keyboard</label>
-                        <textarea 
-                          rows={2}
-                          className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
-                          placeholder="e.g. Backlit Chiclet Keyboard with Num-key"
-                          value={getSpecValue('Keyboard')}
-                          onChange={e => updateSpecField('Keyboard', e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Wireless Connectivity</label>
-                        <input 
-                          type="text"
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all"
-                          placeholder="e.g. Wi-Fi 6 (802.11ax) + Bluetooth 5.2"
-                          value={getSpecValue('Wireless Connectivity')}
-                          onChange={e => updateSpecField('Wireless Connectivity', e.target.value)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              <div className="pt-10 border-t border-slate-100 flex flex-col sm:flex-row gap-4">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="sm:flex-1 py-5 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition-colors uppercase tracking-widest text-[11px]">
-                  Cancel
-                </button>
-                <button type="submit" className="sm:flex-[2] py-5 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20 uppercase tracking-widest text-[11px] flex items-center justify-center gap-2">
-                  {editingId ? 'Push Live Update' : 'Publish Product'}
-                </button>
               </div>
             </form>
           </div>
