@@ -57,7 +57,7 @@ const SubCategoryManagement: React.FC = () => {
     setLoading(true);
     try {
       const [catRes, subRes] = await Promise.all([
-        supabase.from('products').select('*').order('name'),
+        supabase.from('categories').select('*').order('name'),
         supabase.from('subcategories').select('*').order('name')
       ]);
 

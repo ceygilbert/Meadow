@@ -55,7 +55,7 @@ const BrandManagement: React.FC = () => {
     setLoading(true);
     try {
       const { data, error: sbError } = await supabase
-        .from('products')
+        .from('brands')
         .select('*')
         .order('name');
       if (sbError) throw sbError;
@@ -85,14 +85,14 @@ const BrandManagement: React.FC = () => {
 
       // Upload to Supabase Storage bucket 'brands'
       const { data, error: uploadError } = await supabase.storage
-        .from('products')
+        .from('brands')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       // Get Public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('products')
+        .from('brands')
         .getPublicUrl(filePath);
 
       setFormData(prev => ({ ...prev, logo_url: publicUrl }));
@@ -108,13 +108,13 @@ const BrandManagement: React.FC = () => {
     try {
       if (editingId) {
         const { error: updateError } = await supabase
-          .from('products')
+          .from('brands')
           .update(formData)
           .eq('id', editingId);
         if (updateError) throw updateError;
       } else {
         const { error: insertError } = await supabase
-          .from('products')
+          .from('brands')
           .insert([formData]);
         if (insertError) throw insertError;
       }
@@ -144,7 +144,7 @@ const BrandManagement: React.FC = () => {
     setIsDeleting(id);
     try {
       const { data, error: delError } = await supabase
-        .from('products')
+        .from('brands')
         .delete()
         .eq('id', id)
         .select();

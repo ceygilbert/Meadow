@@ -105,6 +105,12 @@ const Customers: React.FC = () => {
             password: password
           })
         });
+        
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Server returned an invalid response (not JSON). Ensure your backend Express server is running in production.");
+        }
+        
         const data = await res.json();
         if (!data.success) throw new Error(data.error);
       } else {
@@ -121,6 +127,12 @@ const Customers: React.FC = () => {
             role: 'customer'
           })
         });
+        
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Server returned an invalid response (not JSON). Ensure your backend Express server is running in production.");
+        }
+        
         const data = await res.json();
         if (!data.success) throw new Error(data.error);
       }

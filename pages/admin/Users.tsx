@@ -77,6 +77,12 @@ const UsersPage: React.FC = () => {
             password: password
           })
         });
+        
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Server returned an invalid response (not JSON). Ensure your backend Express server is running in production.");
+        }
+        
         const data = await res.json();
         if (!data.success) throw new Error(data.error);
       } else {
@@ -92,6 +98,13 @@ const UsersPage: React.FC = () => {
             role: currentUser.role || 'admin'
           })
         });
+        
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          const text = await res.text();
+          throw new Error("Server did not return JSON. This usually means the backend Express server is not running, or the route is missing. Response: " + text.substring(0, 50) + "...");
+        }
+
         const data = await res.json();
         if (!data.success) throw new Error(data.error);
       }

@@ -53,7 +53,7 @@ const CategoryManagement: React.FC = () => {
     setLoading(true);
     try {
       const { data, error: sbError } = await supabase
-        .from('products')
+        .from('categories')
         .select('*')
         .order('name');
       if (sbError) throw sbError;
@@ -81,13 +81,13 @@ const CategoryManagement: React.FC = () => {
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('products')
+        .from('categories')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('products')
+        .from('categories')
         .getPublicUrl(filePath);
 
       setFormData(prev => ({ ...prev, image_url: publicUrl }));
@@ -105,13 +105,13 @@ const CategoryManagement: React.FC = () => {
     try {
       if (editingId) {
         const { error: updateError } = await supabase
-          .from('products')
+          .from('categories')
           .update({ ...formData, slug })
           .eq('id', editingId);
         if (updateError) throw updateError;
       } else {
         const { error: insertError } = await supabase
-          .from('products')
+          .from('categories')
           .insert([{ ...formData, slug }]);
         if (insertError) throw insertError;
       }
@@ -141,7 +141,7 @@ const CategoryManagement: React.FC = () => {
     setIsDeleting(id);
     try {
       const { data, error: delError } = await supabase
-        .from('products')
+        .from('categories')
         .delete()
         .eq('id', id)
         .select();
