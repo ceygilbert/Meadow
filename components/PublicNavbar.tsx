@@ -229,8 +229,9 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
               </div>
 
               <Link 
-                to="/customised" 
-                className="px-5 lg:px-7 py-3 bg-slate-900 text-white text-[11px] lg:text-xs font-nav uppercase tracking-[0.25em] rounded-full hover:bg-rose-600 transition-all shadow-md shadow-slate-900/20 hover:shadow-rose-600/30 flex items-center gap-2 shrink-0"
+                to="#" 
+                onClick={(e) => e.preventDefault()}
+                className="px-5 lg:px-7 py-3 bg-slate-900 text-white text-[11px] lg:text-xs font-nav uppercase tracking-[0.25em] rounded-full hover:bg-slate-700 transition-all shadow-md shadow-slate-900/20 flex items-center gap-2 shrink-0 opacity-50 cursor-not-allowed pointer-events-none"
               >
                 <Zap size={16} className="text-rose-400" />
                 Build Your Own PC
@@ -376,9 +377,9 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
               <div className="p-3.5 bg-slate-50/90 border-b border-slate-100 space-y-2 shrink-0">
                 {/* Build Your Own PC Feature Card */}
                 <Link 
-                  to="/customised" 
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between p-3 rounded-xl bg-slate-900 text-white shadow-md active:scale-[0.99] transition-transform group"
+                  to="#" 
+                  onClick={(e) => e.preventDefault()}
+                  className="flex items-center justify-between p-3 rounded-xl bg-slate-900 text-white shadow-md transition-transform group opacity-50 cursor-not-allowed pointer-events-none"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
@@ -643,9 +644,9 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
                       <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-5">Featured Collections</p>
                       <div className="space-y-5">
                         <Link 
-                          to="/customised"
-                          onClick={() => setActiveMenu(null)}
-                          className="group block cursor-pointer"
+                          to="#"
+                          onClick={(e) => e.preventDefault()}
+                          className="group block cursor-not-allowed opacity-50 pointer-events-none"
                         >
                           <div className="aspect-video rounded-2xl overflow-hidden mb-2.5 bg-slate-900 relative">
                             <img src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80" alt="PC Builder" />
