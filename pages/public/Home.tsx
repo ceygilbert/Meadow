@@ -903,13 +903,15 @@ const Home: React.FC = () => {
                <p className="text-xs sm:text-sm md:text-base lg:text-lg text-slate-200 font-medium max-w-lg leading-relaxed mb-6 md:mb-8">
                  {homeSettings?.custom_pc_subtitle || "Pick your parts step by step to build your dream PC that suits your budget and needs. Support and after-sales guidance assurance."}
                </p>
-               <Link 
+               {/* Temporarily disabled
+<Link 
                  to={homeSettings?.custom_pc_btn_link || "/customised"} 
                  className="inline-flex items-center gap-3 px-6 py-3 md:px-9 md:py-4 bg-[#e11d48] hover:bg-rose-700 text-white rounded-full font-black text-xs md:text-sm uppercase tracking-wider md:tracking-widest hover:scale-105 transition-all shadow-xl group/btn w-fit active:scale-95"
                >
                  <span>{homeSettings?.custom_pc_btn_text || "Start Building"}</span>
                  <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
                </Link>
+*/}
              </div>
            </div>
         </div>
