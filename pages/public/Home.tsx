@@ -1201,7 +1201,7 @@ const Home: React.FC = () => {
                 Support Beyond the Purchase
               </h2>
               <p className="text-sm md:text-base text-slate-500 font-medium leading-relaxed max-w-md">
-                Practical, ongoing support and added convenience that go beyond your purchase.
+                At Meadow, our certified technicians provide expert repairs using genuine manufacturer parts, ensuring your device receives the highest quality care. We offer seamless, warranty-compliant services to get your technology up and running swiftly.
               </p>
             </div>
 
