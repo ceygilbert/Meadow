@@ -32,8 +32,13 @@ import {
   HardDrive,
   Database,
   Shield,
-  Wifi
+  Wifi,
+  FileText,
+  Clock,
+  RotateCcw,
+  Wrench
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../../lib/supabase';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import Footer from '../../components/Footer';
@@ -63,6 +68,7 @@ const ProductDetails: React.FC = () => {
   const [isAdded, setIsAdded] = useState(false);
   const [selectedColor, setSelectedColor] = useState('');
   const [viewingCount, setViewingCount] = useState(() => Math.floor(Math.random() * 21) + 12);
+  const [activeDetailTab, setActiveDetailTab] = useState<'product' | 'warranty'>('product');
 
   const availableColors = useMemo(() => {
     if (!product) return [];
@@ -510,157 +516,254 @@ const ProductDetails: React.FC = () => {
         </div>
       </main>
 
-      {/* Additional Details Section - Implemented for All Product Categories */}
-      <section className="bg-[#FAF9FB] py-16 md:py-24 border-y border-slate-200/80 font-sans relative overflow-hidden">
+      {/* Product Information & Warranty Information Tabbed Section */}
+      <section className="bg-[#FAF9FB] py-12 md:py-20 border-y border-slate-200/80 font-sans relative overflow-hidden">
         {/* Subtle background red glow */}
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="max-w-[1550px] mx-auto px-4 md:px-10 relative z-10">
-          {/* Centered Header Box */}
-          <div className="max-w-3xl mx-auto text-center flex flex-col items-center mb-10 md:mb-14">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-50 text-red-600 text-[11px] font-black uppercase tracking-widest mb-4 border border-red-100 shadow-sm">
-              <ShieldCheck size={14} className="text-red-600" />
-              Product Information
+          {/* Centered Tab Switcher */}
+          <div className="max-w-xl mx-auto mb-10 md:mb-12 flex justify-center">
+            <div className="inline-flex p-1.5 bg-slate-200/70 rounded-2xl border border-slate-300/60 shadow-inner w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => setActiveDetailTab('product')}
+                className={`flex-1 sm:flex-initial px-6 md:px-8 py-3 rounded-xl text-sm md:text-base font-bold transition-all duration-300 flex items-center justify-center gap-2.5 relative ${
+                  activeDetailTab === 'product'
+                    ? 'bg-white text-slate-900 shadow-md'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                }`}
+              >
+                <FileText size={18} className={activeDetailTab === 'product' ? 'text-red-600' : 'text-slate-500'} />
+                <span>Product Information</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveDetailTab('warranty')}
+                className={`flex-1 sm:flex-initial px-6 md:px-8 py-3 rounded-xl text-sm md:text-base font-bold transition-all duration-300 flex items-center justify-center gap-2.5 relative ${
+                  activeDetailTab === 'warranty'
+                    ? 'bg-white text-slate-900 shadow-md'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                }`}
+              >
+                <ShieldCheck size={18} className={activeDetailTab === 'warranty' ? 'text-red-600' : 'text-slate-500'} />
+                <span>Warranty Information</span>
+              </button>
             </div>
-            <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight flex items-center justify-center gap-3">
-              <span className="w-2.5 h-6 md:h-8 bg-red-600 rounded-full inline-block shrink-0"></span>
-              Additional Details
-            </h2>
-            <p className="text-slate-500 font-medium text-base md:text-lg leading-relaxed mt-3 max-w-xl">
-              Detailed metrics, specifications, and quality guarantees for this unit.
-            </p>
           </div>
 
-          {/* Details Container (below header) */}
+          {/* Tab Content Container */}
           <div className="max-w-5xl mx-auto">
-            {(() => {
-              const addDetails = product?.additional_details || product?.specs?.additional_details || '';
-              if (!addDetails || !addDetails.trim()) {
-                return (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {[
-                      { label: 'Thermal Efficiency', val: 'Vortex Airflow Cooling & Optimized Heat Dissipation', icon: Zap },
-                      { label: 'System Logic', val: 'Engineered V-Series Performance Architecture', icon: Cpu },
-                      { label: 'Durability Matrix', val: 'Military-Grade Certified Materials', icon: ShieldCheck },
-                      { label: 'Quality Assurance', val: '100% Genuine Certified Stock & Local Warranty', icon: CheckCircle }
-                    ].map((spec, i) => (
-                      <div key={i} className="flex gap-5 p-5 bg-white rounded-2xl shadow-sm border border-slate-200/80 group hover:border-red-500/40 hover:shadow-md transition-all">
-                        <div className="w-14 h-14 bg-red-50 rounded-xl border border-red-100 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all shrink-0">
-                          <spec.icon size={24} />
+            <AnimatePresence mode="wait">
+              {activeDetailTab === 'product' ? (
+                <motion.div
+                  key="tab-product-info"
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 16 }}
+                  transition={{ duration: 0.25, ease: 'easeInOut' }}
+                >
+                  {(() => {
+                    const addDetails = product?.additional_details || product?.specs?.additional_details || '';
+                    if (!addDetails || !addDetails.trim()) {
+                      return (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {[
+                            { label: 'Thermal Efficiency', val: 'Vortex Airflow Cooling & Optimized Heat Dissipation', icon: Zap },
+                            { label: 'System Logic', val: 'Engineered V-Series Performance Architecture', icon: Cpu },
+                            { label: 'Durability Matrix', val: 'Military-Grade Certified Materials', icon: ShieldCheck },
+                            { label: 'Quality Assurance', val: '100% Genuine Certified Stock & Local Warranty', icon: CheckCircle }
+                          ].map((spec, i) => (
+                            <div key={i} className="flex gap-5 p-5 bg-white rounded-2xl shadow-sm border border-slate-200/80 group hover:border-red-500/40 hover:shadow-md transition-all">
+                              <div className="w-14 h-14 bg-red-50 rounded-xl border border-red-100 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all shrink-0">
+                                <spec.icon size={24} />
+                              </div>
+                              <div className="space-y-1">
+                                <p className="text-xs font-black uppercase tracking-wider text-red-600">{spec.label}</p>
+                                <p className="text-base font-bold text-slate-900 tracking-tight leading-snug">{spec.val}</p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-xs font-black uppercase tracking-wider text-red-600">{spec.label}</p>
-                          <p className="text-base font-bold text-slate-900 tracking-tight leading-snug">{spec.val}</p>
+                      );
+                    }
+
+                    // Render rich additional details with text paragraphs, bold headers, and images
+                    const lines = addDetails.split('\n').map(l => l.trim()).filter(Boolean);
+
+                    return (
+                      <div className="bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-slate-200/80 space-y-6 text-slate-800 font-sans">
+                        <div className="space-y-5 text-sm md:text-base leading-relaxed">
+                          {lines.map((line, idx) => {
+                            // Image Detection
+                            const markdownImgMatch = line.match(/^!\[(.*?)\]\((.*?)\)$/);
+                            const imageTagMatch = line.match(/^<img\s+.*?src=["'](.*?)["'].*?>$/i);
+                            const imageCustomMatch = line.match(/^\[image:\s*(.*?)\]$/i);
+                            const isDirectImgUrl = /^https?:\/\/.*\.(png|jpg|jpeg|webp|gif|svg)(\?.*)?$/i.test(line);
+
+                            let imgUrl = '';
+                            let imgAlt = '';
+
+                            if (markdownImgMatch) {
+                              imgAlt = markdownImgMatch[1];
+                              imgUrl = markdownImgMatch[2];
+                            } else if (imageTagMatch) {
+                              imgUrl = imageTagMatch[1];
+                            } else if (imageCustomMatch) {
+                              imgUrl = imageCustomMatch[1];
+                            } else if (isDirectImgUrl) {
+                              imgUrl = line;
+                            }
+
+                            if (imgUrl) {
+                              return (
+                                <div key={idx} className="my-6 overflow-hidden rounded-2xl border border-slate-200/80 shadow-sm bg-slate-50 flex items-center justify-center p-3">
+                                  <img 
+                                    src={imgUrl} 
+                                    alt={imgAlt || "Product Detail Illustration"} 
+                                    className="max-h-[500px] w-full object-contain rounded-xl"
+                                    loading="lazy"
+                                    onError={(e) => {
+                                      (e.target as HTMLElement).style.display = 'none';
+                                    }}
+                                  />
+                                </div>
+                              );
+                            }
+
+                            // Explicit markdown bold **Text**
+                            if (line.includes('**')) {
+                              const parts = line.split(/(\*\*.*?\*\*)/g);
+                              return (
+                                <p key={idx} className="text-slate-800 text-sm md:text-base leading-relaxed font-normal">
+                                  {parts.map((part, pIdx) => {
+                                    if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
+                                      return (
+                                        <strong key={pIdx} className="font-extrabold text-slate-900">
+                                          {part.slice(2, -2)}
+                                        </strong>
+                                      );
+                                    }
+                                    return part;
+                                  })}
+                                </p>
+                              );
+                            }
+
+                            // Heading with dash: "Title - Description"
+                            if (line.includes(' - ')) {
+                              const dashIdx = line.indexOf(' - ');
+                              const title = line.slice(0, dashIdx).trim();
+                              const rest = line.slice(dashIdx);
+                              return (
+                                <p key={idx} className="text-slate-800 text-sm md:text-base leading-relaxed font-normal">
+                                  <strong className="font-extrabold text-slate-900">{title}</strong>
+                                  {rest}
+                                </p>
+                              );
+                            }
+
+                            // Key-Value with colon: "Label: Value"
+                            if (line.includes(':')) {
+                              const colonIdx = line.indexOf(':');
+                              const title = line.slice(0, colonIdx).trim();
+                              const rest = line.slice(colonIdx);
+                              return (
+                                <p key={idx} className="text-slate-800 text-sm md:text-base leading-relaxed font-normal">
+                                  <strong className="font-extrabold text-slate-900">{title}</strong>
+                                  {rest}
+                                </p>
+                              );
+                            }
+
+                            // Regular paragraph
+                            return (
+                              <p key={idx} className="text-slate-800 text-sm md:text-base leading-relaxed font-normal">
+                                {line}
+                              </p>
+                            );
+                          })}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                );
-              }
-
-              // Render rich additional details with text paragraphs, bold headers, and images
-              const lines = addDetails.split('\n').map(l => l.trim()).filter(Boolean);
-
-              return (
-                <div className="bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-slate-200/80 space-y-6 text-slate-800 font-sans">
-                  <h3 className="text-2xl md:text-3xl font-bold text-[#0072ce] tracking-tight pb-2 border-b border-slate-100">
-                    Additional Details
-                  </h3>
-                  <div className="space-y-5 text-sm md:text-base leading-relaxed">
-                    {lines.map((line, idx) => {
-                      // Image Detection
-                      const markdownImgMatch = line.match(/^!\[(.*?)\]\((.*?)\)$/);
-                      const imageTagMatch = line.match(/^<img\s+.*?src=["'](.*?)["'].*?>$/i);
-                      const imageCustomMatch = line.match(/^\[image:\s*(.*?)\]$/i);
-                      const isDirectImgUrl = /^https?:\/\/.*\.(png|jpg|jpeg|webp|gif|svg)(\?.*)?$/i.test(line);
-
-                      let imgUrl = '';
-                      let imgAlt = '';
-
-                      if (markdownImgMatch) {
-                        imgAlt = markdownImgMatch[1];
-                        imgUrl = markdownImgMatch[2];
-                      } else if (imageTagMatch) {
-                        imgUrl = imageTagMatch[1];
-                      } else if (imageCustomMatch) {
-                        imgUrl = imageCustomMatch[1];
-                      } else if (isDirectImgUrl) {
-                        imgUrl = line;
-                      }
-
-                      if (imgUrl) {
-                        return (
-                          <div key={idx} className="my-6 overflow-hidden rounded-2xl border border-slate-200/80 shadow-sm bg-slate-50 flex items-center justify-center p-3">
-                            <img 
-                              src={imgUrl} 
-                              alt={imgAlt || "Product Detail Illustration"} 
-                              className="max-h-[500px] w-full object-contain rounded-xl"
-                              loading="lazy"
-                              onError={(e) => {
-                                (e.target as HTMLElement).style.display = 'none';
-                              }}
-                            />
-                          </div>
-                        );
-                      }
-
-                      // Explicit markdown bold **Text**
-                      if (line.includes('**')) {
-                        const parts = line.split(/(\*\*.*?\*\*)/g);
-                        return (
-                          <p key={idx} className="text-slate-800 text-sm md:text-base leading-relaxed font-normal">
-                            {parts.map((part, pIdx) => {
-                              if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
-                                return (
-                                  <strong key={pIdx} className="font-extrabold text-slate-900">
-                                    {part.slice(2, -2)}
-                                  </strong>
-                                );
-                              }
-                              return part;
-                            })}
-                          </p>
-                        );
-                      }
-
-                      // Heading with dash: "Title - Description"
-                      if (line.includes(' - ')) {
-                        const dashIdx = line.indexOf(' - ');
-                        const title = line.slice(0, dashIdx).trim();
-                        const rest = line.slice(dashIdx);
-                        return (
-                          <p key={idx} className="text-slate-800 text-sm md:text-base leading-relaxed font-normal">
-                            <strong className="font-extrabold text-slate-900">{title}</strong>
-                            {rest}
-                          </p>
-                        );
-                      }
-
-                      // Key-Value with colon: "Label: Value"
-                      if (line.includes(':')) {
-                        const colonIdx = line.indexOf(':');
-                        const title = line.slice(0, colonIdx).trim();
-                        const rest = line.slice(colonIdx);
-                        return (
-                          <p key={idx} className="text-slate-800 text-sm md:text-base leading-relaxed font-normal">
-                            <strong className="font-extrabold text-slate-900">{title}</strong>
-                            {rest}
-                          </p>
-                        );
-                      }
-
-                      // Regular paragraph
-                      return (
-                        <p key={idx} className="text-slate-800 text-sm md:text-base leading-relaxed font-normal">
-                          {line}
+                    );
+                  })()}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="tab-warranty-info"
+                  initial={{ opacity: 0, x: 16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -16 }}
+                  transition={{ duration: 0.25, ease: 'easeInOut' }}
+                  className="bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-slate-200/80 space-y-8 text-slate-800 font-sans"
+                >
+                  {/* Warranty Highlights Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0 border border-red-100">
+                        <CheckCircle size={22} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 mb-1">100% Genuine Unit</h4>
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          Official manufacturer warranty coverage with genuine parts and local distributor support.
                         </p>
-                      );
-                    })}
+                      </div>
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0 border border-red-100">
+                        <Wrench size={22} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 mb-1">Authorised Service Centers</h4>
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          Walk in to any official brand service center nationwide or drop off at any Meadow Computer branch.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0 border border-red-100">
+                        <Clock size={22} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 mb-1">Fast RMA Assistance</h4>
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          Our technical team assists with diagnostics, warranty claims, and status tracking for hassle-free resolution.
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              );
-            })()}
+
+                  {/* Detailed Warranty Guidelines */}
+                  <div className="space-y-6 pt-2">
+                    <div className="border-l-4 border-red-600 pl-4 py-1">
+                      <h4 className="text-base font-bold text-slate-900 mb-1">Warranty Period & Scope</h4>
+                      <p className="text-sm text-slate-600 leading-relaxed">
+                        All brand-new laptops, desktops, monitors, and components are backed by official manufacturer warranties ranging from 1 to 3 years (depending on brand and model tier). The warranty covers manufacturing defects in materials and hardware functionality under normal usage.
+                      </p>
+                    </div>
+
+                    <div className="border-l-4 border-slate-300 pl-4 py-1">
+                      <h4 className="text-base font-bold text-slate-900 mb-1">Claim Process & Drop-off</h4>
+                      <p className="text-sm text-slate-600 leading-relaxed">
+                        To claim warranty, simply present your invoice or order confirmation. You can bring the device to any Meadow Computer store across Johor or contact our customer care team via WhatsApp for direct RMA collection arrangements.
+                      </p>
+                    </div>
+
+                    <div className="border-l-4 border-slate-300 pl-4 py-1">
+                      <h4 className="text-base font-bold text-slate-900 mb-1">Exclusions</h4>
+                      <p className="text-sm text-slate-600 leading-relaxed">
+                        Warranty does not cover accidental liquid spills, physical drops or impact cracks, unauthorized modifications or tampering, software or operating system corruption, or cosmetic wear and tear resulting from standard usage.
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </section>
@@ -685,7 +788,7 @@ const ProductDetails: React.FC = () => {
                       <Cpu size={14} className="text-red-600" />
                       Hardware Architecture
                     </div>
-                    <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                    <h2 className="text-xl md:text-3xl font-normal text-slate-900 tracking-tight flex items-center gap-3">
                       <span className="w-2.5 h-6 md:h-8 bg-red-600 rounded-full inline-block shrink-0"></span>
                       System Specification
                     </h2>
@@ -706,7 +809,7 @@ const ProductDetails: React.FC = () => {
                         <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
                           <Cpu size={22} />
                         </div>
-                        <span className="text-red-600 font-extrabold text-lg md:text-2xl tracking-tight">Processor</span>
+                        <span className="text-red-600 font-normal text-lg md:text-2xl tracking-tight">Processor</span>
                       </div>
                       <p className="text-slate-900 font-bold text-sm md:text-base leading-snug">{sysProcessor}</p>
                     </div>
@@ -720,7 +823,7 @@ const ProductDetails: React.FC = () => {
                         <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
                           <Monitor size={22} />
                         </div>
-                        <span className="text-red-600 font-extrabold text-lg md:text-2xl tracking-tight">Graphics</span>
+                        <span className="text-red-600 font-normal text-lg md:text-2xl tracking-tight">Graphics</span>
                       </div>
                       <p className="text-slate-900 font-bold text-sm md:text-base leading-snug">{sysGraphics}</p>
                     </div>
@@ -734,7 +837,7 @@ const ProductDetails: React.FC = () => {
                         <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
                           <Maximize size={22} />
                         </div>
-                        <span className="text-red-600 font-extrabold text-lg md:text-2xl tracking-tight">Display</span>
+                        <span className="text-red-600 font-normal text-lg md:text-2xl tracking-tight">Display</span>
                       </div>
                       <p className="text-slate-900 font-bold text-xs md:text-sm leading-relaxed">{sysDisplay}</p>
                     </div>
@@ -748,7 +851,7 @@ const ProductDetails: React.FC = () => {
                         <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
                           <HardDrive size={22} />
                         </div>
-                        <span className="text-red-600 font-extrabold text-lg md:text-2xl tracking-tight">Memory</span>
+                        <span className="text-red-600 font-normal text-lg md:text-2xl tracking-tight">Memory</span>
                       </div>
                       <p className="text-slate-900 font-bold text-sm md:text-base leading-snug">{sysMemory}</p>
                     </div>
@@ -762,7 +865,7 @@ const ProductDetails: React.FC = () => {
                         <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
                           <Database size={22} />
                         </div>
-                        <span className="text-red-600 font-extrabold text-lg md:text-2xl tracking-tight">Storage</span>
+                        <span className="text-red-600 font-normal text-lg md:text-2xl tracking-tight">Storage</span>
                       </div>
                       <p className="text-slate-900 font-bold text-sm md:text-base leading-snug">{sysStorage}</p>
                     </div>
@@ -776,7 +879,7 @@ const ProductDetails: React.FC = () => {
                         <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
                           <Shield size={22} />
                         </div>
-                        <span className="text-red-600 font-extrabold text-lg md:text-2xl tracking-tight">Security</span>
+                        <span className="text-red-600 font-normal text-lg md:text-2xl tracking-tight">Security</span>
                       </div>
                       <p className="text-slate-900 font-bold text-sm md:text-base leading-snug">{sysSecurity}</p>
                     </div>
@@ -788,7 +891,7 @@ const ProductDetails: React.FC = () => {
                 <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200/80">
                   <div className="flex items-center gap-3 pb-4 border-b border-slate-100 mb-6">
                     <span className="w-2.5 h-6 md:h-8 bg-red-600 rounded-full inline-block shrink-0"></span>
-                    <h3 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight">Additional Information</h3>
+                    <h3 className="text-xl md:text-3xl font-normal text-slate-900 tracking-tight">Additional Information</h3>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-100 hover:bg-slate-100/80 transition-colors">
@@ -818,7 +921,7 @@ const ProductDetails: React.FC = () => {
                   <div>
                     <div className="flex items-center gap-3 pb-4 border-b border-slate-100 mb-6">
                       <span className="w-2.5 h-6 md:h-8 bg-red-600 rounded-full inline-block shrink-0"></span>
-                      <h3 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight">Feature Specification</h3>
+                      <h3 className="text-xl md:text-3xl font-normal text-slate-900 tracking-tight">Feature Specification</h3>
                     </div>
                     <div className="space-y-5">
                       <div className="border-l-2 border-red-600/40 hover:border-red-600 transition-colors pl-4 py-1">

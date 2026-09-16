@@ -93,7 +93,7 @@ const OurStory: React.FC = () => {
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.15] mb-6">
                 {storySettings.hero_title || 'A Trusted Name in PCs & Technology Since 1995.'}
               </h1>
-              <div className="space-y-4 text-sm md:text-base text-slate-600 font-medium leading-relaxed max-w-2xl">
+              <div className="space-y-4 text-sm md:text-base text-slate-600 font-medium leading-relaxed max-w-2xl pt-12">
                 <p>
                   {storySettings.hero_paragraph_1 || 'Meadow Computer is a computer retailer and distributor offering a wide range of PCs, laptops, components, printers and everyday IT products through our retail stores. Our journey began in distribution in 1995, before gradually expanding into retail with Meadow Computer stores, together with official ASUS and HP concept stores.'}
                 </p>
