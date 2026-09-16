@@ -872,7 +872,7 @@ const HomePageSettingsPage: React.FC = () => {
 
                   <div className="space-y-3 mt-4">
                     <span className="inline-block px-4 py-2 bg-white border border-black rounded-lg text-[10px] font-black uppercase tracking-wider text-black">
-                      {settings.store_btn_text || 'Our Store'}
+                      {settings.store_btn_text || 'Our Locations'}
                     </span>
                     <div className="border-t border-black/20 pt-3">
                       <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-slate-600">
@@ -963,7 +963,7 @@ const HomePageSettingsPage: React.FC = () => {
                   value={settings.store_btn_text || ''} 
                   onChange={(e) => setSettings({ ...settings, store_btn_text: e.target.value })}
                   className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900"
-                  placeholder="Our Store"
+                  placeholder="Our Locations"
                 />
               </div>
 

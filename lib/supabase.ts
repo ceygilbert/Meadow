@@ -27,9 +27,9 @@ const getEnvVar = (key: string): string => {
   return '';
 };
 
-// Values from the user's .env file provided in the prompt
-const FALLBACK_URL = 'https://hxfftpvzumcvtnzbpegb.supabase.co';
-const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4ZmZ0cHZ6dW1jdnRuemJwZWdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NzA0NTUsImV4cCI6MjA4NDE0NjQ1NX0.Fgn2rbrtdkUv8i6IWqnS5WxUeTIiRtwVy8MFmPFzPHg';
+// Values from the user's .env file
+const FALLBACK_URL = 'https://ecscjefihrntuhumtqwe.supabase.co';
+const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjc2NqZWZpaHJudHVodW10cXdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1MjE0NDQsImV4cCI6MjEwNTA5NzQ0NH0.e5O14flqHFoue0297dp6JXmAAmDbrpkMp7-M66RE3k8';
 
 export const supabaseUrl = getEnvVar('SUPABASE_URL') || FALLBACK_URL;
 export const supabaseAnonKey = getEnvVar('SUPABASE_ANON_KEY') || FALLBACK_KEY;

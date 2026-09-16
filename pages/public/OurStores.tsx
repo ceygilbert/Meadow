@@ -218,7 +218,7 @@ const OurStores: React.FC = () => {
         <div className="absolute inset-0 bg-neutral-900/40 backdrop-blur-[1px]"></div>
         <div className="relative px-6 md:px-16 max-w-[1440px] mx-auto w-full z-10">
           <div className="max-w-3xl">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.6em] text-white/70 mb-5 animate-in fade-in slide-in-from-bottom duration-700">Presence</h2>
+            <h2 className="text-[10px] font-black uppercase tracking-[0.6em] text-white/70 mb-5 animate-in fade-in slide-in-from-bottom duration-700">Store Locator</h2>
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light text-white leading-tight mb-6 animate-in fade-in slide-in-from-bottom duration-1000">
               Find a Meadow Store Near You
             </h1>

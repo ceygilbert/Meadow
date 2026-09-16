@@ -77,11 +77,11 @@ const OurStory: React.FC = () => {
       />
 
       {/* Hero Section */}
-      <section className="pt-28 md:pt-36 pb-12 md:pb-16 px-4 md:px-10 lg:px-12 max-w-[1440px] mx-auto">
+      <section className="pt-36 sm:pt-44 md:pt-48 lg:pt-52 pb-12 md:pb-16 px-4 md:px-10 lg:px-12 max-w-[1440px] mx-auto">
         {/* Top Grid: Content & Image */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center pt-4 md:pt-8">
           {/* Left Column: Text & CTA Buttons */}
-          <div className="lg:col-span-7 xl:col-span-6">
+          <div className="lg:col-span-7 xl:col-span-6 pt-2 md:pt-4">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -108,7 +108,7 @@ const OurStory: React.FC = () => {
           </div>
 
           {/* Right Column: Hero Image with Rounded Corners */}
-          <div className="lg:col-span-5 xl:col-span-6">
+          <div className="lg:col-span-5 xl:col-span-6 pt-2 md:pt-4">
             <motion.div 
               initial={{ scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}

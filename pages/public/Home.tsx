@@ -652,7 +652,7 @@ const Home: React.FC = () => {
                               Inquiry Form <ArrowUpRight size={16} className="opacity-0 group-hover:opacity-100" />
                            </Link>
                            <Link to="/our-stores" onClick={() => setIsFullMenuOpen(false)} className="text-sm md:text-xl font-bold text-blue-500 hover:text-blue-700 transition-colors flex items-center gap-2">
-                              Our Store <ArrowUpRight size={16} />
+                              Our Locations <ArrowUpRight size={16} />
                            </Link>
                         </div>
                      </div>
@@ -1275,7 +1275,7 @@ const Home: React.FC = () => {
             <div className="flex items-center justify-between mb-8">
               <div className="flex flex-col">
                 <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-2">Laptops</h2>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Master of Portability</p>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Find the right laptop for work, study, gaming and everyday use</p>
               </div>
               <div className="hidden md:flex gap-4">
                   <button 
@@ -1328,7 +1328,7 @@ const Home: React.FC = () => {
             <div className="flex items-center justify-between mb-8">
               <div className="flex flex-col">
                 <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-2">PC Components</h2>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">The Core Elements</p>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Processors, graphics cards, motherboards, memory and more for your next build</p>
               </div>
               <div className="hidden md:flex gap-4">
                   <button 
@@ -1380,8 +1380,8 @@ const Home: React.FC = () => {
           <div className="max-w-[1440px] mx-auto px-4 md:px-10">
             <div className="flex items-center justify-between mb-8">
               <div className="flex flex-col">
-                <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-2">Display</h2>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Visual Excellence</p>
+                <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-2">Monitors</h2>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Find the right monitor for work, gaming and everyday use</p>
               </div>
               <div className="hidden md:flex gap-4">
                   <button 
@@ -1449,7 +1449,7 @@ const Home: React.FC = () => {
                   to={homeSettings?.store_btn_link || "/our-stores"} 
                   className="inline-flex items-center justify-center w-fit max-w-full px-6 md:px-7 py-3 md:py-3.5 whitespace-nowrap bg-white border-2 border-black rounded-xl text-xs font-black uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all shadow-sm text-center"
                 >
-                  {homeSettings?.store_btn_text || "Our Store"}
+                  {homeSettings?.store_btn_text === 'Our Store' ? 'Our Locations' : (homeSettings?.store_btn_text || "Our Locations")}
                 </Link>
                 <div className="border-t border-black/20 pt-4">
                   <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-[#333] mb-1.5">

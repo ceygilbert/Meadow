@@ -36,7 +36,7 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', className = '' }) => {
               />
             </Link>
             <p className={`text-xs font-medium leading-relaxed max-w-xs mb-8 ${isDark ? 'text-white/80' : 'text-slate-500'}`}>
-              Premium hardware distribution and bespoke computational engineering. Built for the elite.
+              IT retail, distribution and custom PC solutions, serving customers across Johor since 1995.
             </p>
             
             <div className="space-y-6">
@@ -168,7 +168,7 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', className = '' }) => {
               Newsletter
             </h4>
             <p className={`text-xs font-medium mb-4 ${isDark ? 'text-white/80' : 'text-slate-500'}`}>
-              Join the Registry for updates.
+              Subscribe our newsletter on for received the latest promotion and campaign on IT Products
             </p>
             <form className="flex gap-2 mb-8">
               <input 
