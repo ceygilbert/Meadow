@@ -159,6 +159,11 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', className = '' }) => {
                   Contact Us
                 </Link>
               </li>
+              <li>
+                <Link to="/customer/login" className={`text-xs uppercase tracking-widest font-semibold transition-colors block ${isDark ? 'text-white/80 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}>
+                  Customer Portal
+                </Link>
+              </li>
             </ul>
           </div>
 

@@ -260,17 +260,19 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
               {/* User / Profile Icon */}
               {!user ? (
                 <button 
-                  onClick={onOpenAuth} 
-                  className="bg-slate-100/90 text-slate-600 rounded-full flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-sm w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 hover:scale-105"
-                  aria-label="Sign in"
+                  onClick={() => navigate('/customer/login')} 
+                  className="bg-slate-100/90 text-slate-600 rounded-full flex items-center justify-center hover:bg-[#c5161d] hover:text-white transition-all shadow-sm w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 hover:scale-105 cursor-pointer"
+                  aria-label="Customer Login"
+                  title="Customer Login"
                 >
                   <UserIcon size={18} />
                 </button>
               ) : (
                 <button 
                   onClick={() => navigate(profile?.role === 'admin' ? '/admin/dashboard' : '/customer/dashboard')} 
-                  className="rounded-full border border-slate-200 overflow-hidden shadow-sm transition-all w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 hover:scale-105"
+                  className="rounded-full border border-slate-200 overflow-hidden shadow-sm transition-all w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 hover:scale-105 cursor-pointer"
                   aria-label="View account"
+                  title={profile?.full_name || 'My Account'}
                 >
                   <img 
                     src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`} 

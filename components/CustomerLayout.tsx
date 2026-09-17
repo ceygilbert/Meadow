@@ -14,6 +14,7 @@ import {
   Settings,
   HelpCircle
 } from 'lucide-react';
+import { useAuth } from '../lib/AuthContext';
 
 interface CustomerLayoutProps {
   onLogout: () => Promise<void>;
@@ -23,6 +24,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ onLogout }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
+  const { profile, user } = useAuth();
 
   const menuItems = [
     { name: 'Dashboard', path: '/customer/dashboard', icon: LayoutDashboard },
@@ -33,7 +35,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ onLogout }) => {
 
   const handleLogoutClick = async () => {
     await onLogout();
-    navigate('/');
+    navigate('/customer/login');
   };
 
   return (
@@ -86,17 +88,21 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ onLogout }) => {
 
         <div className="p-4 mt-auto border-t border-slate-50">
           <div className={`p-3 flex items-center ${isSidebarOpen ? 'gap-3' : 'justify-center'} rounded-[2rem] bg-slate-50/50 border border-slate-100`}>
-             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-black text-xs shrink-0">
-               ME
+             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-black text-xs shrink-0 overflow-hidden">
+               {profile?.avatar_url ? (
+                 <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+               ) : (
+                 <span>{profile?.full_name?.substring(0, 2).toUpperCase() || 'CU'}</span>
+               )}
              </div>
              {isSidebarOpen && (
                <div className="flex-1 overflow-hidden">
-                 <p className="font-bold text-slate-900 text-xs truncate">My Account</p>
-                 <button onClick={handleLogoutClick} className="text-[10px] font-black text-rose-500 uppercase tracking-widest hover:underline">Log Out</button>
+                 <p className="font-bold text-slate-900 text-xs truncate">{profile?.full_name || 'Customer'}</p>
+                 <button onClick={handleLogoutClick} className="text-[10px] font-black text-rose-500 uppercase tracking-widest hover:underline cursor-pointer">Log Out</button>
                </div>
              )}
              {!isSidebarOpen && (
-               <button onClick={handleLogoutClick} className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors">
+               <button onClick={handleLogoutClick} className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer" title="Log Out">
                  <LogOut size={16} />
                </button>
              )}

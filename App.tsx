@@ -23,6 +23,8 @@ import AllBrands from './pages/public/AllBrands';
 import Events from './pages/public/Events';
 import Contact from './pages/public/Contact';
 import AdminLogin from './pages/admin/Login';
+import CustomerLogin from './pages/customer/Login';
+import CustomerSignup from './pages/customer/Signup';
 import AdminDashboard from './pages/admin/Dashboard';
 import HomePageSettingsPage from './pages/admin/HomePageSettings';
 import OurStorySettingsPage from './pages/admin/OurStorySettings';
@@ -90,6 +92,16 @@ const AppContent: React.FC = () => {
       />
 
       <Route 
+        path="/customer/login" 
+        element={isCustomer ? <Navigate to="/customer/dashboard" replace /> : <CustomerLogin />} 
+      />
+
+      <Route 
+        path="/customer/signup" 
+        element={isCustomer ? <Navigate to="/customer/dashboard" replace /> : <CustomerSignup />} 
+      />
+
+      <Route 
         path="/admin" 
         element={isAdmin ? <AdminLayout onLogout={signOut} /> : <Navigate to="/admin/login" replace />}
       >
@@ -111,11 +123,12 @@ const AppContent: React.FC = () => {
       </Route>
 
       <Route 
-        path="/customer/*" 
-        element={isCustomer ? <CustomerLayout onLogout={signOut} /> : <Navigate to="/" />}
+        path="/customer" 
+        element={isCustomer ? <CustomerLayout onLogout={signOut} /> : <Navigate to="/customer/login" replace />}
       >
+        <Route index element={<Navigate to="/customer/dashboard" replace />} />
         <Route path="dashboard" element={<CustomerDashboard />} />
-        <Route path="*" element={<Navigate to="dashboard" />} />
+        <Route path="*" element={<Navigate to="/customer/dashboard" replace />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" />} />

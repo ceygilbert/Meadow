@@ -327,7 +327,7 @@ const ProductDetails: React.FC = () => {
 
           <div className="flex items-center gap-3 md:gap-6 pointer-events-auto">
             {!user ? (
-               <button onClick={() => navigate('/')} className="w-12 h-12 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-sm">
+               <button onClick={() => navigate('/customer/login')} className="w-12 h-12 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center hover:bg-[#c5161d] hover:text-white transition-all shadow-sm cursor-pointer" title="Customer Login">
                  <UserIcon size={20} />
                </button>
             ) : (
