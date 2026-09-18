@@ -26,7 +26,9 @@ import {
   ChevronsUpDown,
   MessageSquare,
   Sparkles,
-  LayoutTemplate
+  LayoutTemplate,
+  PanelBottom,
+  Truck
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -70,6 +72,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout }) => {
   const contentItems = [
     { name: 'Home Page', path: '/admin/homepage', icon: LayoutTemplate },
     { name: 'Our Story', path: '/admin/our-story', icon: BookOpen },
+    { name: 'Supplier Page', path: '/admin/supplier', icon: Truck },
+    { name: 'Footer', path: '/admin/footer', icon: PanelBottom },
   ];
 
   const isCatalogActive = catalogItems.some(i => location.pathname.startsWith(i.path));

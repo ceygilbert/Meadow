@@ -19,6 +19,7 @@ import ProductListing from './pages/public/ProductListing';
 import Categories from './pages/public/Categories';
 import OurStores from './pages/public/OurStores';
 import OurStory from './pages/public/OurStory';
+import Suppliers from './pages/public/Suppliers';
 import AllBrands from './pages/public/AllBrands';
 import Events from './pages/public/Events';
 import Contact from './pages/public/Contact';
@@ -28,6 +29,8 @@ import CustomerSignup from './pages/customer/Signup';
 import AdminDashboard from './pages/admin/Dashboard';
 import HomePageSettingsPage from './pages/admin/HomePageSettings';
 import OurStorySettingsPage from './pages/admin/OurStorySettings';
+import SupplierSettingsPage from './pages/admin/SupplierSettings';
+import FooterSettingsPage from './pages/admin/FooterSettings';
 import ProductManagement from './pages/admin/Products';
 import CategoryManagement from './pages/admin/Categories';
 import SubCategoryManagement from './pages/admin/SubCategories';
@@ -72,6 +75,8 @@ const AppContent: React.FC = () => {
       <Route path="/stores" element={<StoreLocator />} />
       <Route path="/our-stores" element={<OurStores />} />
       <Route path="/our-story" element={<OurStory />} />
+      <Route path="/suppliers" element={<Suppliers />} />
+      <Route path="/supplier" element={<Suppliers />} />
       <Route path="/events" element={<Events />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/customised" element={<Customised />} />
@@ -109,6 +114,9 @@ const AppContent: React.FC = () => {
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="homepage" element={<HomePageSettingsPage />} />
         <Route path="our-story" element={<OurStorySettingsPage />} />
+        <Route path="supplier" element={<SupplierSettingsPage />} />
+        <Route path="suppliers" element={<SupplierSettingsPage />} />
+        <Route path="footer" element={<FooterSettingsPage />} />
         <Route path="products" element={<ProductManagement />} />
         <Route path="stock-take" element={<StockTake />} />
         <Route path="orders" element={<Orders />} />

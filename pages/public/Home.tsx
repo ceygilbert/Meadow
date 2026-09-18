@@ -742,10 +742,7 @@ const Home: React.FC = () => {
                <Link 
                  key={banner.id || index}
                  to={banner.link || '/products'}
-                 className={`absolute inset-0 block cursor-pointer transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 scale-105 pointer-events-auto' : 'opacity-0 scale-100 pointer-events-none'}`}
-                 style={{ 
-                   transition: 'opacity 1s ease-in-out, transform 8s linear' 
-                 }}
+                 className={`absolute inset-0 block cursor-pointer transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                >
                   <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/40 to-transparent z-10"></div>
                   <img src={banner.image_url} className="w-full h-full object-cover" alt={banner.title || `Meadow Banner ${index + 1}`} />
