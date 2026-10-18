@@ -33,13 +33,14 @@ import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { Category, SubCategory, Brand, Profile } from '../types';
 import { useAuth } from '../lib/AuthContext';
+import { useCart } from '../lib/CartContext';
 
 interface PublicNavbarProps {
   user?: any;
   profile?: Profile | null;
-  cartCount: number;
+  cartCount?: number;
   onOpenAuth: () => void;
-  onOpenCart: () => void;
+  onOpenCart?: () => void;
   scrolled: boolean;
 }
 
@@ -71,6 +72,75 @@ const getIcon = (name: string) => {
   return <Layers size={18} />;
 };
 
+interface CategoryShowcase {
+  title: string;
+  description: string;
+  image: string;
+}
+
+const CATEGORY_SHOWCASES: Record<string, CategoryShowcase> = {
+  'peripherals': {
+    title: 'PERIPHERALS',
+    description: 'Enhance your computing experience with top-tier peripherals like keyboards, mice, webcams, and gaming accessories.',
+    image: 'https://images.unsplash.com/photo-1541140532154-b024d705b909?auto=format&fit=crop&q=80&w=1000'
+  },
+  'desktop': {
+    title: 'DESKTOP COMPUTERS',
+    description: 'Engineered for elite gaming, workstation productivity, and next-generation power with advanced thermal cooling.',
+    image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80&w=1000'
+  },
+  'laptop': {
+    title: 'LAPTOPS & NOTEBOOKS',
+    description: 'High-performance portable power for competitive gaming, creative professionals, and all-day mobile productivity.',
+    image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=1000'
+  },
+  'pc-components': {
+    title: 'PC COMPONENTS',
+    description: 'Processors, graphics cards, motherboards, high-speed memory, and power units to construct your custom build.',
+    image: 'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?auto=format&fit=crop&q=80&w=1000'
+  },
+  'display': {
+    title: 'DISPLAYS & MONITORS',
+    description: 'Ultra-fast refresh rate gaming monitors, curved immersive panels, and color-accurate professional displays.',
+    image: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&q=80&w=1000'
+  },
+  'home-office': {
+    title: 'HOME & OFFICE',
+    description: 'High-yield printers, genuine ink supplies, surge-protected extensions, and ergonomic workspace accessories.',
+    image: 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&q=80&w=1000'
+  },
+  'networking': {
+    title: 'NETWORKING SOLUTIONS',
+    description: 'High-speed Wi-Fi 6/7 routers, mesh systems, network switches, and ultra-reliable connectivity hardware.',
+    image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&q=80&w=1000'
+  },
+  'smart-home': {
+    title: 'SMART HOME TECH',
+    description: 'Automate your environment with intelligent security cameras, IoT hubs, voice assistants, and connected lifestyle devices.',
+    image: 'https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&q=80&w=1000'
+  },
+  'gadgets': {
+    title: 'TECH GADGETS',
+    description: 'Innovative portable chargers, audio gear, cables, adapters, and smart accessories for daily life.',
+    image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80&w=1000'
+  }
+};
+
+const getCategoryShowcase = (nameOrSlug: string): CategoryShowcase => {
+  const norm = (nameOrSlug || '').toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]/g, '');
+  for (const key in CATEGORY_SHOWCASES) {
+    const keyNorm = key.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]/g, '');
+    if (norm.includes(keyNorm) || keyNorm.includes(norm)) {
+      return CATEGORY_SHOWCASES[key];
+    }
+  }
+  return {
+    title: (nameOrSlug || 'FEATURED COLLECTION').toUpperCase(),
+    description: 'Explore high-performance hardware, cutting-edge components, and premium accessories tailored for your setup.',
+    image: 'https://images.unsplash.com/photo-1541140532154-b024d705b909?auto=format&fit=crop&q=80&w=1000'
+  };
+};
+
 const PublicNavbar: React.FC<PublicNavbarProps> = ({ 
   user: userProp, 
   profile: profileProp, 
@@ -86,6 +156,17 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
   const user = userProp || authUser;
   const profile = profileProp || authProfile;
 
+  let contextCartCount = 0;
+  let contextOpenCart = () => {};
+  try {
+    const ctx = useCart();
+    contextCartCount = ctx.cartCount;
+    contextOpenCart = ctx.openCart;
+  } catch (e) {}
+
+  const effectiveCartCount = cartCount !== undefined ? cartCount : contextCartCount;
+  const effectiveOpenCart = onOpenCart || contextOpenCart;
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -93,6 +174,7 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
   // Desktop Mega Menu state
   const [activeMenu, setActiveMenu] = useState<'categories' | 'brands' | null>(null);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const [hoveredSubCategory, setHoveredSubCategory] = useState<string | null>(null);
   const [headerSearch, setHeaderSearch] = useState('');
 
   // Mobile navigation state
@@ -105,6 +187,7 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
   useEffect(() => {
     setActiveMenu(null);
     setMobileMenuOpen(false);
+    setHoveredSubCategory(null);
   }, [location.pathname, location.search]);
 
   // Prevent background scroll when mobile menu is full open
@@ -120,8 +203,16 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
   }, [mobileMenuOpen]);
 
   const toggleDesktopMenu = (menu: 'categories' | 'brands') => {
-    setActiveMenu(prev => prev === menu ? null : menu);
-    if (activeMenu === menu) setHoveredCategory(null);
+    setActiveMenu(prev => {
+      const next = prev === menu ? null : menu;
+      if (next === 'categories') {
+        if (!hoveredCategory && categories.length > 0) {
+          setHoveredCategory(categories[0].id);
+        }
+      }
+      setHoveredSubCategory(null);
+      return next;
+    });
   };
 
   const openMobileSection = (section: 'categories' | 'brands') => {
@@ -146,6 +237,9 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
         return name !== 'accessories' && name !== 'gadget' && name !== 'gadgets';
       });
       setCategories(filteredCategories);
+      if (filteredCategories.length > 0) {
+        setHoveredCategory(prev => prev || filteredCategories[0].id);
+      }
     }
     if (subRes.data) setSubCategories(subRes.data);
     if (brandRes.data) setBrands(brandRes.data);
@@ -284,14 +378,14 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
 
               {/* Cart Button */}
               <button 
-                onClick={onOpenCart} 
-                className="bg-slate-900 text-white rounded-full flex items-center justify-center relative shadow-md hover:bg-slate-800 transition-all w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 hover:scale-105"
+                onClick={effectiveOpenCart} 
+                className="bg-slate-900 text-white rounded-full flex items-center justify-center relative shadow-md hover:bg-slate-800 transition-all w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 hover:scale-105 cursor-pointer"
                 aria-label="View cart"
               >
                 <ShoppingCart size={18} />
-                {cartCount > 0 && (
+                {effectiveCartCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-[#c5161d] text-white font-black flex items-center justify-center rounded-full border-2 border-white w-5 h-5 text-[9px] shadow-sm">
-                    {cartCount}
+                    {effectiveCartCount}
                   </span>
                 )}
               </button>
@@ -579,102 +673,151 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
               className="hidden md:block absolute left-0 right-0 top-full bg-white/95 backdrop-blur-3xl border-b border-slate-100 shadow-2xl pointer-events-auto overflow-hidden"
             >
               <div className="max-w-[1440px] mx-auto">
-                {activeMenu === 'categories' && (
-                  <div className="max-w-[1440px] mx-auto p-10 lg:p-12 grid grid-cols-12 gap-10 lg:gap-12">
-                    {/* Categories List */}
-                    <div className="col-span-4 border-r border-slate-100 pr-8 lg:pr-12">
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6">Explore Categories</p>
-                      <div className="space-y-1.5 max-h-[420px] overflow-y-auto pr-2">
-                        {categories.map((cat) => (
-                          <div 
-                            key={cat.id}
-                            onClick={() => setHoveredCategory(prev => prev === cat.id ? null : cat.id)}
-                            className={`group flex items-center justify-between p-3 rounded-xl transition-all cursor-pointer ${hoveredCategory === cat.id ? 'bg-slate-900 text-white' : 'hover:bg-slate-50 text-slate-600'}`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className={`${hoveredCategory === cat.id ? 'text-blue-400' : 'text-slate-400'}`}>
-                                {getIcon(cat.name)}
+                {activeMenu === 'categories' && (() => {
+                  const activeCategory = categories.find(c => c.id === hoveredCategory) || categories[0] || null;
+                  const activeSubCategory = subCategories.find(s => s.id === hoveredSubCategory) || null;
+                  
+                  const showcase = activeCategory ? getCategoryShowcase(activeCategory.slug || activeCategory.name) : null;
+                  const displayTitle = activeSubCategory 
+                    ? activeSubCategory.name.toUpperCase()
+                    : (showcase?.title || (activeCategory ? activeCategory.name.toUpperCase() : 'FEATURED HARDWARE'));
+                  
+                  const displayDescription = activeSubCategory
+                    ? (activeSubCategory.description || (activeCategory ? `Enhance your setup with top-tier ${activeSubCategory.name.toLowerCase()} selected for quality, performance, and durability.` : `Discover our ${activeSubCategory.name.toLowerCase()} collection.`))
+                    : (activeCategory?.description || showcase?.description || 'Explore our high-performance hardware and accessories.');
+                  
+                  const displayImage = activeSubCategory?.image_url 
+                    || activeCategory?.image_url 
+                    || showcase?.image 
+                    || 'https://images.unsplash.com/photo-1541140532154-b024d705b909?auto=format&fit=crop&q=80&w=1000';
+                  
+                  const displayLink = activeSubCategory
+                    ? `/products?category=${activeCategory?.slug || ''}&subcategory=${activeSubCategory.slug}`
+                    : `/products?category=${activeCategory?.slug || ''}`;
+
+                  return (
+                    <div className="max-w-[1440px] mx-auto p-10 lg:p-12 grid grid-cols-12 gap-10 lg:gap-12">
+                      {/* Categories List */}
+                      <div className="col-span-4 border-r border-slate-100 pr-8 lg:pr-12">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6">Explore Categories</p>
+                        <div className="space-y-1.5 max-h-[420px] overflow-y-auto pr-2">
+                          {categories.map((cat) => (
+                            <div 
+                              key={cat.id}
+                              onMouseEnter={() => {
+                                setHoveredCategory(cat.id);
+                                setHoveredSubCategory(null);
+                              }}
+                              onClick={() => {
+                                setHoveredCategory(cat.id);
+                                setHoveredSubCategory(null);
+                              }}
+                              className={`group flex items-center justify-between p-3 rounded-xl transition-all cursor-pointer ${hoveredCategory === cat.id ? 'bg-slate-900 text-white' : 'hover:bg-slate-50 text-slate-600'}`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`${hoveredCategory === cat.id ? 'text-blue-400' : 'text-slate-400'}`}>
+                                  {getIcon(cat.name)}
+                                </div>
+                                <span className="text-xs font-black uppercase tracking-tight">{cat.name}</span>
                               </div>
-                              <span className="text-xs font-black uppercase tracking-tight">{cat.name}</span>
+                              <ChevronRight size={14} className={`transition-transform ${hoveredCategory === cat.id ? 'translate-x-1 opacity-100' : 'opacity-0'}`} />
                             </div>
-                            <ChevronRight size={14} className={`transition-transform ${hoveredCategory === cat.id ? 'translate-x-1 opacity-100' : 'opacity-0'}`} />
-                          </div>
-                        ))}
-                      </div>
-                      <Link 
-                        to="/categories" 
-                        className="mt-6 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-blue-600 hover:text-blue-700"
-                        onClick={() => setActiveMenu(null)}
-                      >
-                        View All Categories <ArrowUpRight size={14} />
-                      </Link>
-                    </div>
-
-                    {/* Subcategories / Items */}
-                    <div className="col-span-5">
-                      {hoveredCategory ? (
-                        <div className="animate-in fade-in slide-in-from-left-4 duration-300">
-                          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6">
-                            {categories.find(c => c.id === hoveredCategory)?.name} Sub-categories
-                          </p>
-                          <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-                            {subCategories
-                              .filter(sub => sub.category_id === hoveredCategory)
-                              .map(sub => (
-                                <Link
-                                  key={sub.id}
-                                  to={`/products?category=${categories.find(c => c.id === hoveredCategory)?.slug}&subcategory=${sub.slug}`}
-                                  className="group flex flex-col gap-0.5"
-                                  onClick={() => setActiveMenu(null)}
-                                >
-                                  <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{sub.name}</span>
-                                  <span className="text-[8px] text-slate-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Shop Now</span>
-                                </Link>
-                              ))}
-                          </div>
+                          ))}
                         </div>
-                      ) : (
-                        <div className="h-full flex flex-col items-center justify-center text-center text-slate-300 py-16">
-                          <Layers size={48} className="mb-4 opacity-20" />
-                          <p className="text-sm font-bold uppercase tracking-widest">Hover a category to explore</p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Featured / More Info */}
-                    <div className="col-span-3 bg-slate-50/60 rounded-[2rem] p-6 lg:p-8 border border-slate-100">
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-5">Featured Collections</p>
-                      <div className="space-y-5">
                         <Link 
-                          to="#"
-                          onClick={(e) => e.preventDefault()}
-                          className="group block cursor-not-allowed opacity-50 pointer-events-none"
-                        >
-                          <div className="aspect-video rounded-2xl overflow-hidden mb-2.5 bg-slate-900 relative">
-                            <img src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80" alt="PC Builder" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent flex items-end p-3">
-                              <span className="text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
-                                <Zap size={14} className="text-rose-400" /> Build Your Own PC
-                              </span>
-                            </div>
-                          </div>
-                          <p className="text-[11px] text-slate-500">Interactive PC parts configurator with real-time compatibility.</p>
-                        </Link>
-                        <Link 
-                          to="/products"
+                          to="/categories" 
+                          className="mt-6 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-blue-600 hover:text-blue-700"
                           onClick={() => setActiveMenu(null)}
-                          className="group block cursor-pointer"
                         >
-                          <div className="aspect-video rounded-2xl overflow-hidden mb-2.5 bg-slate-100">
-                            <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="Gaming Setup" />
-                          </div>
-                          <h5 className="font-black text-slate-900 uppercase tracking-tight text-xs">Battle Station Gears</h5>
-                          <p className="text-[11px] text-slate-500">Monitors, mechanical keyboards & peripherals.</p>
+                          View All Categories <ArrowUpRight size={14} />
                         </Link>
                       </div>
+
+                      {/* Subcategories / Items (Single Vertical Line) */}
+                      <div className="col-span-3 border-r border-slate-100/70 pr-6 lg:pr-8">
+                        {activeCategory ? (
+                          <div className="animate-in fade-in slide-in-from-left-4 duration-300">
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6">
+                              {activeCategory.name} Sub-categories
+                            </p>
+                            {subCategories.filter(sub => sub.category_id === activeCategory.id).length === 0 ? (
+                              <p className="text-xs font-semibold text-slate-400 py-4">No sub-categories available</p>
+                            ) : (
+                              <div 
+                                className="flex flex-col gap-y-3.5 max-h-[420px] overflow-y-auto pr-2"
+                                onMouseLeave={() => setHoveredSubCategory(null)}
+                              >
+                                {subCategories
+                                  .filter(sub => sub.category_id === activeCategory.id)
+                                  .map(sub => (
+                                    <Link
+                                      key={sub.id}
+                                      to={`/products?category=${activeCategory.slug}&subcategory=${sub.slug}`}
+                                      className={`group flex flex-col gap-0.5 transition-all ${hoveredSubCategory === sub.id ? 'translate-x-1' : ''}`}
+                                      onMouseEnter={() => setHoveredSubCategory(sub.id)}
+                                      onClick={() => setActiveMenu(null)}
+                                    >
+                                      <span className={`text-xs font-bold transition-colors ${hoveredSubCategory === sub.id ? 'text-blue-600' : 'text-slate-900 group-hover:text-blue-600'}`}>
+                                        {sub.name}
+                                      </span>
+                                      <span className={`text-[8px] uppercase tracking-widest transition-opacity ${hoveredSubCategory === sub.id ? 'text-blue-500 opacity-100' : 'text-slate-400 opacity-0 group-hover:opacity-100'}`}>
+                                        Shop Now
+                                      </span>
+                                    </Link>
+                                  ))}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="h-full flex flex-col items-center justify-center text-center text-slate-300 py-16">
+                            <Layers size={48} className="mb-4 opacity-20" />
+                            <p className="text-sm font-bold uppercase tracking-widest">Select a category</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Featured Showcase Card (Matching Image 2) */}
+                      <div className="col-span-5 bg-white rounded-[2rem] p-6 lg:p-8 border border-slate-100 shadow-sm flex flex-col justify-between relative overflow-hidden group">
+                        <div className="space-y-2">
+                          <h3 className="text-xl lg:text-2xl font-black text-slate-900 uppercase tracking-tight leading-none">
+                            {displayTitle}
+                          </h3>
+                          <p className="text-xs lg:text-sm text-slate-600 font-medium leading-relaxed max-w-md">
+                            {displayDescription}
+                          </p>
+                        </div>
+
+                        {/* Big Image Display */}
+                        <Link 
+                          to={displayLink}
+                          onClick={() => setActiveMenu(null)}
+                          className="flex-1 min-h-[200px] max-h-[290px] my-3 flex items-center justify-center p-2 relative cursor-pointer"
+                        >
+                          <img 
+                            key={displayImage}
+                            src={displayImage} 
+                            alt={displayTitle} 
+                            className="max-w-full max-h-[260px] object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-500" 
+                          />
+                        </Link>
+
+                        <div className="pt-3 border-t border-slate-100/90 flex items-center justify-between">
+                          <Link 
+                            to={displayLink}
+                            onClick={() => setActiveMenu(null)}
+                            className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-blue-600 hover:text-blue-700 transition-colors"
+                          >
+                            <span>Explore {displayTitle}</span>
+                            <ArrowUpRight size={14} />
+                          </Link>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            {activeSubCategory ? 'Sub-category' : 'Category Showcase'}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {activeMenu === 'brands' && (
                   <div className="flex max-h-[65vh]">

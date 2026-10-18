@@ -69,7 +69,8 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLogin }) => {
       });
 
       if (authError) {
-        throw authError;
+        setError(authError.message || 'Invalid email or password.');
+        return;
       }
 
       if (data.session) {

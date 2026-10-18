@@ -1,5 +1,5 @@
-
-import { createClient } from '@supabase/supabase-js';
+import { createClient, processLock } from '@supabase/supabase-js';
+import { MysqlQueryBuilder, mysqlStorage, mysqlAuth } from './mysqlClient';
 
 /**
  * Robustly fetch environment variables.
@@ -27,20 +27,35 @@ const getEnvVar = (key: string): string => {
   return '';
 };
 
+// Database driver switch: 'mysql' or 'supabase'
+export const getActiveDatabaseDriver = (): 'mysql' | 'supabase' => {
+  try {
+    const stored = localStorage.getItem('meadow_db_driver');
+    if (stored === 'mysql' || stored === 'supabase') return stored;
+  } catch {}
+
+  const envDriver = getEnvVar('USE_MYSQL') || getEnvVar('DB_DRIVER');
+  if (envDriver === 'true' || envDriver === 'mysql') return 'mysql';
+
+  return 'supabase';
+};
+
+export const setDatabaseDriver = (driver: 'mysql' | 'supabase') => {
+  try {
+    localStorage.setItem('meadow_db_driver', driver);
+    window.location.reload();
+  } catch (e) {
+    console.warn('Failed to persist db driver:', e);
+  }
+};
+
 // Values from the user's .env file
 const FALLBACK_URL = 'https://ecscjefihrntuhumtqwe.supabase.co';
 const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjc2NqZWZpaHJudHVodW10cXdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1MjE0NDQsImV4cCI6MjEwNTA5NzQ0NH0.e5O14flqHFoue0297dp6JXmAAmDbrpkMp7-M66RE3k8';
 
 export const supabaseUrl = getEnvVar('SUPABASE_URL') || FALLBACK_URL;
 export const supabaseAnonKey = getEnvVar('SUPABASE_ANON_KEY') || FALLBACK_KEY;
-
 export const isSupabaseConfigured = !!(supabaseUrl && supabaseUrl.startsWith('https://'));
-
-if (!isSupabaseConfigured) {
-  console.error("Supabase URL is invalid or missing. Please check your environment variables (SUPABASE_URL).");
-} else {
-  console.log(`Supabase initialized with URL: ${supabaseUrl.substring(0, 15)}...`);
-}
 
 /**
  * Resilient fetch wrapper with automatic retry for transient network dropouts,
@@ -86,13 +101,59 @@ const resilientFetch: typeof fetch = async (input, init) => {
   throw lastError;
 };
 
-// Initialize the client with the detected or fallback values
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+/**
+ * Safe auth lock implementation to prevent "AbortError: Lock broken by another request with the 'steal' option".
+ * Uses processLock (in-memory sequential promise chain) instead of browser navigator.locks with steal:true,
+ * preventing lock contention and crashes across tabs, iframes, and React StrictMode mounts.
+ */
+const safeAuthLock = async <R>(name: string, acquireTimeout: number, fn: () => Promise<R>): Promise<R> => {
+  try {
+    if (typeof processLock === 'function') {
+      return await processLock(name, acquireTimeout, fn);
+    }
+    return await fn();
+  } catch (err: any) {
+    if (err?.name === 'AbortError' || String(err?.message || '').includes('steal')) {
+      console.warn(`Recovered from lock contention for "${name}":`, err);
+      return await fn();
+    }
+    throw err;
+  }
+};
+
+// Standard Supabase client instance
+const realSupabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
+    lock: safeAuthLock,
   },
   global: {
-    fetch: resilientFetch
-  }
+    fetch: resilientFetch,
+  },
+});
+
+/**
+ * Universal Database Client:
+ * Automatically delegates to Hostinger MariaDB/MySQL when driver is 'mysql',
+ * and seamlessly uses Supabase when driver is 'supabase'.
+ */
+export const supabase: any = new Proxy(realSupabase, {
+  get(target, prop, receiver) {
+    const isMysql = getActiveDatabaseDriver() === 'mysql';
+
+    if (isMysql) {
+      if (prop === 'from') {
+        return (table: string) => new MysqlQueryBuilder(table);
+      }
+      if (prop === 'storage') {
+        return mysqlStorage;
+      }
+      if (prop === 'auth') {
+        return mysqlAuth;
+      }
+    }
+
+    return Reflect.get(target, prop, receiver);
+  },
 });

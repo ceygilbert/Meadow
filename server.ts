@@ -1,16 +1,37 @@
 import "dotenv/config";
+if (process.env.DB_PORT === "3006") {
+  process.env.DB_PORT = "3306";
+}
 import express from "express";
 import path from "path";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { createClient } from "@supabase/supabase-js";
-
+import { testDbConnection } from "./server/db";
+import { authRouter } from "./server/auth";
+import { uploadRouter } from "./server/upload";
+import { apiRouter } from "./server/api";
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Test MySQL/MariaDB connection if configured
+  await testDbConnection();
+
   app.use(express.json());
+
+  // Serve uploaded images statically
+  const uploadsDir = path.join(process.cwd(), "public", "uploads");
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  app.use("/uploads", express.static(uploadsDir));
+
+  // Mount API Routers
+  app.use("/api/auth", authRouter);
+  app.use("/api/upload", uploadRouter);
+  app.use("/api", apiRouter);
 
   // API Route for logging login events
   app.post("/api/log-login", (req, res) => {

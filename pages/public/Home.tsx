@@ -37,6 +37,8 @@ import {
 } from 'lucide-react';
 import PublicNavbar from '../../components/PublicNavbar';
 import Footer from '../../components/Footer';
+import SidebarCart from '../../components/SidebarCart';
+import { useCart } from '../../lib/CartContext';
 import { supabase } from '../../lib/supabase';
 import { Product, Profile, Brand, HomePageSettings } from '../../types';
 import { fetchHomePageSettings } from '../../services/homepageService';
@@ -200,9 +202,17 @@ const Home: React.FC = () => {
   const [authForm, setAuthForm] = useState({ email: '', password: '', fullName: '' });
   const [showPassword, setShowPassword] = useState(false);
 
-  // Cart States
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  // Cart States (using global CartContext)
+  const {
+    cart,
+    cartCount,
+    isCartOpen,
+    setIsCartOpen,
+    addToCart: addProductToCart,
+    updateQuantity,
+    removeFromCart,
+    clearCart
+  } = useCart();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState<string | null>(null);
@@ -335,15 +345,6 @@ const Home: React.FC = () => {
     }
 
     fetchData();
-
-    const savedCart = localStorage.getItem('meadow_cart');
-    if (savedCart) {
-      try {
-        setCart(JSON.parse(savedCart));
-      } catch (e) {
-        console.warn("Failed to parse cart:", e);
-      }
-    }
   }, []);
 
   // Keep customer info in sync with auth user without re-fetching public catalog
@@ -375,9 +376,7 @@ const Home: React.FC = () => {
     }
   }, [isFullMenuOpen]);
 
-  useEffect(() => {
-    localStorage.setItem('meadow_cart', JSON.stringify(cart));
-  }, [cart]);
+
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -490,30 +489,7 @@ const Home: React.FC = () => {
   };
 
   const addToCart = (product: Product) => {
-    if (product.stock <= 0) return;
-    setCart(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        if (existing.quantity >= product.stock) return prev;
-        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
-      }
-      return [...prev, { ...product, quantity: 1 }];
-    });
-    setIsCartOpen(true);
-  };
-
-  const updateQuantity = (id: string, delta: number) => {
-    setCart(prev => prev.map(item => {
-      if (item.id === id) {
-        const newQty = Math.max(1, Math.min(item.quantity + delta, item.stock));
-        return { ...item, quantity: newQty };
-      }
-      return item;
-    }));
-  };
-
-  const removeFromCart = (id: string) => {
-    setCart(prev => prev.filter(item => item.id !== id));
+    addProductToCart(product, 1);
   };
 
   const cartTotal = cart.reduce((acc, item) => {
@@ -549,7 +525,7 @@ const Home: React.FC = () => {
         await supabase.from('products').update({ stock: item.stock - item.quantity }).eq('id', item.id);
       }
       setOrderSuccess(orderData.id);
-      setCart([]);
+      clearCart();
       setIsCheckoutOpen(false);
       fetchData();
     } catch (err: any) {
@@ -1510,62 +1486,16 @@ const Home: React.FC = () => {
         </div>
       )}
 
-      {/* Cart Slider */}
-      {isCartOpen && (
-        <div className="fixed inset-0 z-[150] flex justify-end">
-          <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-md" onClick={() => setIsCartOpen(false)}></div>
-          <div className="relative w-full max-w-md bg-white h-full shadow-2xl animate-in slide-in-from-right duration-700 flex flex-col p-10 md:p-14">
-            <div className="flex items-center justify-between mb-16">
-               <div className="flex flex-col">
-                 <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">Your Selection</h2>
-                 <p className="text-xs text-slate-300 font-black uppercase tracking-[0.3em] mt-3">Active Buffer</p>
-               </div>
-               <button onClick={() => setIsCartOpen(false)} className="w-12 h-12 md:w-14 md:h-14 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-full flex items-center justify-center transition-all shadow-sm"><X size={30} /></button>
-            </div>
-            <div className="flex-1 overflow-y-auto space-y-12 scrollbar-hide">
-               {cart.length === 0 ? (
-                 <div className="h-full flex flex-col items-center justify-center text-center opacity-30">
-                    <div className="w-28 h-28 bg-slate-50 rounded-[3rem] flex items-center justify-center text-slate-300 mb-10"><ShoppingCart size={48} /></div>
-                    <p className="text-xs font-black uppercase tracking-[0.3em]">No items in buffer.</p>
-                 </div>
-               ) : (
-                 cart.map(item => (
-                   <div key={item.id} className="group relative">
-                      <div className="flex gap-10">
-                         <div className="w-32 h-32 rounded-[2.5rem] bg-[#F9FAFB] overflow-hidden shrink-0 border border-slate-50 p-5 transition-all group-hover:scale-105">
-                           <img src={item.image_url || undefined} className="w-full h-full object-contain" />
-                         </div>
-                         <div className="flex-1 py-3">
-                           <div className="flex justify-between items-start gap-4 mb-5">
-                             <h4 className="font-black text-slate-900 text-base uppercase tracking-tight leading-none truncate max-w-[150px]">{item.name}</h4>
-                             <button onClick={() => removeFromCart(item.id)} className="text-slate-200 hover:text-rose-500 transition-colors"><Trash2 size={18} /></button>
-                           </div>
-                           <div className="flex items-center justify-between mt-auto">
-                              <div className="flex items-center bg-slate-50 rounded-2xl px-3 py-1.5 gap-5">
-                                <button onClick={() => updateQuantity(item.id, -1)} className="text-slate-400 hover:text-slate-900 transition-colors"><Minus size={16} /></button>
-                                <span className="font-black text-sm min-w-[24px] text-center">{item.quantity}</span>
-                                <button onClick={() => updateQuantity(item.id, 1)} className="text-slate-400 hover:text-slate-900 transition-colors"><Plus size={16} /></button>
-                              </div>
-                              <span className="font-black text-slate-900 text-base">RM{(item.price * item.quantity).toLocaleString()}</span>
-                           </div>
-                         </div>
-                      </div>
-                   </div>
-                 ))
-               )}
-            </div>
-            {cart.length > 0 && (
-              <div className="mt-auto pt-14 border-t border-slate-50">
-                 <div className="flex items-center justify-between mb-12">
-                    <span className="text-xs font-black text-slate-300 uppercase tracking-[0.4em]">Subtotal</span>
-                    <span className="text-4xl font-black text-slate-900 tracking-tighter">RM{cartTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                 </div>
-                 <button onClick={() => setIsCheckoutOpen(true)} className="w-full py-7 bg-slate-900 text-white font-black rounded-3xl hover:bg-black transition-all shadow-2xl uppercase tracking-[0.3em] text-xs">Initialize Purchase</button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Sidebar Cart */}
+      <SidebarCart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        items={cart}
+        onUpdateQuantity={updateQuantity}
+        onRemoveItem={removeFromCart}
+        checkoutPath="/checkout-light"
+        viewCartPath="/cart"
+      />
 
       <Footer />
     </div>

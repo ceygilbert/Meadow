@@ -39,7 +39,9 @@ import {
   Eye,
   SlidersHorizontal,
   ArrowDownAZ,
-  MoreHorizontal
+  MoreHorizontal,
+  Tag,
+  ChevronDown
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { generateProductDescription } from '../../services/geminiService';
@@ -67,7 +69,10 @@ const ProductManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(6);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBatchDeleting, setIsBatchDeleting] = useState(false);
+  const [showBatchDeleteModal, setShowBatchDeleteModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'out_of_stock'>('all');
+  const [brandFilter, setBrandFilter] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [actionDropdownId, setActionDropdownId] = useState<string | null>(null);
   
@@ -339,11 +344,44 @@ const ProductManagement: React.FC = () => {
       const { error: delError } = await supabase.from('products').delete().eq('id', id);
       if (delError) throw delError;
       setProducts(products.filter(p => p.id !== id));
+      setSelectedIds(prev => prev.filter(item => item !== id));
     } catch (err: any) {
       alert("Error deleting product: " + err.message);
     } finally {
       setIsDeleting(null);
       setItemToDelete(null);
+    }
+  };
+
+  const confirmBatchDelete = async () => {
+    if (selectedIds.length === 0 || isBatchDeleting) return;
+    setIsBatchDeleting(true);
+    try {
+      // 1. Attempt batch delete via Supabase .in() filter
+      const { error: delError } = await supabase
+        .from('products')
+        .delete()
+        .in('id', selectedIds);
+
+      if (delError) {
+        console.warn("Batch delete with in() returned error, falling back to sequential delete:", delError);
+        // Fallback: sequential delete for individual items
+        for (const id of selectedIds) {
+          const { error: singleErr } = await supabase.from('products').delete().eq('id', id);
+          if (singleErr) throw singleErr;
+        }
+      }
+
+      // 2. Remove deleted products from state
+      const deletedSet = new Set(selectedIds);
+      setProducts(prev => prev.filter(p => !deletedSet.has(p.id)));
+      setSelectedIds([]);
+      setShowBatchDeleteModal(false);
+    } catch (err: any) {
+      console.error("Error executing batch delete:", err);
+      alert("Error deleting selected products: " + (err.message || 'Unknown error occurred.'));
+    } finally {
+      setIsBatchDeleting(false);
     }
   };
 
@@ -357,12 +395,18 @@ const ProductManagement: React.FC = () => {
   const filteredProducts = products.filter(p => {
     const matchesSearch = 
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      categories.find(c => c.id === p.category_id)?.name.toLowerCase().includes(searchTerm.toLowerCase());
+      categories.find(c => c.id === p.category_id)?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      brands.find(b => b.id === p.brand_id)?.name.toLowerCase().includes(searchTerm.toLowerCase());
     
     if (!matchesSearch) return false;
 
     if (statusFilter === 'published') return p.stock > 0;
     if (statusFilter === 'out_of_stock') return p.stock === 0;
+
+    if (brandFilter !== 'all') {
+      if (p.brand_id !== brandFilter) return false;
+    }
+
     return true;
   }).sort((a, b) => {
     if (sortOrder === 'asc') return a.name.localeCompare(b.name);
@@ -372,12 +416,25 @@ const ProductManagement: React.FC = () => {
   const totalPages = Math.ceil(filteredProducts.length / pageSize) || 1;
   const paginatedProducts = filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
+  const isAllPaginatedSelected = paginatedProducts.length > 0 && paginatedProducts.every(p => selectedIds.includes(p.id));
+  const isSomePaginatedSelected = paginatedProducts.some(p => selectedIds.includes(p.id)) && !isAllPaginatedSelected;
+
   const toggleSelectAll = () => {
-    if (selectedIds.length === paginatedProducts.length) {
-      setSelectedIds([]);
+    if (isAllPaginatedSelected) {
+      const pageIds = new Set(paginatedProducts.map(p => p.id));
+      setSelectedIds(selectedIds.filter(id => !pageIds.has(id)));
     } else {
-      setSelectedIds(paginatedProducts.map(p => p.id));
+      const pageIds = paginatedProducts.map(p => p.id);
+      setSelectedIds(Array.from(new Set([...selectedIds, ...pageIds])));
     }
+  };
+
+  const selectAllFiltered = () => {
+    setSelectedIds(filteredProducts.map(p => p.id));
+  };
+
+  const clearSelection = () => {
+    setSelectedIds([]);
   };
 
   const toggleSelectOne = (id: string) => {
@@ -455,7 +512,33 @@ const ProductManagement: React.FC = () => {
         </div>
 
         {/* Filter & Sort Pills */}
-        <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-end sm:self-auto">
+          {/* Brand Filter Dropdown */}
+          <div className="relative">
+            <select
+              value={brandFilter}
+              onChange={(e) => {
+                setBrandFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className={`appearance-none bg-white border ${
+                brandFilter !== 'all' 
+                  ? 'border-slate-800 text-slate-900 font-bold bg-slate-50 ring-1 ring-slate-800/10' 
+                  : 'border-slate-200/90 hover:border-slate-300 text-slate-700 font-semibold'
+              } pl-9 pr-8 py-2.5 rounded-full text-xs shadow-xs focus:outline-none cursor-pointer transition-all max-w-[210px] truncate`}
+              title="Filter by brand"
+            >
+              <option value="all">All Brands</option>
+              {brands.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+            <Tag size={13} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${brandFilter !== 'all' ? 'text-slate-900' : 'text-slate-400'} pointer-events-none`} />
+            <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          </div>
+
           {/* Status Filter Pill */}
           <div className="relative">
             <button
@@ -497,20 +580,82 @@ const ProductManagement: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-4">
+          {/* Batch Selection Banner */}
+          {selectedIds.length > 0 && (
+            <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-slate-900 text-white rounded-2xl shadow-sm border border-slate-800 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded-full bg-rose-600 text-white text-[11px] font-black">
+                  {selectedIds.length}
+                </span>
+                <span className="text-xs font-semibold text-slate-100">
+                  {selectedIds.length} {selectedIds.length === 1 ? 'product' : 'products'} selected
+                </span>
+                {filteredProducts.length > selectedIds.length && (
+                  <button
+                    type="button"
+                    onClick={selectAllFiltered}
+                    className="text-xs text-sky-400 hover:text-sky-300 font-medium underline underline-offset-2 transition-colors"
+                  >
+                    Select all {filteredProducts.length} matching products
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={clearSelection}
+                  className="px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+                >
+                  Clear Selection
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowBatchDeleteModal(true)}
+                  className="px-4 py-1.5 rounded-full text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white transition-all shadow-xs flex items-center gap-1.5"
+                >
+                  <Trash2 size={13} />
+                  <span>Batch Delete ({selectedIds.length})</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-100">
+                  <tr className="border-b border-slate-100 bg-slate-50/50">
                     <th className="py-4 pl-6 pr-3 w-10">
                       <input 
                         type="checkbox"
-                        checked={paginatedProducts.length > 0 && selectedIds.length === paginatedProducts.length}
+                        checked={paginatedProducts.length > 0 && isAllPaginatedSelected}
+                        ref={el => {
+                          if (el) el.indeterminate = isSomePaginatedSelected;
+                        }}
                         onChange={toggleSelectAll}
                         className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer"
+                        title={isAllPaginatedSelected ? "Deselect current page" : "Select all on current page"}
                       />
                     </th>
-                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">Product</th>
+                    <th className="py-4 px-4 text-xs font-semibold text-slate-900">
+                      {selectedIds.length > 0 ? (
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-slate-900">{selectedIds.length} Selected</span>
+                          <button
+                            type="button"
+                            onClick={() => setShowBatchDeleteModal(true)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200/80 transition-colors shadow-2xs"
+                            title="Delete selected products"
+                          >
+                            <Trash2 size={12} />
+                            <span>Delete ({selectedIds.length})</span>
+                          </button>
+                        </div>
+                      ) : (
+                        'Product'
+                      )}
+                    </th>
                     <th className="py-4 px-4 text-xs font-semibold text-slate-900">Status</th>
                     <th className="py-4 px-4 text-xs font-semibold text-slate-900">Price</th>
                     <th className="py-4 px-4 text-xs font-semibold text-slate-900">Inventory</th>
@@ -632,7 +777,21 @@ const ProductManagement: React.FC = () => {
                   {paginatedProducts.length === 0 && (
                     <tr>
                       <td colSpan={6} className="py-16 text-center text-xs font-medium text-slate-400">
-                        No products found matching your search.
+                        <p className="mb-2">No products found matching your filters.</p>
+                        {(searchTerm || statusFilter !== 'all' || brandFilter !== 'all') && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSearchTerm('');
+                              setStatusFilter('all');
+                              setBrandFilter('all');
+                              setCurrentPage(1);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 transition-colors shadow-2xs"
+                          >
+                            Reset all filters
+                          </button>
+                        )}
                       </td>
                     </tr>
                   )}
@@ -672,6 +831,78 @@ const ProductManagement: React.FC = () => {
                 <button onClick={() => setItemToDelete(null)} className="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 uppercase tracking-widest text-[10px]">Cancel</button>
                 <button onClick={confirmDelete} disabled={isDeleting !== null} className="flex-1 py-4 bg-rose-600 text-white font-bold rounded-2xl hover:bg-rose-700 shadow-lg shadow-rose-600/20 uppercase tracking-widest text-[10px] flex items-center justify-center gap-2">
                   {isDeleting ? <Loader2 size={14} className="animate-spin" /> : 'Confirm'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Batch Delete Confirmation Modal */}
+      {showBatchDeleteModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-6">
+          <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="p-8 text-center">
+              <div className="w-20 h-20 bg-rose-50 text-rose-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <Trash2 size={38} />
+              </div>
+              <h3 className="text-2xl font-black text-slate-900 mb-2">
+                Delete {selectedIds.length} {selectedIds.length === 1 ? 'Product' : 'Products'}?
+              </h3>
+              <p className="text-slate-500 text-sm mb-6 leading-relaxed">
+                You are about to permanently delete <span className="font-bold text-slate-900">{selectedIds.length} selected products</span> from your inventory. This action cannot be reversed.
+              </p>
+
+              {/* Selected items preview list */}
+              <div className="max-h-48 overflow-y-auto mb-6 bg-slate-50 border border-slate-100 rounded-2xl p-3 text-left space-y-2">
+                {products
+                  .filter(p => selectedIds.includes(p.id))
+                  .slice(0, 6)
+                  .map(p => (
+                    <div key={p.id} className="flex items-center gap-3 p-1.5 bg-white border border-slate-200/60 rounded-xl">
+                      <div className="w-8 h-8 rounded-lg bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center border border-slate-200/50">
+                        {p.image_url ? (
+                          <img src={p.image_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <ImageIcon size={14} className="text-slate-400" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-slate-900 truncate">{p.name}</p>
+                        <p className="text-[10px] text-slate-400">Stock: {p.stock}</p>
+                      </div>
+                    </div>
+                  ))}
+                {selectedIds.length > 6 && (
+                  <p className="text-[11px] font-bold text-slate-500 pt-1 text-center">
+                    + {selectedIds.length - 6} more products selected
+                  </p>
+                )}
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => setShowBatchDeleteModal(false)}
+                  disabled={isBatchDeleting}
+                  className="flex-1 py-4 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 uppercase tracking-widest text-[10px] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmBatchDelete}
+                  disabled={isBatchDeleting}
+                  className="flex-1 py-4 bg-rose-600 text-white font-bold rounded-2xl hover:bg-rose-700 shadow-lg shadow-rose-600/20 uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 transition-all"
+                >
+                  {isBatchDeleting ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      <span>Deleting...</span>
+                    </>
+                  ) : (
+                    <span>Delete {selectedIds.length} Products</span>
+                  )}
                 </button>
               </div>
             </div>
@@ -1114,6 +1345,47 @@ const ProductManagement: React.FC = () => {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* Floating Bottom Batch Action Bar */}
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-950/95 backdrop-blur-md text-white border border-slate-800 rounded-full py-2.5 px-5 shadow-2xl flex items-center gap-3.5 sm:gap-4 animate-in fade-in slide-in-from-bottom-5 duration-200 max-w-[90vw]">
+          <div className="flex items-center gap-2 text-xs font-semibold shrink-0">
+            <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px] font-black">
+              {selectedIds.length}
+            </span>
+            <span className="hidden sm:inline">Selected</span>
+          </div>
+
+          <div className="h-4 w-px bg-slate-800 shrink-0" />
+
+          {filteredProducts.length > selectedIds.length && (
+            <button
+              type="button"
+              onClick={selectAllFiltered}
+              className="text-xs text-sky-400 hover:text-sky-300 font-medium whitespace-nowrap hidden sm:inline"
+            >
+              Select all {filteredProducts.length}
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={clearSelection}
+            className="text-xs text-slate-400 hover:text-white font-medium whitespace-nowrap"
+          >
+            Clear
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowBatchDeleteModal(true)}
+            className="px-4 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md shadow-rose-600/30 transition-all shrink-0"
+          >
+            <Trash2 size={13} />
+            <span>Delete Selected ({selectedIds.length})</span>
+          </button>
         </div>
       )}
     </div>

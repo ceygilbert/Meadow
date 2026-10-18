@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import PublicNavbar from '../../components/PublicNavbar';
 import Footer from '../../components/Footer';
+import SidebarCart from '../../components/SidebarCart';
 import { supabase } from '../../lib/supabase';
 import { Profile, OurStorySettings, AwardCardItem } from '../../types';
 import { fetchOurStorySettings, DEFAULT_OUR_STORY_SETTINGS } from '../../services/ourStoryService';
@@ -27,6 +28,7 @@ interface CartItem {
 }
 
 import { useAuth } from '../../lib/AuthContext';
+import { useCart } from '../../lib/CartContext';
 
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/Red%20Full%20Logo.png";
 
@@ -34,7 +36,14 @@ const OurStory: React.FC = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const [scrolled, setScrolled] = useState(false);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const {
+    cart,
+    cartCount,
+    isCartOpen,
+    setIsCartOpen,
+    updateQuantity,
+    removeFromCart
+  } = useCart();
   const [awardSlide, setAwardSlide] = useState(0);
   const [storySettings, setStorySettings] = useState<OurStorySettings>(DEFAULT_OUR_STORY_SETTINGS);
 
@@ -60,19 +69,14 @@ const OurStory: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    const savedCart = localStorage.getItem('meadow_cart');
-    if (savedCart) setCart(JSON.parse(savedCart));
-  }, []);
-
   return (
-    <div className="min-h-screen bg-[#FFFEFA] text-[#333] font-sans selection:bg-[#333] selection:text-white overflow-x-hidden">
+    <div className="min-h-screen bg-white text-[#333] font-sans selection:bg-[#333] selection:text-white overflow-x-hidden">
       <PublicNavbar 
         user={user}
         profile={profile}
-        cartCount={cart.length}
+        cartCount={cartCount}
         onOpenAuth={() => navigate('/')} 
-        onOpenCart={() => {}}
+        onOpenCart={() => setIsCartOpen(true)}
         scrolled={scrolled}
       />
 
@@ -221,7 +225,7 @@ const OurStory: React.FC = () => {
               </div>
            </div>
            <div className="flex items-end">
-              <div className="aspect-[3/4] w-full bg-[#F6F5E8] rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-lg border border-slate-200/60">
+              <div className="aspect-[3/4] w-full bg-slate-100 rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-lg border border-slate-200/60">
                  <img 
                    src={storySettings.foundations_image_url || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80"} 
                    alt="Details" 
@@ -233,11 +237,11 @@ const OurStory: React.FC = () => {
       </section>
 
       {/* Our Locations Section */}
-      <section className="bg-[#FFFEFA] text-[#333] py-32 border-t border-slate-200/50">
+      <section className="bg-white text-[#333] py-32 border-t border-slate-100">
         <div className="max-w-[1600px] mx-auto px-6 md:px-16 lg:px-32">
            <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
               <div className="order-2 lg:order-1">
-                 <div className="w-full aspect-video bg-[#F6F5E8] rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-lg border border-slate-200/60">
+                 <div className="w-full aspect-video bg-slate-100 rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-lg border border-slate-200/60">
                    <img 
                      src={storySettings.locations_image_url || "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80"} 
                      alt="Space" 
@@ -255,7 +259,7 @@ const OurStory: React.FC = () => {
                  </p>
                  <Link 
                     to={storySettings.locations_btn_link || "/our-stores"}
-                    className="inline-flex items-center justify-between px-8 py-4 border border-[#333]/20 hover:border-[#333] hover:bg-[#333] hover:text-[#FFFEFA] group transition-all duration-500 w-full md:w-auto md:min-w-[280px] rounded-full"
+                    className="inline-flex items-center justify-between px-8 py-4 border border-[#333]/20 hover:border-[#333] hover:bg-[#333] hover:text-white group transition-all duration-500 w-full md:w-auto md:min-w-[280px] rounded-full"
                  >
                     <span className="text-[10px] font-black uppercase tracking-[0.2em]">{storySettings.locations_btn_text || 'Explore our locations'}</span>
                     <ArrowRight size={14} className="transition-transform duration-500 group-hover:translate-x-2" />
@@ -488,6 +492,17 @@ const OurStory: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Sidebar Cart */}
+      <SidebarCart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        items={cart}
+        onUpdateQuantity={updateQuantity}
+        onRemoveItem={removeFromCart}
+        checkoutPath="/checkout-light"
+        viewCartPath="/cart"
+      />
 
       {/* Footer */}
       <Footer />

@@ -27,6 +27,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Product, Profile, Brand } from '../../types';
 import PublicNavbar from '../../components/PublicNavbar';
+import SidebarCart from '../../components/SidebarCart';
+import { useCart } from '../../lib/CartContext';
 
 interface ITStore {
   id: string;
@@ -115,8 +117,15 @@ const StoreLocator: React.FC = () => {
   const [isFullMenuOpen, setIsFullMenuOpen] = useState(false);
   const [menuMode, setMenuMode] = useState<MenuMode>('all');
   const [headerSearch, setHeaderSearch] = useState('');
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const {
+    cart,
+    cartCount,
+    isCartOpen,
+    setIsCartOpen,
+    updateQuantity,
+    removeFromCart
+  } = useCart();
+
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -126,15 +135,6 @@ const StoreLocator: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  useEffect(() => {
-    const savedCart = localStorage.getItem('meadow_cart');
-    if (savedCart) setCart(JSON.parse(savedCart));
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('meadow_cart', JSON.stringify(cart));
-  }, [cart]);
 
   const handleHeaderSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -307,6 +307,22 @@ const StoreLocator: React.FC = () => {
               {isLocating ? <Loader2 size={16} className="animate-spin" /> : <Crosshair size={16} className="text-blue-600" />}
               Use My Location
             </button>
+
+            <div className="flex items-center gap-2 pt-1">
+              <Link 
+                to="/our-stores" 
+                className="flex-1 py-2.5 text-center text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors border border-slate-200"
+              >
+                Our Stores Page
+              </Link>
+              <Link 
+                to="/admin/stores" 
+                className="flex-1 py-2.5 text-center text-xs font-bold text-white bg-slate-900 hover:bg-[#c5161d] rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+              >
+                <Settings size={13} />
+                <span>Admin Edit</span>
+              </Link>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
@@ -396,54 +412,16 @@ const StoreLocator: React.FC = () => {
         </div>
       </div>
 
-      {/* Cart Slider */}
-      {isCartOpen && (
-        <div className="fixed inset-0 z-[1000] flex justify-end">
-          <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-md" onClick={() => setIsCartOpen(false)}></div>
-          <div className="relative w-full max-w-md bg-white h-full shadow-2xl animate-in slide-in-from-right duration-700 flex flex-col p-10 md:p-14">
-            <div className="flex items-center justify-between mb-16">
-               <div className="flex flex-col">
-                 <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">Your Selection</h2>
-                 <p className="text-xs text-slate-300 font-black uppercase tracking-[0.3em] mt-3">Active Buffer</p>
-               </div>
-               <button onClick={() => setIsCartOpen(false)} className="w-12 h-12 md:w-14 md:h-14 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-full flex items-center justify-center transition-all shadow-sm"><X size={30} /></button>
-            </div>
-            <div className="flex-1 overflow-y-auto space-y-12 scrollbar-hide">
-               {cart.length === 0 ? (
-                 <div className="h-full flex flex-col items-center justify-center text-center opacity-30">
-                    <div className="w-28 h-28 bg-slate-50 rounded-[3rem] flex items-center justify-center text-slate-300 mb-10"><ShoppingCart size={48} /></div>
-                    <p className="text-xs font-black uppercase tracking-[0.3em]">No items in buffer.</p>
-                 </div>
-               ) : (
-                 cart.map(item => (
-                   <div key={item.id} className="group relative">
-                      <div className="flex gap-10">
-                         <div className="w-32 h-32 rounded-[2.5rem] bg-[#F9FAFB] overflow-hidden shrink-0 border border-slate-50 p-5 transition-all group-hover:scale-105">
-                           <img src={item.image_url} className="w-full h-full object-contain" />
-                         </div>
-                         <div className="flex-1 py-3">
-                           <div className="flex justify-between items-start gap-4 mb-5">
-                             <h4 className="font-black text-slate-900 text-base uppercase tracking-tight leading-none truncate max-w-[150px]">{item.name}</h4>
-                             <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="text-slate-200 hover:text-rose-500 transition-colors"><X size={18} /></button>
-                           </div>
-                           <div className="flex items-center justify-between mt-auto">
-                              <span className="font-black text-sm">Qty: {item.quantity}</span>
-                              <span className="font-black text-slate-900 text-base">RM{(item.price * item.quantity).toLocaleString()}</span>
-                           </div>
-                         </div>
-                      </div>
-                   </div>
-                 ))
-               )}
-            </div>
-            {cart.length > 0 && (
-              <div className="mt-auto pt-14 border-t border-slate-50">
-                 <button onClick={() => navigate('/checkout-light')} className="w-full py-7 bg-slate-900 text-white font-black rounded-3xl hover:bg-black transition-all shadow-2xl uppercase tracking-[0.3em] text-xs">Initialize Purchase</button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Sidebar Cart */}
+      <SidebarCart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        items={cart}
+        onUpdateQuantity={updateQuantity}
+        onRemoveItem={removeFromCart}
+        checkoutPath="/checkout-light"
+        viewCartPath="/cart"
+      />
     </div>
   );
 };

@@ -158,7 +158,7 @@ const TrackOrder: React.FC = () => {
               Track your parcel status
             </h1>
             <p className="text-slate-500 text-sm sm:text-base font-normal max-w-md mx-auto leading-relaxed">
-              Enter your order id and email
+              Enter your order number to see real-time status and shipment details
             </p>
           </div>
 
@@ -393,34 +393,6 @@ const TrackOrder: React.FC = () => {
               )}
             </div>
           )}
-
-          {/* Quick Info Badges */}
-          <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
-            <div className="p-4 bg-white border border-slate-200/80 rounded-xl flex items-start gap-3 shadow-2xs">
-              <ShieldCheck size={20} className="text-[#c5161d] shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-xs font-bold text-slate-900">Secure Dispatch</h4>
-                <p className="text-[11px] text-slate-500 mt-0.5">Full transit insurance for high-value PC hardware.</p>
-              </div>
-            </div>
-
-            <div className="p-4 bg-white border border-slate-200/80 rounded-xl flex items-start gap-3 shadow-2xs">
-              <Truck size={20} className="text-[#c5161d] shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-xs font-bold text-slate-900">Express Delivery</h4>
-                <p className="text-[11px] text-slate-500 mt-0.5">Shipped via GDEX &amp; reliable regional couriers.</p>
-              </div>
-            </div>
-
-            <div className="p-4 bg-white border border-slate-200/80 rounded-xl flex items-start gap-3 shadow-2xs">
-              <MapPin size={20} className="text-[#c5161d] shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-xs font-bold text-slate-900">Store Collection</h4>
-                <p className="text-[11px] text-slate-500 mt-0.5">Option to self-collect at Johor retail outlets.</p>
-              </div>
-            </div>
-          </div>
-
         </div>
       </main>
 

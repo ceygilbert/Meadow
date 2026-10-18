@@ -42,6 +42,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../../lib/supabase';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import Footer from '../../components/Footer';
+import SidebarCart from '../../components/SidebarCart';
+import { useCart } from '../../lib/CartContext';
 import { Product, Brand, Category, Profile } from '../../types';
 
 interface CartItem extends Product {
@@ -149,8 +151,16 @@ const ProductDetails: React.FC = () => {
   const [isFullMenuOpen, setIsFullMenuOpen] = useState(false);
   const [menuMode, setMenuMode] = useState<MenuMode>('all');
   const [headerSearch, setHeaderSearch] = useState('');
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const {
+    cart,
+    cartCount,
+    isCartOpen,
+    setIsCartOpen,
+    addToCart: addProductToCart,
+    updateQuantity,
+    removeFromCart
+  } = useCart();
+
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -163,13 +173,7 @@ const ProductDetails: React.FC = () => {
 
   useEffect(() => {
     fetchProductData();
-    const savedCart = localStorage.getItem('meadow_cart');
-    if (savedCart) setCart(JSON.parse(savedCart));
   }, [slug]);
-
-  useEffect(() => {
-    localStorage.setItem('meadow_cart', JSON.stringify(cart));
-  }, [cart]);
 
   const fetchProductData = async () => {
     if (!slug) return;
@@ -212,17 +216,10 @@ const ProductDetails: React.FC = () => {
   };
 
   const addToCart = () => {
-    if (!product || product.stock <= 0) return;
-    setCart(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item);
-      }
-      return [...prev, { ...product, quantity }];
-    });
+    if (!product) return;
+    addProductToCart(product, quantity);
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
-    setIsCartOpen(true);
   };
 
   const openMenu = (mode: MenuMode) => {
@@ -471,15 +468,11 @@ const ProductDetails: React.FC = () => {
                 
                 <button 
                   onClick={() => {
-                    if (!product || product.stock <= 0) return;
-                    const alreadyInCart = cart.find(item => item.id === product.id);
-                    if (!alreadyInCart) {
-                       setCart(prev => [...prev, { ...product, quantity }]);
-                    }
+                    if (!product) return;
+                    addProductToCart(product, quantity);
                     navigate('/checkout-light');
                   }}
-                  disabled={product.stock <= 0}
-                  className="w-full py-3.5 px-6 bg-slate-300 text-slate-800 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm active:scale-[0.98] disabled:opacity-50"
+                  className="w-full py-3.5 px-6 bg-slate-300 text-slate-800 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm active:scale-[0.98]"
                 >
                   BUY IT NOW
                 </button>
@@ -992,54 +985,16 @@ const ProductDetails: React.FC = () => {
         </div>
       </section>
 
-      {/* Cart Slider */}
-      {isCartOpen && (
-        <div className="fixed inset-0 z-[1000] flex justify-end">
-          <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-md" onClick={() => setIsCartOpen(false)}></div>
-          <div className="relative w-full max-w-md bg-white h-full shadow-2xl animate-in slide-in-from-right duration-700 flex flex-col p-10 md:p-14">
-            <div className="flex items-center justify-between mb-16">
-               <div className="flex flex-col">
-                 <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">Your Selection</h2>
-                 <p className="text-xs text-slate-300 font-black uppercase tracking-[0.3em] mt-3">Active Buffer</p>
-               </div>
-               <button onClick={() => setIsCartOpen(false)} className="w-12 h-12 md:w-14 md:h-14 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-full flex items-center justify-center transition-all shadow-sm"><X size={30} /></button>
-            </div>
-            <div className="flex-1 overflow-y-auto space-y-12 scrollbar-hide">
-               {cart.length === 0 ? (
-                 <div className="h-full flex flex-col items-center justify-center text-center opacity-30">
-                    <div className="w-28 h-28 bg-slate-50 rounded-[3rem] flex items-center justify-center text-slate-300 mb-10"><ShoppingCart size={48} /></div>
-                    <p className="text-xs font-black uppercase tracking-[0.3em]">No items in buffer.</p>
-                 </div>
-               ) : (
-                 cart.map(item => (
-                   <div key={item.id} className="group relative">
-                      <div className="flex gap-10">
-                         <div className="w-32 h-32 rounded-[2.5rem] bg-[#F9FAFB] overflow-hidden shrink-0 border border-slate-50 p-5 transition-all group-hover:scale-105">
-                           <img src={item.image_url || undefined} className="w-full h-full object-contain" />
-                         </div>
-                         <div className="flex-1 py-3">
-                           <div className="flex justify-between items-start gap-4 mb-5">
-                             <h4 className="font-black text-slate-900 text-base uppercase tracking-tight leading-none truncate max-w-[150px]">{item.name}</h4>
-                             <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="text-slate-200 hover:text-rose-500 transition-colors"><X size={18} /></button>
-                           </div>
-                           <div className="flex items-center justify-between mt-auto">
-                              <span className="font-black text-sm">Qty: {item.quantity}</span>
-                              <span className="font-black text-slate-900 text-base">RM{(item.price * item.quantity).toLocaleString()}</span>
-                           </div>
-                         </div>
-                      </div>
-                   </div>
-                 ))
-               )}
-            </div>
-            {cart.length > 0 && (
-              <div className="mt-auto pt-14 border-t border-slate-50">
-                 <button onClick={() => navigate('/checkout-light')} className="w-full py-7 bg-slate-900 text-white font-black rounded-3xl hover:bg-black transition-all shadow-2xl uppercase tracking-[0.3em] text-xs">Initialize Purchase</button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Sidebar Cart */}
+      <SidebarCart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        items={cart}
+        onUpdateQuantity={updateQuantity}
+        onRemoveItem={removeFromCart}
+        checkoutPath="/checkout-light"
+        viewCartPath="/cart"
+      />
 
       {/* Footer */}
       <Footer />
@@ -1099,15 +1054,11 @@ const ProductDetails: React.FC = () => {
               {/* Buy It Now */}
               <button 
                 onClick={() => {
-                  if (!product || product.stock <= 0) return;
-                  const alreadyInCart = cart.find(item => item.id === product.id);
-                  if (!alreadyInCart) {
-                     setCart(prev => [...prev, { ...product, quantity }]);
-                  }
+                  if (!product) return;
+                  addProductToCart(product, quantity);
                   navigate('/checkout-light');
                 }}
-                disabled={product.stock <= 0}
-                className="py-2.5 md:py-3 px-4 md:px-8 bg-slate-900 text-white rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-black transition-all shadow-sm active:scale-[0.98] disabled:opacity-50 whitespace-nowrap"
+                className="py-2.5 md:py-3 px-4 md:px-8 bg-slate-900 text-white rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-black transition-all shadow-sm active:scale-[0.98] whitespace-nowrap"
               >
                 BUY IT NOW
               </button>

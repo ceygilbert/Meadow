@@ -91,8 +91,43 @@ export const DEFAULT_FOOTER_CONFIG: FooterConfig = {
   ],
 };
 
+function formatParsedConfig(parsed: any): FooterConfig {
+  const parsedColumns = Array.isArray(parsed?.columns) ? parsed.columns : DEFAULT_FOOTER_CONFIG.columns;
+
+  // Check if a supplier link exists in any column; if not, inject it
+  const hasSupplierLink = parsedColumns.some((col: FooterColumn) =>
+    Array.isArray(col.items) && col.items.some((item) => item.url === '/suppliers' || item.url === '/supplier')
+  );
+
+  let finalColumns = parsedColumns;
+  if (!hasSupplierLink && finalColumns.length > 0) {
+    finalColumns = finalColumns.map((col: FooterColumn, idx: number) => {
+      if (idx === 0 || col.id === 'col-company') {
+        return {
+          ...col,
+          items: [
+            ...(col.items || []),
+            { id: "c-supplier", name: "Suppliers", url: "/suppliers", isVisible: true },
+          ],
+        };
+      }
+      return col;
+    });
+  }
+
+  return {
+    ...DEFAULT_FOOTER_CONFIG,
+    ...parsed,
+    socialLinks: {
+      ...DEFAULT_FOOTER_CONFIG.socialLinks,
+      ...(parsed?.socialLinks || {}),
+    },
+    columns: finalColumns,
+  };
+}
+
 /**
- * Retrieve the current footer configuration from localStorage (zero database calls).
+ * Retrieve the cached footer configuration from localStorage for instantaneous rendering.
  * Falls back safely to DEFAULT_FOOTER_CONFIG.
  */
 export function getFooterConfig(): FooterConfig {
@@ -101,38 +136,7 @@ export function getFooterConfig(): FooterConfig {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_FOOTER_CONFIG;
     const parsed = JSON.parse(raw);
-    const parsedColumns = Array.isArray(parsed.columns) ? parsed.columns : DEFAULT_FOOTER_CONFIG.columns;
-
-    // Check if a supplier link exists in any column; if not, inject it so admin can see and edit it
-    const hasSupplierLink = parsedColumns.some((col: FooterColumn) => 
-      Array.isArray(col.items) && col.items.some(item => item.url === '/suppliers' || item.url === '/supplier')
-    );
-
-    let finalColumns = parsedColumns;
-    if (!hasSupplierLink && finalColumns.length > 0) {
-      finalColumns = finalColumns.map((col: FooterColumn, idx: number) => {
-        if (idx === 0 || col.id === 'col-company') {
-          return {
-            ...col,
-            items: [
-              ...(col.items || []),
-              { id: "c-supplier", name: "Suppliers", url: "/suppliers", isVisible: true }
-            ]
-          };
-        }
-        return col;
-      });
-    }
-
-    return {
-      ...DEFAULT_FOOTER_CONFIG,
-      ...parsed,
-      socialLinks: {
-        ...DEFAULT_FOOTER_CONFIG.socialLinks,
-        ...(parsed.socialLinks || {})
-      },
-      columns: finalColumns
-    };
+    return formatParsedConfig(parsed);
   } catch (err) {
     console.warn('Error reading footer config from localStorage:', err);
     return DEFAULT_FOOTER_CONFIG;
@@ -140,8 +144,31 @@ export function getFooterConfig(): FooterConfig {
 }
 
 /**
- * Save footer configuration to localStorage and notify all listeners immediately.
- * Zero database calls.
+ * Asynchronously fetch the authoritative footer configuration from the server and database.
+ * Updates local cache and notifies all tabs/components.
+ */
+export async function fetchFooterConfig(): Promise<FooterConfig> {
+  try {
+    const res = await fetch('/api/settings/footer_config');
+    if (res.ok) {
+      const result = await res.json();
+      if (result && result.data && typeof result.data === 'object' && Array.isArray(result.data.columns)) {
+        const formatted = formatParsedConfig(result.data);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(formatted));
+          window.dispatchEvent(new CustomEvent(FOOTER_EVENT_NAME, { detail: formatted }));
+        }
+        return formatted;
+      }
+    }
+  } catch (err) {
+    console.warn('[FooterConfig] Remote fetch failed, falling back to local cache:', err);
+  }
+  return getFooterConfig();
+}
+
+/**
+ * Save footer configuration to localStorage and asynchronously sync to server/database.
  */
 export function saveFooterConfig(config: FooterConfig): void {
   if (typeof window === 'undefined') return;
@@ -151,12 +178,47 @@ export function saveFooterConfig(config: FooterConfig): void {
   } catch (err) {
     console.error('Failed to save footer config to localStorage:', err);
   }
+
+  // Persist to server / database asynchronously
+  fetch('/api/settings/footer_config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ value: config }),
+  }).catch((err) => {
+    console.warn('[FooterConfig] Background save to server failed:', err);
+  });
 }
 
 /**
- * Reset footer configuration to factory defaults in localStorage.
+ * Save footer configuration and await confirmation from the database/server.
  */
-export function resetFooterConfig(): FooterConfig {
+export async function saveFooterConfigAsync(config: FooterConfig): Promise<boolean> {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+      window.dispatchEvent(new CustomEvent(FOOTER_EVENT_NAME, { detail: config }));
+    } catch (err) {
+      console.error('Failed to save footer config to localStorage:', err);
+    }
+  }
+
+  try {
+    const res = await fetch('/api/settings/footer_config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ value: config }),
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('[FooterConfig] Failed to persist footer config to server:', err);
+    return false;
+  }
+}
+
+/**
+ * Reset footer configuration to factory defaults in localStorage and on the server.
+ */
+export async function resetFooterConfig(): Promise<FooterConfig> {
   if (typeof window !== 'undefined') {
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -165,18 +227,32 @@ export function resetFooterConfig(): FooterConfig {
       console.error('Failed to reset footer config:', err);
     }
   }
+
+  try {
+    await fetch('/api/settings/footer_config', { method: 'DELETE' });
+  } catch (err) {
+    console.warn('[FooterConfig] Failed to reset footer config on server:', err);
+  }
+
   return DEFAULT_FOOTER_CONFIG;
 }
 
 /**
- * React hook for consuming and dynamically synchronizing the footer configuration.
+ * React hook for consuming and dynamically synchronizing the footer configuration across all browsers.
  */
 export function useFooterConfig() {
   const [config, setConfig] = useState<FooterConfig>(() => getFooterConfig());
 
   useEffect(() => {
-    // Initial sync
+    // 1. Initial cached state
     setConfig(getFooterConfig());
+
+    // 2. Fetch authoritative configuration from server/database
+    fetchFooterConfig().then((serverConfig) => {
+      if (serverConfig) {
+        setConfig(serverConfig);
+      }
+    });
 
     const handleCustomEvent = (e: Event) => {
       const custom = e as CustomEvent<FooterConfig>;
@@ -207,8 +283,8 @@ export function useFooterConfig() {
     setConfig(newConfig);
   }, []);
 
-  const reset = useCallback(() => {
-    const def = resetFooterConfig();
+  const reset = useCallback(async () => {
+    const def = await resetFooterConfig();
     setConfig(def);
   }, []);
 

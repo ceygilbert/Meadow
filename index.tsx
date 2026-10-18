@@ -11,6 +11,22 @@ if (typeof window !== 'undefined' && window.location.hash && window.location.has
   window.history.replaceState(null, '', cleanPath);
 }
 
+// Suppress and handle benign Web Locks AbortError ("Lock broken by another request with the 'steal' option")
+if (typeof window !== 'undefined') {
+  window.addEventListener('unhandledrejection', (event) => {
+    const reason = event.reason;
+    const msg = String(reason?.message || reason || '');
+    if (
+      reason?.name === 'AbortError' ||
+      msg.includes('steal') ||
+      msg.includes('Lock broken by another request')
+    ) {
+      event.preventDefault();
+      console.warn('Benign lock contention handled:', msg);
+    }
+  });
+}
+
 const mountApp = () => {
   const rootElement = document.getElementById('root');
   if (!rootElement) {

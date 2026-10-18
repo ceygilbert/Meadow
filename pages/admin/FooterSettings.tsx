@@ -29,7 +29,8 @@ import {
   FooterMenuItem, 
   DEFAULT_FOOTER_CONFIG, 
   getFooterConfig, 
-  saveFooterConfig, 
+  fetchFooterConfig,
+  saveFooterConfigAsync, 
   resetFooterConfig 
 } from '../../lib/footerConfig';
 import Footer from '../../components/Footer';
@@ -40,9 +41,15 @@ const FooterSettingsPage: React.FC = () => {
   const [toast, setToast] = useState<{ type: 'success' | 'info' | 'error'; message: string } | null>(null);
   const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>('light');
   const [isDirty, setIsDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setConfig(getFooterConfig());
+    fetchFooterConfig().then((serverConfig) => {
+      if (serverConfig) {
+        setConfig(serverConfig);
+      }
+    });
   }, []);
 
   const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
@@ -52,18 +59,29 @@ const FooterSettingsPage: React.FC = () => {
     }, 3500);
   };
 
-  const handleSave = () => {
-    saveFooterConfig(config);
-    setIsDirty(false);
-    showToast("Footer configuration saved successfully! Frontend footer updated immediately without database calls.", 'success');
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const ok = await saveFooterConfigAsync(config);
+      setIsDirty(false);
+      if (ok) {
+        showToast("Footer configuration saved successfully and synced to database across all browsers!", 'success');
+      } else {
+        showToast("Footer saved locally and queued for database sync.", 'info');
+      }
+    } catch (err: any) {
+      showToast("Error saving footer config: " + (err.message || 'Unknown error'), 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     if (window.confirm("Are you sure you want to reset all footer menus and texts to default values?")) {
-      const def = resetFooterConfig();
+      const def = await resetFooterConfig();
       setConfig(def);
       setIsDirty(false);
-      showToast("Footer settings reset to factory defaults.", 'info');
+      showToast("Footer settings reset to factory defaults across all browsers.", 'info');
     }
   };
 
@@ -330,10 +348,11 @@ const FooterSettingsPage: React.FC = () => {
 
           <button
             onClick={handleSave}
-            className="px-6 py-2.5 bg-[#c5161d] hover:bg-[#a81318] active:bg-[#991217] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+            disabled={saving}
+            className="px-6 py-2.5 bg-[#c5161d] hover:bg-[#a81318] active:bg-[#991217] disabled:opacity-50 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
           >
-            <Save size={15} />
-            <span>Save Changes</span>
+            <Save size={15} className={saving ? 'animate-spin' : ''} />
+            <span>{saving ? 'Saving...' : 'Save Changes'}</span>
           </button>
         </div>
       </div>

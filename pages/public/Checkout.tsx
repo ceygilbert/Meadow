@@ -60,8 +60,8 @@ const Checkout: React.FC = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
 
-  const [selectedBranch, setSelectedBranch] = useState('MEADOW IT DISTRIBUTION (HQ)');
-  const [deliveryMethod, setDeliveryMethod] = useState('Shipping');
+  const selectedBranch = 'West Malaysia GDEX Logistics';
+  const deliveryMethod = 'Shipping By GDEX';
   const [paymentMethod, setPaymentMethod] = useState('Credit Card');
   const [selections, setSelections] = useState<Record<string, any>>({});
 
@@ -94,41 +94,34 @@ const Checkout: React.FC = () => {
     if (profile?.phone && !phone) setPhone(profile.phone);
   }, [profile, user]);
 
-  const filteredHubs = useMemo(() => {
-    if (deliveryMethod === 'Shipping') {
-      return [{ id: 'wm', name: 'WEST MALAYSIA', city: 'LOGISTICS', available: true }];
-    }
-    if (deliveryMethod === 'Self-Pickup') {
-      return [
-        { id: 'jj', name: 'JOHOR JAYA BRANCH', city: 'HQ', available: true },
-        { id: 'pp', name: 'PLAZA PELANGI', city: 'JB', available: true },
-        { id: 'lk', name: 'LARKIN (COMING SOON)', city: 'JB', available: false },
-        { id: 'tu', name: 'TAMAN UNIVERSITI (COMING SOON)', city: 'SKUDAI', available: false }
-      ];
-    }
-    if (deliveryMethod === 'Onsite') {
-      return [{ id: 'jb', name: 'JB AREA', city: 'LOCAL', available: true }];
-    }
-    return [];
-  }, [deliveryMethod]);
-
   useEffect(() => {
-    // Reset selected branch if it's not in the filtered list
-    if (filteredHubs.length > 0 && !filteredHubs.find(h => h.name === selectedBranch)) {
-      setSelectedBranch(filteredHubs[0].name);
-    }
-  }, [filteredHubs]);
-
-  useEffect(() => {
+    let hasBuild = false;
     const saved = localStorage.getItem('meadow_pc_build');
     if (saved) {
       try {
-        setSelections(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        if (parsed && Object.keys(parsed).length > 0) {
+          hasBuild = true;
+          setSelections(parsed);
+        }
       } catch (e) {
         console.error("Failed to parse saved build", e);
       }
     }
-  }, []);
+
+    // If no active custom PC build, check if user has normal cart items
+    if (!hasBuild) {
+      const savedCart = localStorage.getItem('meadow_cart');
+      if (savedCart) {
+        try {
+          const parsedCart = JSON.parse(savedCart);
+          if (Array.isArray(parsedCart) && parsedCart.length > 0) {
+            navigate('/checkout-light', { replace: true });
+          }
+        } catch (e) {}
+      }
+    }
+  }, [navigate]);
 
   const manifestItems = useMemo(() => {
     const items: Array<{ id: string, name: string, price: number, quantity: number, category: string }> = [];
@@ -165,7 +158,7 @@ const Checkout: React.FC = () => {
     return manifestItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   }, [manifestItems]);
 
-  const deliveryFee = deliveryMethod === 'Shipping' ? 45 : 0;
+  const deliveryFee = 45;
   const grandTotal = subtotal + deliveryFee;
 
 
@@ -250,15 +243,13 @@ const Checkout: React.FC = () => {
   };
 
   const deliveryOptions = [
-    { id: 'Shipping', label: 'Shipping By GDEX', sub: 'West Malaysia Coverage' },
-    { id: 'Self-Pickup', label: 'Self-Pickup', sub: 'From Selected Branch' },
-    { id: 'Onsite', label: 'Onsite Delivery', sub: 'Area Dependent' }
+    { id: 'Shipping', label: 'Shipping By GDEX', sub: 'West Malaysia Doorstep Delivery (1-3 Days)' }
   ];
 
   const paymentOptions = [
-    { id: 'Credit Card', label: 'Instant Settlement', sub: 'Card, FPX, E-Wallet (Stripe)' },
-    { id: 'IPP', label: 'Instalment Plan', sub: 'IPP Settlement' },
-    { id: 'Atome', label: 'Buy Now Pay Later', sub: 'Atome, Grab, SpayLater' }
+    { id: 'Credit Card', label: 'Instant Card / FPX', sub: 'Stripe Gateway' },
+    { id: 'IPP', label: 'Instalment Plan', sub: 'EPP Participating Banks' },
+    { id: 'Atome', label: 'Buy Now Pay Later', sub: 'Atome 3x Split' }
   ];
 
   return (
@@ -270,390 +261,361 @@ const Checkout: React.FC = () => {
       </div>
 
       {/* Header */}
-      <nav className="relative h-24 md:h-32 px-8 md:px-16 flex items-center justify-between z-10 border-b border-white/5 bg-[#050607]/80 backdrop-blur-xl">
-        <div className="flex items-center gap-10">
-          <Link to="/buildpc" className="group flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 group-hover:text-rose-500 group-hover:border-rose-600 transition-all">
-               <ArrowLeft size={18} />
-            </div>
-            <img src={LOGO_URL} className="h-10 md:h-14 w-auto opacity-80" alt="Meadow" />
-          </Link>
-          <div className="hidden lg:block w-px h-8 bg-white/10"></div>
-          <p className="hidden lg:block text-xs font-black uppercase tracking-[0.4em] text-white/40">Protocol Execution: Phase_Final</p>
-        </div>
+      <nav className="relative h-16 sm:h-20 px-4 sm:px-8 flex items-center justify-between z-10 border-b border-white/10 bg-[#050607]/80 backdrop-blur-xl">
         <div className="flex items-center gap-6">
-           <div className="flex items-center gap-2 text-rose-500">
-              <Lock size={14} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Secure Link</span>
-           </div>
+          <Link to="/buildpc" className="group flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/50 group-hover:text-rose-500 group-hover:border-rose-600 transition-all">
+               <ArrowLeft size={15} />
+            </div>
+            <img src={LOGO_URL} className="h-8 sm:h-10 w-auto opacity-90" alt="Meadow" />
+          </Link>
+          <div className="hidden sm:block w-px h-6 bg-white/10"></div>
+          <p className="hidden sm:block text-[11px] font-bold uppercase tracking-wider text-white/40">PC Builder Checkout</p>
         </div>
       </nav>
 
-      <main className="relative z-10 max-w-[1600px] mx-auto px-8 md:px-16 py-12 md:py-20">
-        <div className="grid lg:grid-cols-12 gap-16 items-start">
+      <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Breadcrumb & Title */}
+        <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-white/10">
+          <div>
+            <div className="flex items-center gap-2 text-xs text-white/40 mb-1">
+              <Link to="/buildpc" className="hover:text-white transition-colors">PC Builder</Link>
+              <span>/</span>
+              <span className="text-white font-medium">Checkout</span>
+            </div>
+            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              <span>Checkout</span>
+            </h1>
+          </div>
+
+          <Link
+            to="/buildpc"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/60 hover:text-rose-400 transition-colors self-start sm:self-auto"
+          >
+            <ArrowLeft size={13} />
+            <span>Modify Build</span>
+          </Link>
+        </div>
+
+        <div className="grid lg:grid-cols-12 gap-5 lg:gap-6 items-start">
           
           {/* Left Column: Forms */}
-          <div className="lg:col-span-8 space-y-24">
+          <div className="lg:col-span-7 xl:col-span-8 space-y-4">
             
-            {/* Client Registry */}
-            <section className="space-y-10">
-              <div className="flex items-center gap-6">
-                 <div className="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></div>
-                 <h2 className="font-black text-4xl md:text-5xl text-white tracking-tighter uppercase">Client Registry.</h2>
+            {/* 1. Customer Details */}
+            <section className="bg-[#0B0C0E] border border-white/10 rounded-xl p-4 sm:p-5 shadow-xs">
+              <div className="flex items-center justify-between pb-2.5 mb-3.5 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-md bg-rose-600 text-white text-[11px] font-bold flex items-center justify-center">1</span>
+                  <h2 className="text-xs sm:text-sm font-bold text-white">Customer Details</h2>
+                </div>
+                <span className="text-[10px] text-white/40 font-medium">* Required fields</span>
               </div>
-              
-              <div className="grid md:grid-cols-2 gap-8 bg-white/[0.02] border border-white/5 p-10 rounded-[3rem]">
-                <div className="space-y-8 md:col-span-2">
-                   <div>
-                      <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] mb-4 block">Customer Category</label>
-                      <select 
-                        value={customerCategory}
-                        onChange={(e) => setCustomerCategory(e.target.value)}
-                        className="w-full h-16 px-6 bg-white/[0.03] border border-white/10 rounded-2xl outline-none focus:border-rose-600/50 font-bold transition-all text-white"
-                      >
-                         <option value="Personal" className="bg-[#050607]">Individual / Personal</option>
-                         <option value="Corporate" className="bg-[#050607]">Corporate / Enterprise</option>
-                      </select>
-                   </div>
+
+              <div className="grid sm:grid-cols-2 gap-3.5 sm:gap-4">
+                <div className="sm:col-span-2">
+                  <label className="text-xs sm:text-sm font-semibold text-slate-300 block mb-1.5">Customer</label>
+                  <select 
+                    value={customerCategory}
+                    onChange={(e) => setCustomerCategory(e.target.value)}
+                    className="w-full h-14 px-4 bg-white/[0.04] border border-white/10 rounded-lg text-sm sm:text-base font-medium text-white focus:bg-white/[0.08] focus:border-rose-500 outline-none transition-all cursor-pointer shadow-2xs"
+                  >
+                    <option value="Personal" className="bg-[#0B0C0E] text-white">Individual / Personal</option>
+                    <option value="Corporate" className="bg-[#0B0C0E] text-white">Corporate / Enterprise</option>
+                  </select>
                 </div>
 
-                <div className="space-y-4">
-                   <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] block">Full Name *</label>
-                   <input 
-                     value={fullName}
-                     onChange={(e) => setFullName(e.target.value)}
-                     className="w-full h-16 px-6 bg-white/[0.03] border border-white/10 rounded-2xl outline-none focus:border-rose-600/50 font-bold transition-all text-white placeholder:text-white/10" 
-                     placeholder="LEGAL NAME" 
-                   />
+                <div>
+                  <label className="text-xs sm:text-sm font-semibold text-slate-300 block mb-1.5">Full Name *</label>
+                  <input 
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="e.g. Tan Wei Ming"
+                    className="w-full h-14 px-4 bg-white/[0.04] border border-white/10 rounded-lg text-sm sm:text-base font-medium text-white placeholder:text-white/30 focus:bg-white/[0.08] focus:border-rose-500 outline-none transition-all shadow-2xs"
+                  />
                 </div>
 
-                <div className="space-y-4">
-                   <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] block">ID Number (For E-Invoice)</label>
-                   <input 
-                     value={nric}
-                     onChange={(e) => setNric(e.target.value)}
-                     className="w-full h-16 px-6 bg-white/[0.03] border border-white/10 rounded-2xl outline-none focus:border-rose-600/50 font-bold transition-all text-white placeholder:text-white/10" 
-                     placeholder="NRIC / PASSPORT" 
-                   />
+                <div>
+                  <label className="text-xs sm:text-sm font-semibold text-slate-300 block mb-1.5">ID Number (NRIC / Passport)</label>
+                  <input 
+                    type="text"
+                    value={nric}
+                    onChange={(e) => setNric(e.target.value)}
+                    placeholder="For E-Invoice"
+                    className="w-full h-14 px-4 bg-white/[0.04] border border-white/10 rounded-lg text-sm sm:text-base font-medium text-white placeholder:text-white/30 focus:bg-white/[0.08] focus:border-rose-500 outline-none transition-all shadow-2xs"
+                  />
                 </div>
 
-                <div className="space-y-4">
-                   <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] block">Communication Link (Mobile) *</label>
-                   <input 
-                     value={phone}
-                     onChange={(e) => setPhone(e.target.value)}
-                     className="w-full h-16 px-6 bg-white/[0.03] border border-white/10 rounded-2xl outline-none focus:border-rose-600/50 font-bold transition-all text-white placeholder:text-white/10" 
-                     placeholder="+60 000-0000" 
-                   />
+                <div>
+                  <label className="text-xs sm:text-sm font-semibold text-slate-300 block mb-1.5">Mobile Phone *</label>
+                  <input 
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+60 12-345 6789"
+                    className="w-full h-14 px-4 bg-white/[0.04] border border-white/10 rounded-lg text-sm sm:text-base font-medium text-white placeholder:text-white/30 focus:bg-white/[0.08] focus:border-rose-500 outline-none transition-all shadow-2xs"
+                  />
                 </div>
 
-                <div className="space-y-4">
-                   <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] block">Registry Email *</label>
-                   <input 
-                     type="email"
-                     value={email}
-                     onChange={(e) => setEmail(e.target.value)}
-                     className="w-full h-16 px-6 bg-white/[0.03] border border-white/10 rounded-2xl outline-none focus:border-rose-600/50 font-bold transition-all text-white placeholder:text-white/10" 
-                     placeholder="EMAIL@DOMAIN.COM" 
-                   />
+                <div>
+                  <label className="text-xs sm:text-sm font-semibold text-slate-300 block mb-1.5">Registry Email *</label>
+                  <input 
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@example.com"
+                    className="w-full h-14 px-4 bg-white/[0.04] border border-white/10 rounded-lg text-sm sm:text-base font-medium text-white placeholder:text-white/30 focus:bg-white/[0.08] focus:border-rose-500 outline-none transition-all shadow-2xs"
+                  />
                 </div>
 
-                <div className="md:col-span-2 space-y-4">
-                   <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] block">Deployment Address</label>
-                   <textarea 
-                     rows={4} 
-                     value={address}
-                     onChange={(e) => setAddress(e.target.value)}
-                     className="w-full p-6 bg-white/[0.03] border border-white/10 rounded-3xl outline-none focus:border-rose-600/50 font-bold transition-all text-white placeholder:text-white/10" 
-                     placeholder="STREET, UNIT, POSTCODE, CITY" 
-                   />
+                <div className="sm:col-span-2">
+                  <label className="text-xs sm:text-sm font-semibold text-slate-300 block mb-1.5">Delivery Address *</label>
+                  <textarea 
+                    rows={6} 
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Street, building, unit number, city, and state"
+                    className="w-full p-4 bg-white/[0.04] border border-white/10 rounded-lg text-sm sm:text-base font-medium text-white placeholder:text-white/30 focus:bg-white/[0.08] focus:border-rose-500 outline-none transition-all resize-y min-h-[160px] shadow-2xs leading-relaxed"
+                  />
                 </div>
 
-                <div className="md:col-span-2 space-y-4">
-                   <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] block">Operational Notes</label>
-                   <textarea 
-                     rows={2} 
-                     value={notes}
-                     onChange={(e) => setNotes(e.target.value)}
-                     className="w-full p-6 bg-white/[0.03] border border-white/10 rounded-3xl outline-none focus:border-rose-600/50 font-bold transition-all text-white placeholder:text-white/10" 
-                     placeholder="LEAVE YOUR MESSAGE HERE..." 
-                   />
-                </div>
-              </div>
-            </section>
-
-            {/* Shipping Method & Logistics Deployment */}
-            <section className="space-y-10">
-              <div className="flex items-center gap-6">
-                 <div className="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></div>
-                 <h2 className="font-black text-4xl md:text-5xl text-white tracking-tighter uppercase">Logistics Deployment.</h2>
-              </div>
-              
-              <div className="space-y-12">
-                <div className="space-y-6">
-                   <p className="text-[11px] font-black text-rose-500 uppercase tracking-[0.4em]">Shipping Method</p>
-                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {deliveryOptions.map((opt) => (
-                        <button 
-                          key={opt.id}
-                          onClick={() => setDeliveryMethod(opt.id)}
-                          className={`p-8 rounded-[2.5rem] border text-left transition-all duration-500 relative overflow-hidden group ${
-                            deliveryMethod === opt.id 
-                              ? 'bg-rose-600 border-rose-600 shadow-[0_0_40px_rgba(225,29,72,0.2)]' 
-                              : 'bg-white/[0.02] border-white/5 hover:border-white/20'
-                          }`}
-                        >
-                           <p className={`text-lg font-black tracking-tight mb-2 ${deliveryMethod === opt.id ? 'text-white' : 'text-white/60 group-hover:text-white'}`}>{opt.label}</p>
-                           <p className={`text-[10px] font-black uppercase tracking-widest ${deliveryMethod === opt.id ? 'text-white/70' : 'text-white/30'}`}>{opt.sub}</p>
-                           {deliveryMethod === opt.id && <div className="absolute top-4 right-4 text-white"><CheckCircle2 size={16} /></div>}
-                        </button>
-                      ))}
-                   </div>
-                </div>
-
-                <div className="space-y-6">
-                   <p className="text-[11px] font-black text-rose-500 uppercase tracking-[0.4em]">Select Operations Hub</p>
-                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {filteredHubs.map((branch) => (
-                        <button 
-                          key={branch.id}
-                          onClick={() => branch.available && setSelectedBranch(branch.name)}
-                          disabled={!branch.available}
-                          className={`p-8 rounded-[2.5rem] border text-left transition-all duration-500 relative overflow-hidden group min-h-[140px] flex flex-col justify-center ${
-                            selectedBranch === branch.name 
-                              ? 'bg-rose-600 border-rose-600 shadow-[0_0_40px_rgba(225,29,72,0.2)]' 
-                              : branch.available 
-                                ? 'bg-white/[0.02] border-white/5 hover:border-white/20'
-                                : 'bg-white/[0.01] border-white/5 opacity-40 cursor-not-allowed'
-                          }`}
-                        >
-                           <p className={`text-[10px] font-black uppercase tracking-widest mb-2 ${selectedBranch === branch.name ? 'text-white/70' : 'text-white/30'}`}>{branch.city}</p>
-                           <p className={`text-sm md:text-base font-black tracking-tight leading-tight ${selectedBranch === branch.name ? 'text-white' : 'text-white/60 group-hover:text-white'}`}>{branch.name}</p>
-                           {selectedBranch === branch.name && <div className="absolute top-4 right-4 text-white"><CheckCircle2 size={16} /></div>}
-                        </button>
-                      ))}
-                   </div>
+                <div className="sm:col-span-2">
+                  <label className="text-xs sm:text-sm font-semibold text-slate-300 block mb-1.5">Operational Notes (Optional)</label>
+                  <input 
+                    type="text"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Special instructions or cabling requests"
+                    className="w-full h-14 px-4 bg-white/[0.04] border border-white/10 rounded-lg text-sm sm:text-base font-medium text-white placeholder:text-white/30 focus:bg-white/[0.08] focus:border-rose-500 outline-none transition-all shadow-2xs"
+                  />
                 </div>
               </div>
             </section>
 
-            {/* Financial Resolution */}
-            <section className="space-y-10">
-              <div className="flex items-center gap-6">
-                 <div className="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></div>
-                 <h2 className="font-black text-4xl md:text-5xl text-white tracking-tighter uppercase">Financial Resolution.</h2>
+            {/* 2. Logistics & Delivery (Shipping By GDEX only, compact box & small text) */}
+            <section className="bg-[#0B0C0E] border border-white/10 rounded-xl p-4 sm:p-5 shadow-xs">
+              <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-md bg-rose-600 text-white text-[11px] font-bold flex items-center justify-center">2</span>
+                  <h2 className="text-xs sm:text-sm font-bold text-white">Delivery Method</h2>
+                </div>
+                <span className="text-[10px] font-bold text-rose-500 uppercase tracking-wide">GDEX Courier</span>
               </div>
-              
-              <div className="space-y-10">
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {paymentOptions.map((opt) => (
-                      <button 
-                        key={opt.id}
-                        onClick={() => setPaymentMethod(opt.id)}
-                        className={`p-8 rounded-[2.5rem] border text-left transition-all duration-500 relative overflow-hidden group ${
-                          paymentMethod === opt.id 
-                            ? 'bg-rose-600 border-rose-600 shadow-[0_0_40px_rgba(225,29,72,0.2)]' 
-                            : 'bg-white/[0.02] border-white/5 hover:border-white/20'
-                        }`}
-                      >
-                         <div className="flex items-center gap-2 mb-2">
-                           {opt.id === 'Credit Card' && <Zap size={16} className={paymentMethod === opt.id ? 'text-amber-300 animate-pulse' : 'text-rose-500'} />}
-                           <p className={`text-lg font-black tracking-tight ${paymentMethod === opt.id ? 'text-white' : 'text-white/60 group-hover:text-white'}`}>{opt.label}</p>
-                         </div>
-                         <p className={`text-[10px] font-black uppercase tracking-widest ${paymentMethod === opt.id ? 'text-white/70' : 'text-white/30'}`}>{opt.sub}</p>
-                         {paymentMethod === opt.id && <div className="absolute top-4 right-4 text-white"><CheckCircle2 size={16} /></div>}
-                      </button>
-                    ))}
-                 </div>
 
-                 {paymentMethod === 'Credit Card' && (
-                   <div className="bg-gradient-to-r from-indigo-950/60 via-slate-900/80 to-indigo-950/60 border border-indigo-500/30 rounded-[2.5rem] p-8 space-y-4 shadow-xl">
-                     <div className="flex items-center justify-between">
-                       <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black shadow-lg shadow-indigo-600/30">
-                           <CreditCard size={20} />
-                         </div>
-                         <div>
-                           <h4 className="text-sm font-black text-white uppercase tracking-widest">Stripe Gateway Integrated</h4>
-                           <p className="text-[11px] font-bold text-slate-400">Encrypted instant credit card & mobile wallet processing for PC builds</p>
-                         </div>
-                       </div>
-                       <button 
-                         onClick={() => setShowStripeConfig(!showStripeConfig)}
-                         className="flex items-center gap-2 text-xs font-black text-indigo-400 bg-white/5 border border-white/10 px-4 py-2 rounded-xl hover:bg-white/10 transition-all"
-                       >
-                         <Settings size={14} />
-                         <span>{showStripeConfig ? 'Hide Stripe Key' : 'Publishable Key'}</span>
-                       </button>
-                     </div>
-
-                     {showStripeConfig && (
-                       <div className="pt-4 border-t border-white/10 animate-in fade-in slide-in-from-top-2 duration-300">
-                         <label className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1 block">Stripe Publishable Key</label>
-                         <input 
-                           type="text" 
-                           value={stripePublishableKey} 
-                           onChange={(e) => setStripePublishableKey(e.target.value)}
-                           placeholder="pk_test_..." 
-                           className="w-full h-12 px-4 bg-white/5 border border-white/10 rounded-xl text-xs font-mono font-bold text-white focus:border-indigo-500 outline-none" 
-                         />
-                       </div>
-                     )}
-                   </div>
-                 )}
-
-                 {/* Protocol Terms */}
-                 <div className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-10 space-y-10">
-                    <div className="flex items-center gap-6 border-b border-white/5 pb-8">
-                       <h3 className="text-xl font-bold uppercase tracking-widest text-white">Service Protocol & Conditions</h3>
+              {/* Single Compact GDEX Shipping Card */}
+              <div className="border border-rose-500/30 bg-rose-950/20 rounded-lg p-2.5 sm:p-3 flex items-center justify-between gap-3 shadow-2xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-md bg-rose-600 text-white flex items-center justify-center shrink-0">
+                    <Truck size={14} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="text-xs font-bold text-white">Shipping By GDEX</p>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300">Doorstep Delivery</span>
                     </div>
+                    <p className="text-[10px] text-slate-400 mt-0.5">West Malaysia coverage • 1 - 3 working days with live parcel tracking</p>
+                  </div>
+                </div>
 
-                    <div className="space-y-8 max-h-[400px] overflow-y-auto pr-6 scrollbar-hide">
-                       <div className="bg-rose-600/5 border border-rose-600/10 p-6 rounded-2xl flex items-start gap-5">
-                          <Info className="text-rose-600 shrink-0 mt-1" size={20} />
-                          <p className="text-sm font-bold text-rose-500 leading-relaxed uppercase tracking-wider">
-                            Ensure active browser pop-ups are enabled for payment gateway redirection protocol.
-                          </p>
-                       </div>
-
-                       <div className="space-y-6">
-                          {[
-                            { title: 'Instalment Handling', text: 'Administrative fees apply to all modular payment deployments.' },
-                            { title: 'Overseas Resolution', text: 'Non-resident credit transactions incur a 3% handling protocol.' },
-                            { title: 'Irreversible Selection', text: 'Once committed, the instalment period cannot be recalibrated.' },
-                            { title: 'Cancellation Policy', text: 'Withdrawal of active orders incurs a 2% administrative decay fee.' },
-                            { title: 'Refund Eligibility', text: 'All requests are subject to engineering review and approval cycles.' },
-                            { title: 'Settlement Window', text: 'Transmission of funds may take 7-14 standard cycle days for full verification.' }
-                          ].map((item, i) => (
-                            <div key={i} className="flex gap-6 group">
-                               <span className="text-rose-600 font-black text-xs mt-1 shrink-0">0{i+1}</span>
-                               <div className="space-y-2">
-                                  <h4 className="text-sm font-black text-white uppercase tracking-widest">{item.title}</h4>
-                                  <p className="text-slate-500 text-sm leading-relaxed group-hover:text-slate-300 transition-colors font-medium">{item.text}</p>
-                               </div>
-                            </div>
-                          ))}
-                       </div>
-
-                       <div className="pt-8 border-t border-white/5">
-                          <p className="text-[10px] font-bold text-rose-600/60 uppercase tracking-[0.2em] leading-loose italic">
-                            * Completion of this terminal protocol confirms client acceptance of all liability and service terms stated above. Meadow reserves the right to terminate invalid deployments.
-                          </p>
-                       </div>
-                    </div>
-                 </div>
+                <div className="flex items-center justify-end gap-2.5 shrink-0">
+                  <div className="text-right">
+                    <span className="text-xs sm:text-sm font-extrabold text-white block">RM 45.00</span>
+                    <span className="text-[9px] text-slate-400">Standard Rate</span>
+                  </div>
+                  <div className="w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center shrink-0">
+                    <CheckCircle2 size={11} />
+                  </div>
+                </div>
               </div>
+            </section>
+
+            {/* 3. Payment Option */}
+            <section className="bg-[#0B0C0E] border border-white/10 rounded-xl p-4 sm:p-5 shadow-xs">
+              <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-md bg-rose-600 text-white text-[11px] font-bold flex items-center justify-center">3</span>
+                  <h2 className="text-xs sm:text-sm font-bold text-white">Payment Option</h2>
+                </div>
+                <span className="text-[10px] text-white/40 font-medium">Encrypted Checkout</span>
+              </div>
+
+              {/* Payment Options Grid - Compact */}
+              <div className="grid sm:grid-cols-3 gap-2.5">
+                {paymentOptions.map((opt) => (
+                  <button 
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setPaymentMethod(opt.id)}
+                    className={`p-2.5 rounded-lg border text-left transition-all duration-200 relative flex flex-col justify-between cursor-pointer ${
+                      paymentMethod === opt.id 
+                        ? 'bg-rose-950/30 border-rose-600 shadow-2xs' 
+                        : 'bg-white/[0.02] border-white/10 hover:border-white/20 hover:bg-white/[0.04]'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="w-6 h-6 rounded bg-white/5 flex items-center justify-center shrink-0 text-rose-400">
+                          {opt.id === 'Credit Card' ? <Zap size={13} /> : <CreditCard size={13} />}
+                        </div>
+                        <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                          paymentMethod === opt.id ? 'border-rose-600 bg-rose-600 text-white' : 'border-white/20'
+                        }`}>
+                          {paymentMethod === opt.id && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        </div>
+                      </div>
+                      <p className={`text-xs font-bold ${paymentMethod === opt.id ? 'text-white' : 'text-slate-200'}`}>{opt.label}</p>
+                      <p className="text-[9.5px] text-slate-400 mt-0.5 leading-snug line-clamp-1">{opt.sub}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Stripe Gateway Notice */}
+              {paymentMethod === 'Credit Card' && (
+                <div className="mt-2.5 bg-indigo-950/40 border border-indigo-500/20 rounded-lg p-2.5 sm:p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                      <CreditCard size={13} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-white">Stripe Checkout Integrated</p>
+                      <p className="text-[10px] text-slate-400">Encrypted instant credit card & mobile wallet processing</p>
+                    </div>
+                  </div>
+                  <button 
+                    type="button"
+                    onClick={() => setShowStripeConfig(!showStripeConfig)}
+                    className="flex items-center gap-1.5 text-[10px] font-semibold text-indigo-300 bg-white/5 border border-white/10 px-2.5 py-1 rounded-md hover:bg-white/10 transition-all self-start sm:self-auto cursor-pointer"
+                  >
+                    <Settings size={12} />
+                    <span>{showStripeConfig ? 'Hide Config' : 'Publishable Key'}</span>
+                  </button>
+                </div>
+              )}
+
+              {showStripeConfig && paymentMethod === 'Credit Card' && (
+                <div className="mt-2.5 p-2.5 bg-black/40 border border-white/10 rounded-lg space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Stripe Publishable Key</label>
+                  <input 
+                    type="text" 
+                    value={stripePublishableKey} 
+                    onChange={(e) => setStripePublishableKey(e.target.value)}
+                    placeholder="pk_test_..." 
+                    className="w-full h-8 px-2.5 bg-white/5 border border-white/10 rounded-md text-xs font-mono text-white outline-none" 
+                  />
+                </div>
+              )}
             </section>
           </div>
 
           {/* Right Column: Order Manifest */}
-          <div className="lg:col-span-4 sticky top-32">
-             <div className="bg-[#0A0B0C] border border-white/5 rounded-[4rem] p-12 space-y-12 shadow-2xl overflow-hidden group">
-                <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_100%_0%,_#200a0a_0%,_transparent_50%)]"></div>
-                
-                <div className="relative z-10">
-                   <div className="flex items-center justify-between mb-10">
-                      <div>
-                        <h2 className="font-black text-4xl text-white tracking-tighter uppercase">The Manifest.</h2>
-                        <p className="text-[11px] font-black text-rose-600 uppercase tracking-[0.4em] mt-2">Active Buffer</p>
-                      </div>
-                      <FileText size={32} className="text-white/10" />
+          <div className="lg:col-span-5 xl:col-span-4 sticky top-24 space-y-3">
+             <div className="bg-[#0B0C0E] border border-white/10 rounded-xl p-4 sm:p-5 shadow-xl space-y-3">
+                <div className="flex items-center justify-between pb-2.5 border-b border-white/10">
+                   <div>
+                     <h3 className="text-xs sm:text-sm font-bold text-white tracking-tight">The Manifest</h3>
+                     <p className="text-[10px] text-slate-400">Custom PC build components</p>
                    </div>
+                   <FileText size={16} className="text-white/30" />
+                </div>
 
-                   <div className="space-y-8 max-h-[450px] overflow-y-auto pr-4 scrollbar-hide">
-                      {manifestItems.length === 0 ? (
-                        <div className="py-12 text-center opacity-20">
-                          <p className="text-[10px] font-black uppercase tracking-widest">No selections recorded.</p>
-                        </div>
-                      ) : (
-                        manifestItems.map((item) => (
-                          <div key={item.id} className="flex items-start gap-6 group/item">
-                            <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center shrink-0 border border-white/10 group-hover/item:border-rose-600 transition-colors">
-                                <div className="text-white/20 group-hover/item:text-rose-500 transition-colors">
-                                  {ICON_MAP[item.category] || <Box size={24} />}
-                                </div>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h4 className="text-[10px] font-black text-white uppercase tracking-tight leading-tight mb-2 truncate">{item.name}</h4>
-                                <div className="flex items-center justify-between mt-4">
-                                  <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest">
-                                    RM {item.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                  </span>
-                                  <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">x{item.quantity}</span>
-                                </div>
-                            </div>
-                          </div>
-                        ))
-                      )}
-
-                      {deliveryFee > 0 && (
-                        <div className="flex items-start gap-6 group/item opacity-50">
-                          <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center shrink-0 border border-white/10">
-                              <Truck size={24} className="text-white/20" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                              <h4 className="text-xs font-black text-white uppercase tracking-tight leading-tight mb-1">Logistics Allocation</h4>
-                              <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest">RM {deliveryFee.toLocaleString()}.00</p>
-                          </div>
-                        </div>
-                      )}
-                   </div>
-
-                   <div className="mt-12 pt-10 border-t border-white/5 space-y-8">
-                      <div className="space-y-3">
-                         <div className="flex justify-between items-center text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">
-                            <span>Asset Value</span>
-                            <span>RM {subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+                   {manifestItems.length === 0 ? (
+                     <div className="py-6 text-center text-xs text-slate-400">
+                       <p>No selections recorded.</p>
+                       <Link to="/buildpc" className="text-rose-400 font-semibold hover:underline mt-1 inline-block">Return to PC Builder</Link>
+                     </div>
+                   ) : (
+                     manifestItems.map((item) => (
+                       <div key={item.id} className="flex items-start gap-2.5 pb-2 border-b border-white/5 last:border-b-0">
+                         <div className="w-8 h-8 bg-white/5 rounded-md flex items-center justify-center shrink-0 border border-white/10 text-white/50">
+                           {ICON_MAP[item.category] || <Box size={14} />}
                          </div>
-                         <div className="flex justify-between items-center text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">
-                            <span>Transmission Tax</span>
-                            <span>RM 0.00</span>
+                         <div className="flex-1 min-w-0">
+                           <h4 className="text-xs font-semibold text-white line-clamp-1 leading-tight">{item.name}</h4>
+                           <div className="flex items-center justify-between mt-1">
+                             <span className="text-xs font-bold text-rose-400">
+                               RM {item.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                             </span>
+                             <span className="text-[10px] text-slate-400">x{item.quantity}</span>
+                           </div>
                          </div>
-                      </div>
-                      
-                      <div className="flex flex-col gap-2">
-                         <p className="text-[11px] font-black text-rose-600 uppercase tracking-[0.6em]">Aggregate Total</p>
-                         <p className="text-6xl font-black tracking-tighter text-white">RM {grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
-                      </div>
+                       </div>
+                     ))
+                   )}
+
+                   {deliveryFee > 0 && (
+                     <div className="flex items-center justify-between pt-1 text-xs text-slate-400">
+                       <span className="flex items-center gap-1.5">
+                         <Truck size={12} className="text-slate-400" />
+                         <span>Shipping (GDEX)</span>
+                       </span>
+                       <span className="font-semibold text-white">RM {deliveryFee.toFixed(2)}</span>
+                     </div>
+                   )}
+                </div>
+
+                <div className="pt-2.5 border-t border-white/10 space-y-1.5 text-xs">
+                   <div className="flex justify-between text-slate-400">
+                      <span>Subtotal</span>
+                      <span className="font-semibold text-white">RM {subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                    </div>
-
-                   <div className="mt-12 space-y-4">
-                      {formError && (
-                        <div className="bg-rose-950/80 border border-rose-500/50 p-4 rounded-2xl text-xs font-black text-rose-300 uppercase tracking-widest animate-in fade-in duration-300">
-                          {formError}
-                        </div>
-                      )}
-
-                      <button 
-                        onClick={handlePaymentSubmit}
-                        disabled={isProcessing}
-                        className="w-full h-16 bg-indigo-600 text-white rounded-[2rem] font-black text-[13px] uppercase tracking-[0.5em] hover:bg-indigo-500 transition-all flex items-center justify-center gap-4 group shadow-2xl shadow-indigo-600/30 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                         {isProcessing ? (
-                           <>
-                             <Loader2 size={18} className="animate-spin" />
-                             <span>Processing...</span>
-                           </>
-                         ) : paymentMethod === 'Credit Card' ? (
-                           <>
-                             <CreditCard size={18} className="text-white group-hover:scale-110 transition-transform" />
-                             <span>Pay via Stripe</span>
-                           </>
-                         ) : (
-                           <span>Checkout</span>
-                         )}
-                      </button>
-                      <button className="w-full h-16 bg-white/5 border border-white/10 text-white/40 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.4em] hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-4">
-                         <Printer size={18} />
-                         Generate Quote PDF
-                      </button>
+                   <div className="flex justify-between text-slate-400">
+                      <span>Delivery Fee (GDEX)</span>
+                      <span className="font-semibold text-white">RM {deliveryFee.toFixed(2)}</span>
                    </div>
                    
+                   <div className="pt-2 border-t border-white/10 flex items-baseline justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-white block">Grand Total</span>
+                        <span className="text-[9.5px] text-slate-400">MYR (Ringgit Malaysia)</span>
+                      </div>
+                      <span className="text-lg sm:text-xl font-black text-white tracking-tight">
+                        RM {grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </span>
+                   </div>
+                </div>
 
+                {formError && (
+                  <div className="p-2.5 rounded-lg bg-rose-950/80 border border-rose-500/40 text-xs font-semibold text-rose-300 flex items-center gap-2">
+                    <Info size={13} className="shrink-0 text-rose-400" />
+                    <span>{formError}</span>
+                  </div>
+                )}
+
+                <div className="pt-1 space-y-2">
+                  <button 
+                    type="button"
+                    onClick={handlePaymentSubmit}
+                    disabled={isProcessing || manifestItems.length === 0}
+                    className="w-full h-9 sm:h-10 bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white rounded-lg font-bold text-xs tracking-wide transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                     {isProcessing ? (
+                       <>
+                         <Loader2 size={14} className="animate-spin" />
+                         <span>Processing Order...</span>
+                       </>
+                     ) : paymentMethod === 'Credit Card' ? (
+                       <>
+                         <CreditCard size={14} />
+                         <span>Pay via Stripe</span>
+                       </>
+                     ) : (
+                       <span>Confirm & Place Order</span>
+                     )}
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => window.print()}
+                    className="w-full h-8 bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 rounded-lg font-semibold text-[11px] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                     <Printer size={13} />
+                     <span>Print Build Quote</span>
+                  </button>
                 </div>
              </div>
           </div>
-
         </div>
       </main>
 
@@ -694,61 +656,61 @@ const Checkout: React.FC = () => {
             </div>
 
             {/* Card Inputs */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <label className="text-[10px] font-black text-white/40 uppercase tracking-widest block mb-2">Card Number (Stripe Test Card)</label>
+                <label className="text-xs font-semibold text-white/70 block mb-1">Card Number (Stripe Test Card)</label>
                 <div className="relative">
                   <input 
                     type="text" 
                     value={stripeCardNumber} 
                     onChange={(e) => setStripeCardNumber(e.target.value)}
-                    className="w-full h-14 px-4 pl-12 bg-white/5 border border-white/10 rounded-xl text-sm font-mono font-bold text-white focus:border-indigo-500 outline-none" 
+                    className="w-full h-10.5 px-3 pl-10 bg-white/5 border border-white/10 rounded-lg text-sm font-mono font-medium text-white focus:border-indigo-500 outline-none" 
                   />
-                  <CreditCard className="absolute left-4 top-4 text-indigo-400" size={18} />
+                  <CreditCard className="absolute left-3 top-3 text-indigo-400" size={16} />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] font-black text-white/40 uppercase tracking-widest block mb-2">Expires</label>
+                  <label className="text-xs font-semibold text-white/70 block mb-1">Expires</label>
                   <input 
                     type="text" 
                     value={stripeExpiry} 
                     onChange={(e) => setStripeExpiry(e.target.value)}
-                    className="w-full h-14 px-4 bg-white/5 border border-white/10 rounded-xl text-sm font-mono font-bold text-white focus:border-indigo-500 outline-none" 
+                    className="w-full h-10.5 px-3 bg-white/5 border border-white/10 rounded-lg text-sm font-mono font-medium text-white focus:border-indigo-500 outline-none" 
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-black text-white/40 uppercase tracking-widest block mb-2">CVC / CVC2</label>
+                  <label className="text-xs font-semibold text-white/70 block mb-1">CVC / CVC2</label>
                   <input 
                     type="text" 
                     value={stripeCvc} 
                     onChange={(e) => setStripeCvc(e.target.value)}
-                    className="w-full h-14 px-4 bg-white/5 border border-white/10 rounded-xl text-sm font-mono font-bold text-white focus:border-indigo-500 outline-none" 
+                    className="w-full h-10.5 px-3 bg-white/5 border border-white/10 rounded-lg text-sm font-mono font-medium text-white focus:border-indigo-500 outline-none" 
                   />
                 </div>
               </div>
             </div>
 
-            <div className="p-4 bg-indigo-950/50 border border-indigo-500/30 rounded-2xl flex items-center gap-3 text-xs font-bold text-indigo-300">
-              <Lock size={16} className="shrink-0" />
-              <span>Stripe 256-bit SSL encrypted test transaction</span>
+            <div className="p-2.5 bg-indigo-950/50 border border-indigo-500/30 rounded-lg flex items-center gap-2 text-xs font-medium text-indigo-300">
+              <Lock size={13} className="shrink-0" />
+              <span className="text-xs">Stripe test transaction environment</span>
             </div>
 
             <button 
               onClick={handleCompleteStripePayment}
               disabled={isProcessing}
-              className="w-full h-16 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
+              className="w-full h-11 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 cursor-pointer"
             >
               {isProcessing ? (
                 <>
-                  <Loader2 size={20} className="animate-spin" />
+                  <Loader2 size={15} className="animate-spin" />
                   <span>Authorizing Stripe...</span>
                 </>
               ) : (
                 <>
                   <span>Pay RM {grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })} with Stripe</span>
-                  <ArrowRight size={18} />
+                  <ArrowRight size={14} />
                 </>
               )}
             </button>
@@ -757,11 +719,11 @@ const Checkout: React.FC = () => {
       )}
 
       {/* Footer Minimal */}
-      <footer className="relative z-10 px-8 md:px-16 py-20 border-t border-white/5 mt-20">
-         <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row items-center justify-between gap-10">
-            <img src={LOGO_URL} className="h-8 opacity-20 grayscale" alt="Meadow" />
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">
-               © {new Date().getFullYear()} Meadow IT • Secure Transmission Node JB_4
+      <footer className="relative z-10 px-8 md:px-16 py-12 border-t border-white/5 mt-16">
+         <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <img src={LOGO_URL} className="h-7 opacity-30 grayscale" alt="Meadow" />
+            <p className="text-[11px] font-medium text-white/30">
+               © {new Date().getFullYear()} Meadow IT Distribution
             </p>
             <div className="flex items-center gap-6">
               <a href="#" className="w-10 h-10 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:border-white transition-all shadow-sm">

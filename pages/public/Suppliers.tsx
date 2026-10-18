@@ -23,9 +23,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import PublicNavbar from '../../components/PublicNavbar';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import Footer from '../../components/Footer';
+import SidebarCart from '../../components/SidebarCart';
 import { supabase } from '../../lib/supabase';
 import { Product, Category, Brand, Profile } from '../../types';
 import { useAuth } from '../../lib/AuthContext';
+import { useCart } from '../../lib/CartContext';
 import { useSupplierConfig } from '../../lib/supplierConfig';
 
 interface CartItem extends Product {
@@ -45,8 +47,15 @@ const SuppliersPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Cart states
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const {
+    cart,
+    cartCount,
+    isCartOpen,
+    setIsCartOpen,
+    addToCart: addProductToCart,
+    updateQuantity: updateCartQuantity,
+    removeFromCart: removeCartItem
+  } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [cartToast, setCartToast] = useState<string | null>(null);
 
@@ -63,22 +72,6 @@ const SuppliersPage: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  useEffect(() => {
-    // Load local cart
-    try {
-      const savedCart = localStorage.getItem('meadow_cart');
-      if (savedCart) setCart(JSON.parse(savedCart));
-    } catch (e) {
-      console.warn('Failed to load cart from storage:', e);
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('meadow_cart', JSON.stringify(cart));
-    } catch (e) {}
-  }, [cart]);
 
   useEffect(() => {
     fetchData();
@@ -113,29 +106,8 @@ const SuppliersPage: React.FC = () => {
   };
 
   const addToCart = (product: Product) => {
-    setCart(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
-      }
-      return [...prev, { ...product, quantity: 1 }];
-    });
+    addProductToCart(product, 1);
     showCartToast(product.name);
-    setIsCartOpen(true);
-  };
-
-  const updateCartQuantity = (id: string, delta: number) => {
-    setCart(prev => prev.map(item => {
-      if (item.id === id) {
-        const newQty = item.quantity + delta;
-        return newQty > 0 ? { ...item, quantity: newQty } : null;
-      }
-      return item;
-    }).filter(Boolean) as CartItem[]);
-  };
-
-  const removeCartItem = (id: string) => {
-    setCart(prev => prev.filter(item => item.id !== id));
   };
 
   const cartTotal = useMemo(() => {
@@ -230,7 +202,7 @@ const SuppliersPage: React.FC = () => {
 
       {/* Breadcrumbs */}
       <div className="max-w-[1440px] mx-auto px-4 md:px-10 pt-28 pb-4">
-        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Suppliers' }]} />
+        <Breadcrumbs homePath="/" items={[{ label: 'Suppliers' }]} />
       </div>
 
       {/* ==================================================== */}
@@ -581,9 +553,6 @@ const SuppliersPage: React.FC = () => {
                     {/* Price & Action */}
                     <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                       <div>
-                        <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
-                          Supply Price
-                        </span>
                         <div className="flex items-baseline gap-1.5">
                           <span className="text-base font-black text-slate-900">
                             RM {finalPrice.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -620,115 +589,16 @@ const SuppliersPage: React.FC = () => {
 
       {/* ==================================================== */}
       {/* CART SLIDE-OVER DRAWER                               */}
-      {/* ==================================================== */}
-      <AnimatePresence>
-        {isCartOpen && (
-          <div className="fixed inset-0 z-[1000] flex justify-end">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs" 
-              onClick={() => setIsCartOpen(false)}
-            />
-            <motion.div 
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col justify-between p-6 md:p-8 z-10"
-            >
-              {/* Drawer Header */}
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <div className="flex items-center gap-2">
-                  <ShoppingCart size={18} className="text-[#c5161d]" />
-                  <h3 className="text-base font-black uppercase tracking-tight text-slate-900">
-                    Your Cart ({cart.reduce((s, i) => s + i.quantity, 0)})
-                  </h3>
-                </div>
-                <button 
-                  onClick={() => setIsCartOpen(false)}
-                  className="p-2 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Items List */}
-              <div className="flex-1 overflow-y-auto py-4 space-y-3">
-                {cart.length === 0 ? (
-                  <div className="py-20 text-center text-slate-400">
-                    <ShoppingCart size={40} className="mx-auto mb-3 opacity-30" />
-                    <p className="text-xs font-bold uppercase tracking-wider">Your cart is empty</p>
-                  </div>
-                ) : (
-                  cart.map(item => {
-                    const price = calculateFinalPrice(item);
-                    return (
-                      <div key={item.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-3">
-                        <img 
-                          src={item.image_url || "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&w=600&q=80"} 
-                          alt={item.name} 
-                          className="w-14 h-14 object-contain rounded-lg bg-white p-1 shrink-0 border border-slate-200"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-xs font-bold text-slate-900 truncate">{item.name}</h4>
-                          <span className="text-xs font-black text-slate-800">
-                            RM {(price * item.quantity).toFixed(2)}
-                          </span>
-                          <div className="flex items-center gap-2 mt-1">
-                            <button 
-                              onClick={() => updateCartQuantity(item.id, -1)}
-                              className="w-5 h-5 rounded bg-white border border-slate-200 flex items-center justify-center text-xs font-bold hover:bg-slate-100"
-                            >
-                              -
-                            </button>
-                            <span className="text-xs font-bold">{item.quantity}</span>
-                            <button 
-                              onClick={() => updateCartQuantity(item.id, 1)}
-                              className="w-5 h-5 rounded bg-white border border-slate-200 flex items-center justify-center text-xs font-bold hover:bg-slate-100"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                        <button 
-                          onClick={() => removeCartItem(item.id)}
-                          className="text-slate-400 hover:text-rose-500 p-1"
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              {/* Drawer Footer */}
-              {cart.length > 0 && (
-                <div className="border-t border-slate-100 pt-4 space-y-3">
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Subtotal:</span>
-                    <span className="text-lg font-black text-slate-900">
-                      RM {cartTotal.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setIsCartOpen(false);
-                      navigate('/checkout');
-                    }}
-                    className="w-full py-3.5 bg-[#c5161d] hover:bg-[#a81318] text-white rounded-xl font-black text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <span>Proceed to Checkout</span>
-                    <ArrowRight size={14} />
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* Sidebar Cart */}
+      <SidebarCart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        items={cart}
+        onUpdateQuantity={updateCartQuantity}
+        onRemoveItem={removeCartItem}
+        checkoutPath="/checkout-light"
+        viewCartPath="/cart"
+      />
 
       {/* Public Footer */}
       <Footer theme="light" />

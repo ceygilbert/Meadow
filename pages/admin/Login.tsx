@@ -67,7 +67,8 @@ const AdminLogin: React.FC<LoginProps> = ({ onLogin }) => {
       });
 
       if (authError) {
-        throw authError;
+        setError(authError.message || 'Invalid username or password.');
+        return;
       }
 
       if (data.session) {

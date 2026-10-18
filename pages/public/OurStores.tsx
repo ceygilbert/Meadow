@@ -16,128 +16,23 @@ import {
   Building2,
   ShieldCheck,
   Wrench,
-  Laptop
+  Laptop,
+  Settings,
+  Edit3
 } from 'lucide-react';
 import PublicNavbar from '../../components/PublicNavbar';
 import Footer from '../../components/Footer';
+import SidebarCart from '../../components/SidebarCart';
 import { Product } from '../../types';
 import { useAuth } from '../../lib/AuthContext';
-
-interface StoreItem {
-  id: string;
-  name: string;
-  badge: string;
-  badgeType: 'meadow' | 'asus' | 'hp' | 'hq';
-  category: 'Meadow Computer' | 'ASUS' | 'HP' | 'Distribution HQ';
-  address: string;
-  tags: string[];
-  image: string;
-  phone: string;
-  hours: string;
-  googleMapsUrl: string;
-  embedMapUrl: string;
-  description: string;
-  features: string[];
-}
-
-const STORE_LIST: StoreItem[] = [
-  {
-    id: 'pelangi-meadow',
-    name: 'Pelangi Plaza',
-    badge: 'MEADOW STORE',
-    badgeType: 'meadow',
-    category: 'Meadow Computer',
-    address: 'Lot 3.26, 26A, 27, Level 3, Plaza Pelangi, Taman Pelangi, 80400 Johor Bahru, Johor',
-    tags: ['PC Build', 'Laptops', 'Components', 'Support'],
-    image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80&w=1200',
-    phone: '+60 7-333 3333',
-    hours: '10:00 AM - 10:00 PM (Daily)',
-    googleMapsUrl: 'https://maps.google.com/?q=Lot+3.26+Plaza+Pelangi+Johor+Bahru',
-    embedMapUrl: 'https://www.google.com/maps?q=Lot+3.26+Plaza+Pelangi+Johor+Bahru&output=embed',
-    description: 'Our flagship retail experience featuring an extensive showroom of custom gaming rigs, workstation architectures, and enthusiast component displays.',
-    features: ['Custom PC Assembly & Diagnostic Lab', 'Dedicated Component Consultation Desk', 'Comprehensive Peripheral Testing Zone', 'Immediate Warranty & RMA Drop-off']
-  },
-  {
-    id: 'larkin-junction',
-    name: 'Larkin Junction',
-    badge: 'MEADOW STORE',
-    badgeType: 'meadow',
-    category: 'Meadow Computer',
-    address: 'Lot 4.12, Jalan Dewata, Taman Larkin Perdana, 80350 Johor Bahru, Johor Darul Ta\'zim',
-    tags: ['PC Build', 'Laptops', 'Peripherals', 'Support'],
-    image: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&q=80&w=1200',
-    phone: '+60 7-221 2222',
-    hours: '10:00 AM - 10:00 PM (Daily)',
-    googleMapsUrl: 'https://maps.google.com/?q=Larkin+Junction+Johor+Bahru',
-    embedMapUrl: 'https://www.google.com/maps?q=Lot+4.12+Jalan+Dewata+Taman+Larkin+Perdana+Johor+Bahru&output=embed',
-    description: 'Conveniently situated in Larkin, offering prompt technical assistance, prebuilt desktop configurations, and everyday workspace peripherals.',
-    features: ['Instant Hardware Upgrade Station', 'Business Fleet & Student Solutions', 'Official Genuine Components Guarantee', 'Same-Day Pickup for Online Orders']
-  },
-  {
-    id: 'taman-universiti',
-    name: 'Taman Universiti',
-    badge: 'MEADOW STORE',
-    badgeType: 'meadow',
-    category: 'Meadow Computer',
-    address: '8, Jalan Kebudayaan 1, Taman Universiti, 81300 Skudai',
-    tags: ['PC Build', 'Components', 'Peripherals', 'Support'],
-    image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80&w=1200',
-    phone: '+60 7-521 1111',
-    hours: '10:00 AM - 9:00 PM (Daily)',
-    googleMapsUrl: 'https://maps.google.com/?q=8+Jalan+Kebudayaan+1+Taman+Universiti+81300+Skudai',
-    embedMapUrl: 'https://www.google.com/maps?q=8+Jalan+Kebudayaan+1+Taman+Universiti+81300+Skudai&output=embed',
-    description: 'The core student and enthusiast hub in Skudai, providing accessible custom PC builds, laptop optimization, and hardware upgrades.',
-    features: ['Student Discount Verification & Bundles', 'Rapid Thermal Paste & Cleaning Service', 'Comprehensive Graphic Card Stock', 'Mechanical Keyboards & Audio Gear Demo']
-  },
-  {
-    id: 'pelangi-asus',
-    name: 'Pelangi Plaza',
-    badge: 'ASUS CONCEPT STORE',
-    badgeType: 'asus',
-    category: 'ASUS',
-    address: 'LOT 3.16 & 3.17, Level 3, Plaza Pelangi, Jalan Kuning, Taman Pelangi, 80400 Johor Bahru, Johor Darul Ta\'zim',
-    tags: ['ASUS Products', 'Laptops', 'Accessories', 'Support'],
-    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=1200',
-    phone: '+60 7-333 4444',
-    hours: '10:00 AM - 10:00 PM (Daily)',
-    googleMapsUrl: 'https://maps.google.com/?q=ASUS+Plaza+Pelangi+Johor+Bahru',
-    embedMapUrl: 'https://www.google.com/maps?q=Plaza+Pelangi+ASUS+Concept+Store+Johor+Bahru&output=embed',
-    description: 'Authorized ASUS concept store showcasing the complete Republic of Gamers (ROG), TUF Gaming, ZenBook, and ProArt ecosystem.',
-    features: ['Complete ROG & TUF Gaming Battle Stations', 'ZenBook Ultraportable Touch Experience', 'ProArt Color-Calibrated Displays', 'Official ASUS Authorized Warranty Service']
-  },
-  {
-    id: 'toppen-hp',
-    name: 'Toppen',
-    badge: 'HP CONCEPT STORE',
-    badgeType: 'hp',
-    category: 'HP',
-    address: 'No 33A, Lot L2/22, Level 2, Toppen Shopping Centre, Jln Harmonium, Taman Desa Tebrau, 81100 Johor Bahru, Johor Darul Ta\'zim',
-    tags: ['HP Products', 'Laptops', 'Printers', 'Support'],
-    image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80&w=1200',
-    phone: '+60 7-364 8888',
-    hours: '10:00 AM - 10:00 PM (Daily)',
-    googleMapsUrl: 'https://maps.google.com/?q=Toppen+Shopping+Centre+Johor+Bahru',
-    embedMapUrl: 'https://www.google.com/maps?q=Toppen+Shopping+Centre+HP+Store+Johor+Bahru&output=embed',
-    description: 'Dedicated HP Brand Experience Store showcasing OMEN gaming rigs, Spectre luxury convertibles, ENVY creative laptops, and smart printing solutions.',
-    features: ['OMEN High-FPS Gaming Playground', 'Spectre & ENVY Creator Experience', 'Smart Tank Printer & Ink Supply Hub', 'Certified HP Customer Support Desk']
-  },
-  {
-    id: 'distribution-hq',
-    name: 'Meadow IT Distribution',
-    badge: 'DISTRIBUTION HQ',
-    badgeType: 'hq',
-    category: 'Distribution HQ',
-    address: '7 & 9, Jalan Keembong 22, Taman Johor Jaya, 81100 Johor Bahru, Johor Darul Ta\'zim',
-    tags: ['Distribution', 'Warehouse', 'Business', 'HQ'],
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1200',
-    phone: '+60 7-355 5555',
-    hours: '9:00 AM - 6:00 PM (Mon - Fri)',
-    googleMapsUrl: 'https://maps.google.com/?q=7+Jalan+Keembong+22+Johor+Jaya+Johor+Bahru',
-    embedMapUrl: 'https://www.google.com/maps?q=7+Jalan+Keembong+22+Johor+Jaya+Johor+Bahru&output=embed',
-    description: 'The central hub for wholesale hardware distribution, enterprise computing procurement, and corporate IT infrastructure deployment in Southern Malaysia.',
-    features: ['B2B Corporate Procurement Department', 'Large-Scale Warehousing & Logistics Fulfillment', 'Enterprise Server & Networking Testing Area', 'Wholesale Partner Helpdesk']
-  }
-];
+import { useCart } from '../../lib/CartContext';
+import { 
+  StoreItem, 
+  OurStoresSettings, 
+  getStoredOurStoresSettings, 
+  fetchOurStoresSettings, 
+  STORES_UPDATED_EVENT 
+} from '../../services/storesService';
 
 interface CartItem extends Product {
   quantity: number;
@@ -157,13 +52,22 @@ const OurStores: React.FC = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const [scrolled, setScrolled] = useState(false);
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  
+  const {
+    cart,
+    cartCount,
+    isCartOpen,
+    setIsCartOpen,
+    updateQuantity,
+    removeFromCart
+  } = useCart();
+
+  const [storesSettings, setStoresSettings] = useState<OurStoresSettings>(() => getStoredOurStoresSettings());
   const [activeCategory, setActiveCategory] = useState<FilterCategory>('All Stores');
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [selectedModalStore, setSelectedModalStore] = useState<StoreItem | null>(null);
-  const [selectedMapStore, setSelectedMapStore] = useState<StoreItem>(STORE_LIST[0]);
+
+  const activeStores = (storesSettings.stores || []).filter(s => s.isActive !== false);
+  const [selectedMapStore, setSelectedMapStore] = useState<StoreItem | null>(() => activeStores[0] || null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -172,13 +76,31 @@ const OurStores: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const savedCart = localStorage.getItem('meadow_cart');
-    if (savedCart) setCart(JSON.parse(savedCart));
+    fetchOurStoresSettings().then(data => {
+      if (data) setStoresSettings(data);
+    });
+
+    const handleStoresUpdated = (e: any) => {
+      if (e.detail) {
+        setStoresSettings(e.detail);
+      } else {
+        setStoresSettings(getStoredOurStoresSettings());
+      }
+    };
+
+    window.addEventListener(STORES_UPDATED_EVENT, handleStoresUpdated);
+    return () => window.removeEventListener(STORES_UPDATED_EVENT, handleStoresUpdated);
   }, []);
 
+  useEffect(() => {
+    if (activeStores.length > 0 && (!selectedMapStore || !activeStores.some(s => s.id === selectedMapStore.id))) {
+      setSelectedMapStore(activeStores[0]);
+    }
+  }, [activeStores, selectedMapStore]);
+
   const filteredStores = activeCategory === 'All Stores'
-    ? STORE_LIST
-    : STORE_LIST.filter(s => s.category === activeCategory);
+    ? activeStores
+    : activeStores.filter(s => s.category === activeCategory);
 
   const getBadgeStyle = (type: StoreItem['badgeType']) => {
     switch (type) {
@@ -208,7 +130,8 @@ const OurStores: React.FC = () => {
       {/* Hero Section */}
       <section className="relative h-[70vh] min-h-[480px] flex items-center overflow-hidden">
         <video 
-          src="https://illuminatelabs.space/assets/locator_vd.mp4"
+          key={storesSettings.hero_video_url}
+          src={storesSettings.hero_video_url || "https://illuminatelabs.space/assets/locator_vd.mp4"}
           autoPlay
           loop
           muted
@@ -218,13 +141,28 @@ const OurStores: React.FC = () => {
         <div className="absolute inset-0 bg-neutral-900/40 backdrop-blur-[1px]"></div>
         <div className="relative px-6 md:px-16 max-w-[1440px] mx-auto w-full z-10">
           <div className="max-w-3xl">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.6em] text-white/70 mb-5 animate-in fade-in slide-in-from-bottom duration-700">Store Locator</h2>
+            <h2 className="text-[10px] font-black uppercase tracking-[0.6em] text-white/70 mb-5 animate-in fade-in slide-in-from-bottom duration-700">
+              {storesSettings.hero_eyebrow || 'Store Locator'}
+            </h2>
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light text-white leading-tight mb-6 animate-in fade-in slide-in-from-bottom duration-1000">
-              Find a Meadow Store Near You
+              {storesSettings.hero_title || 'Find a Meadow Store Near You'}
             </h1>
             <p className="text-lg md:text-xl font-light italic text-white/90 max-w-xl animate-in fade-in slide-in-from-bottom duration-1000 delay-300">
-              Discover Meadow's physical spaces across Johor
+              {storesSettings.hero_subtitle || "Discover Meadow's physical spaces across Johor"}
             </p>
+
+            {(profile?.role === 'admin' || profile?.role === 'superadmin') && (
+              <div className="mt-6 animate-in fade-in slide-in-from-bottom duration-1000 delay-500">
+                <Link
+                  to="/admin/stores"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all border border-white/30 shadow-lg group"
+                >
+                  <Edit3 size={14} className="group-hover:rotate-12 transition-transform" />
+                  <span>Edit in Admin Panel</span>
+                  <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -255,30 +193,42 @@ const OurStores: React.FC = () => {
             })}
           </div>
 
-          {/* Right View Toggle Pill */}
-          <div className="inline-flex items-center bg-white border border-slate-200 rounded-full p-1 shadow-sm shrink-0">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-all ${
-                viewMode === 'list'
-                  ? 'bg-slate-100 text-slate-900 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
+          {/* Right Action: Admin Edit & View Toggle Pills */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <Link
+              to="/admin/stores"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-all shadow-xs"
+              title="Edit stores in backend admin panel"
             >
-              <LayoutList size={15} />
-              <span>List View</span>
-            </button>
-            <button
-              onClick={() => setViewMode('map')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-all ${
-                viewMode === 'map'
-                  ? 'bg-slate-100 text-slate-900 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              <MapIcon size={15} />
-              <span>Map View</span>
-            </button>
+              <Settings size={14} className="text-slate-500" />
+              <span>Edit in Admin Panel</span>
+            </Link>
+
+            {/* View Toggle Pill */}
+            <div className="inline-flex items-center bg-white border border-slate-200 rounded-full p-1 shadow-sm shrink-0">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-slate-100 text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <LayoutList size={15} />
+                <span>List View</span>
+              </button>
+              <button
+                onClick={() => setViewMode('map')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+                  viewMode === 'map'
+                    ? 'bg-slate-100 text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <MapIcon size={15} />
+                <span>Map View</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -369,7 +319,7 @@ const OurStores: React.FC = () => {
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {filteredStores.map((store) => {
-                  const isSelected = selectedMapStore.id === store.id;
+                  const isSelected = selectedMapStore?.id === store.id;
                   return (
                     <div
                       key={store.id}
@@ -418,34 +368,44 @@ const OurStores: React.FC = () => {
             </div>
 
             {/* Google Map Embed */}
-            <div className="flex-1 bg-slate-100 relative h-full">
-              <iframe
-                title="Store Map"
-                src={selectedMapStore.embedMapUrl}
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-              <div className="absolute bottom-6 left-6 right-6 lg:left-auto lg:right-6 lg:w-96 bg-white/95 backdrop-blur-md p-4 rounded-xl border border-slate-200 shadow-xl flex items-center justify-between gap-4">
-                <div>
-                  <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${getBadgeStyle(selectedMapStore.badgeType)}`}>
-                    {selectedMapStore.badge}
-                  </span>
-                  <h4 className="font-bold text-slate-900 text-sm mt-1">{selectedMapStore.name}</h4>
-                  <p className="text-[11px] text-slate-500 truncate max-w-[200px]">{selectedMapStore.address}</p>
+            <div className="flex-1 bg-slate-100 relative h-full min-h-[300px]">
+              {selectedMapStore ? (
+                <>
+                  <iframe
+                    title="Store Map"
+                    src={selectedMapStore.embedMapUrl || `https://www.google.com/maps?q=${encodeURIComponent(selectedMapStore.address)}&output=embed`}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                  <div className="absolute bottom-6 left-6 right-6 lg:left-auto lg:right-6 lg:w-96 bg-white/95 backdrop-blur-md p-4 rounded-xl border border-slate-200 shadow-xl flex items-center justify-between gap-4">
+                    <div>
+                      <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${getBadgeStyle(selectedMapStore.badgeType)}`}>
+                        {selectedMapStore.badge}
+                      </span>
+                      <h4 className="font-bold text-slate-900 text-sm mt-1">{selectedMapStore.name}</h4>
+                      <p className="text-[11px] text-slate-500 truncate max-w-[200px]">{selectedMapStore.address}</p>
+                    </div>
+                    {selectedMapStore.googleMapsUrl && (
+                      <a
+                        href={selectedMapStore.googleMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-[#0F172A] text-white text-xs font-semibold px-4 py-2.5 rounded-full shrink-0 flex items-center gap-1 hover:bg-black transition-colors"
+                      >
+                        Navigate <Navigation size={12} />
+                      </a>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center h-full text-slate-400 text-xs">
+                  Select a store to view location on map
                 </div>
-                <a
-                  href={selectedMapStore.googleMapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-[#0F172A] text-white text-xs font-semibold px-4 py-2.5 rounded-full shrink-0 flex items-center gap-1 hover:bg-black transition-colors"
-                >
-                  Navigate <Navigation size={12} />
-                </a>
-              </div>
+              )}
             </div>
           </div>
         )}
@@ -573,6 +533,32 @@ const OurStores: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Floating Admin Quick Access for authorized administrators */}
+      {(profile?.role === 'admin' || profile?.role === 'superadmin') && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-4">
+          <Link
+            to="/admin/stores"
+            className="flex items-center gap-2.5 px-4 py-3 bg-[#c5161d] hover:bg-[#a81318] text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-2xl hover:shadow-red-900/40 transition-all active:scale-95 border border-white/20 group"
+            title="Open Admin Panel to Edit Our Stores"
+          >
+            <Settings size={16} className="group-hover:rotate-45 transition-transform" />
+            <span>Edit Stores (Admin)</span>
+            <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+        </div>
+      )}
+
+      {/* Sidebar Cart */}
+      <SidebarCart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        items={cart as any}
+        onUpdateQuantity={updateQuantity}
+        onRemoveItem={removeFromCart}
+        checkoutPath="/checkout-light"
+        viewCartPath="/cart"
+      />
 
       {/* Footer */}
       <Footer />

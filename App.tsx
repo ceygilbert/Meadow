@@ -17,6 +17,7 @@ import ProductPolicy from './pages/public/ProductPolicy';
 import ProductDetails from './pages/public/ProductDetails';
 import ProductListing from './pages/public/ProductListing';
 import Categories from './pages/public/Categories';
+import Cart from './pages/public/Cart';
 import OurStores from './pages/public/OurStores';
 import OurStory from './pages/public/OurStory';
 import Suppliers from './pages/public/Suppliers';
@@ -31,6 +32,7 @@ import HomePageSettingsPage from './pages/admin/HomePageSettings';
 import OurStorySettingsPage from './pages/admin/OurStorySettings';
 import SupplierSettingsPage from './pages/admin/SupplierSettings';
 import FooterSettingsPage from './pages/admin/FooterSettings';
+import StoresSettings from './pages/admin/StoresSettings';
 import ProductManagement from './pages/admin/Products';
 import CategoryManagement from './pages/admin/Categories';
 import SubCategoryManagement from './pages/admin/SubCategories';
@@ -85,6 +87,7 @@ const AppContent: React.FC = () => {
       <Route path="/track-order" element={<TrackOrder />} />
       <Route path="/buildpc" element={<PCBuilder />} />
       <Route path="/workstation" element={<Workstation />} />
+      <Route path="/cart" element={<Cart />} />
       <Route path="/checkout" element={<Checkout />} />
       <Route path="/checkout-light" element={<LightCheckout />} />
       <Route path="/order-success" element={<OrderSuccess />} />
@@ -116,6 +119,8 @@ const AppContent: React.FC = () => {
         <Route path="our-story" element={<OurStorySettingsPage />} />
         <Route path="supplier" element={<SupplierSettingsPage />} />
         <Route path="suppliers" element={<SupplierSettingsPage />} />
+        <Route path="stores" element={<StoresSettings />} />
+        <Route path="our-stores" element={<StoresSettings />} />
         <Route path="footer" element={<FooterSettingsPage />} />
         <Route path="products" element={<ProductManagement />} />
         <Route path="stock-take" element={<StockTake />} />
@@ -144,10 +149,14 @@ const AppContent: React.FC = () => {
   );
 };
 
+import { CartProvider } from './lib/CartContext';
+
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <AppContent />
+      <CartProvider>
+        <AppContent />
+      </CartProvider>
     </AuthProvider>
   );
 };
