@@ -89,6 +89,11 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', className = '' }) => {
                 </h4>
                 <ul className="space-y-3.5">
                   {visibleItems.map((item) => {
+                    const isUnclickable =
+                      item.id === 's-1' ||
+                      item.name?.trim().toLowerCase() === 'build your own pc' ||
+                      !item.url ||
+                      item.url === '#';
                     const isExternal = item.url.startsWith('http://') || item.url.startsWith('https://') || item.url.startsWith('//');
                     const linkClasses = `text-xs uppercase tracking-widest font-semibold transition-colors inline-flex items-center gap-1 ${
                       isDark ? 'text-white/80 hover:text-white' : 'text-slate-600 hover:text-slate-900'
@@ -96,7 +101,13 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', className = '' }) => {
 
                     return (
                       <li key={item.id}>
-                        {isExternal ? (
+                        {isUnclickable ? (
+                          <span className={`text-xs uppercase tracking-widest font-semibold inline-flex items-center gap-1 cursor-default select-none ${
+                            isDark ? 'text-white/80' : 'text-slate-600'
+                          }`}>
+                            {item.name}
+                          </span>
+                        ) : isExternal ? (
                           <a 
                             href={item.url} 
                             target={item.openInNewTab !== false ? "_blank" : undefined}
