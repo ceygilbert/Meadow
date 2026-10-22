@@ -55,13 +55,13 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', className = '' }) => {
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   <div className="bg-white px-2.5 py-1.5 rounded-lg shadow-sm border border-slate-200 flex items-center justify-center">
-                    <img src="https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/fpx.svg" className="h-5 w-auto object-contain" alt="FPX" />
+                    <img src="/assets/icons/fpx.svg" className="h-5 w-auto object-contain" alt="FPX" />
                   </div>
                   <div className="bg-white px-2.5 py-1.5 rounded-lg shadow-sm border border-slate-200 flex items-center justify-center">
-                    <img src="https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/master.svg" className="h-5 w-auto object-contain" alt="Mastercard" />
+                    <img src="/assets/icons/master.svg" className="h-5 w-auto object-contain" alt="Mastercard" />
                   </div>
                   <div className="bg-white px-2.5 py-1.5 rounded-lg shadow-sm border border-slate-200 flex items-center justify-center">
-                    <img src="https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/visa.svg" className="h-5 w-auto object-contain" alt="VISA" />
+                    <img src="/assets/icons/visa.svg" className="h-5 w-auto object-contain" alt="VISA" />
                   </div>
                 </div>
               </div>
@@ -72,7 +72,7 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', className = '' }) => {
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   <div className="bg-white px-2.5 py-1.5 rounded-lg shadow-sm border border-slate-200 flex items-center justify-center">
-                    <img src="https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/gdex.svg" className="h-5 w-auto object-contain" alt="GDEX" />
+                    <img src="/assets/icons/gdex.svg" className="h-5 w-auto object-contain" alt="GDEX" />
                   </div>
                 </div>
               </div>

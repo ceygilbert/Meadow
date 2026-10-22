@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" fill="none">
+  <!-- Interlocking FPX Diamonds -->
+  <path d="M18 6L30 20L18 34L6 20L18 6Z" stroke="#183059" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M28 6L40 20L28 34L16 20L28 6Z" stroke="#0095D9" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M23 14L28 20L23 26L18 20L23 14Z" fill="#F37021"/>
+  <!-- Bold Italic FPX Wordmark -->
+  <g fill="#183059">
+    <path d="M51 10H69L67.6 15.2H56.2L55.1 19.2H65.2L63.8 24.2H53.7L51.6 32H45.2L51 10Z"/>
+    <path d="M71.5 10H83.5C88.2 10 91 12.4 90.1 16.8C89.1 21.6 85.2 24 79.8 24H74.2L72.1 32H65.7L71.5 10ZM75.4 19.2H79.6C82.1 19.2 83.7 18.1 84.1 16.4C84.5 14.8 83.3 14.2 80.9 14.2H76.7L75.4 19.2Z"/>
+    <path d="M100.2 20.6L94.2 10H101.2L104.5 16.5L110.2 10H117.4L107.6 20.6L114.2 32H107.1L103.3 24.8L97.1 32H89.9L100.2 20.6Z"/>
+  </g>
+</svg>
