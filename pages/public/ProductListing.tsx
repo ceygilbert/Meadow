@@ -22,7 +22,8 @@ import {
   User as UserIcon,
   Facebook,
   Instagram,
-  ArrowRight
+  ArrowRight,
+  Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import PublicNavbar from '../../components/PublicNavbar';
@@ -40,6 +41,7 @@ interface CartItem extends Product {
 
 import { useAuth } from '../../lib/AuthContext';
 import { useCart } from '../../lib/CartContext';
+import { useWishlist } from '../../lib/WishlistContext';
 
 const ProductListing: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -54,6 +56,7 @@ const ProductListing: React.FC = () => {
     updateQuantity,
     removeFromCart
   } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   
   const categorySlug = searchParams.get('category');
   const subcategorySlug = searchParams.get('subcategory');
@@ -415,20 +418,36 @@ const ProductListing: React.FC = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.4 }}
-                className={`group bg-white border border-slate-100 rounded-3xl overflow-hidden hover:shadow-xl hover:border-red-500/20 transition-all duration-500 ${viewMode === 'list' ? 'flex flex-row h-52' : 'flex flex-col'}`}
+                className={`group bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-xl hover:border-red-500/20 transition-all duration-500 ${viewMode === 'list' ? 'flex flex-row h-52' : 'flex flex-col'}`}
               >
-                <Link to={`/product/${product.slug}`} className={`relative bg-slate-50 overflow-hidden ${viewMode === 'list' ? 'w-52 shrink-0' : 'aspect-square'}`}>
-                  <img 
-                    src={product.image_url || undefined} 
-                    alt={product.name}
-                    className="w-full h-full object-contain p-5 transition-transform duration-700 group-hover:scale-110"
-                  />
+                <div className={`relative bg-slate-50 overflow-hidden ${viewMode === 'list' ? 'w-52 shrink-0' : 'aspect-square'}`}>
+                  <Link to={`/product/${product.slug}`} className="block w-full h-full">
+                    <img 
+                      src={product.image_url || undefined} 
+                      alt={product.name}
+                      className="w-full h-full object-contain p-5 transition-transform duration-700 group-hover:scale-110"
+                    />
+                  </Link>
+
+                  <button 
+                    onClick={(e) => toggleWishlist(product, e)}
+                    className={`absolute top-4 right-4 w-8 h-8 rounded-full border transition-all duration-300 flex items-center justify-center z-10 cursor-pointer shadow-sm hover:scale-110 active:scale-90 ${
+                      isInWishlist(product.id)
+                        ? 'bg-rose-50 border-rose-200 text-rose-600'
+                        : 'bg-white border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-100'
+                    }`}
+                    title={isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                    aria-label={isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                  >
+                    <Heart size={14} className={isInWishlist(product.id) ? "fill-rose-600 text-rose-600" : ""} />
+                  </button>
+
                   {product.discount_value > 0 && (
                     <div className="absolute top-4 left-4 px-3 py-1.5 bg-red-600 text-white text-[8px] font-black uppercase tracking-widest rounded-full shadow-md">
                       {product.discount_type === 'percentage' ? `-${product.discount_value}%` : `OFF RM${product.discount_value}`}
                     </div>
                   )}
-                </Link>
+                </div>
 
                 <div className="p-5 flex flex-col flex-1">
                   <div className="flex items-center justify-between mb-2">

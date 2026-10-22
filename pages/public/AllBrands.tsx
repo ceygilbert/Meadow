@@ -131,9 +131,9 @@ const AllBrands: React.FC = () => {
                     <Link 
                       key={brand.id}
                       to={`/products?brand=${brand.id}`}
-                      className="group flex flex-col gap-6 p-8 bg-white border border-slate-100 rounded-[2.5rem] hover:shadow-2xl hover:border-transparent transition-all duration-500"
+                      className="group flex flex-col gap-6 p-8 bg-white border border-slate-100 rounded-2xl hover:shadow-2xl hover:border-transparent transition-all duration-500"
                     >
-                      <div className="aspect-square bg-slate-50 rounded-2xl flex items-center justify-center p-6 group-hover:scale-105 transition-transform duration-700">
+                      <div className="aspect-square bg-slate-50 rounded-xl flex items-center justify-center p-6 group-hover:scale-105 transition-transform duration-700">
                         <img 
                           src={brand.logo_url || undefined} 
                           className="max-w-full max-h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500" 

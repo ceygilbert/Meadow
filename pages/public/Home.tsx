@@ -33,12 +33,17 @@ import {
   Instagram,
   Wrench,
   ShieldCheck,
-  Truck
+  Truck,
+  Gauge,
+  Globe,
+  BadgeCheck,
+  Headset
 } from 'lucide-react';
 import PublicNavbar from '../../components/PublicNavbar';
 import Footer from '../../components/Footer';
 import SidebarCart from '../../components/SidebarCart';
 import { useCart } from '../../lib/CartContext';
+import { useWishlist } from '../../lib/WishlistContext';
 import { supabase } from '../../lib/supabase';
 import { Product, Profile, Brand, HomePageSettings } from '../../types';
 import { fetchHomePageSettings } from '../../services/homepageService';
@@ -156,6 +161,58 @@ const getStoredHomeBrands = (): Brand[] => {
   return [];
 };
 
+export interface PrebuiltPackageCard {
+  id: string;
+  title: string;
+  tagline: string;
+  cpu: string;
+  gpu: string;
+  ram: string;
+  ssd: string;
+  price: string;
+  image: string;
+  link: string;
+}
+
+const DEFAULT_PREBUILT_PACKAGES: PrebuiltPackageCard[] = [
+  {
+    id: "unbeatable-rtx-combo",
+    title: "Unbeatable RTX Combo",
+    tagline: "Everyday gaming",
+    cpu: "AMD Ryzen 5 7500F",
+    gpu: "NVIDIA GeForce RTX 3050",
+    ram: "16GB RAM",
+    ssd: "1TB SSD",
+    price: "RM 2,399",
+    image: "/assets/builds/unbeatable-rtx-combo.png",
+    link: "/prebuilt/unbeatable-rtx-combo"
+  },
+  {
+    id: "level-0-amd",
+    title: "Level 0 AMD",
+    tagline: "Gaming & everyday tasks",
+    cpu: "AMD Ryzen 5 7500F",
+    gpu: "NVIDIA GeForce RTX 5050",
+    ram: "16GB RAM",
+    ssd: "1TB SSD",
+    price: "RM 3,299",
+    image: "/assets/builds/level-0-amd.png",
+    link: "/prebuilt/level-0-amd"
+  },
+  {
+    id: "level-1-amd",
+    title: "Level 1 AMD",
+    tagline: "Gaming & multitasking",
+    cpu: "AMD Ryzen 5 7500F",
+    gpu: "NVIDIA GeForce RTX 5060",
+    ram: "32GB RAM",
+    ssd: "1TB SSD",
+    price: "RM 3,999",
+    image: "/assets/builds/level-1-amd.png",
+    link: "/prebuilt/level-1-amd"
+  }
+];
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
@@ -171,6 +228,7 @@ const Home: React.FC = () => {
   const [laptopProducts, setLaptopProducts] = useState<Product[]>([]);
   const [pcComponentProducts, setPcComponentProducts] = useState<Product[]>([]);
   const [displayProducts, setDisplayProducts] = useState<Product[]>([]);
+  const [prebuiltPackages, setPrebuiltPackages] = useState<PrebuiltPackageCard[]>(DEFAULT_PREBUILT_PACKAGES);
   const [brands, setBrands] = useState<Brand[]>(initialBrands);
   const [homeSettings, setHomeSettings] = useState<HomePageSettings | null>(null);
   const [loading, setLoading] = useState(initialProducts.length === 0);
@@ -213,6 +271,7 @@ const Home: React.FC = () => {
     removeFromCart,
     clearCart
   } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState<string | null>(null);
@@ -335,6 +394,45 @@ const Home: React.FC = () => {
       p.categories?.slug === 'monitor'
     );
     setDisplayProducts(displays);
+
+    // Extract dynamic Pre-built PC packages from database
+    const dbPrebuilts = allProducts.filter(p => 
+      p.is_custom_build === true || 
+      p.slug === 'unbeatable-rtx-combo' || 
+      p.slug === 'level-0-amd' || 
+      p.slug === 'level-1-amd' ||
+      p.slug?.startsWith('level-')
+    );
+
+    if (dbPrebuilts.length > 0) {
+      // Sort to prioritize the 3 showcase packages in order: Unbeatable RTX Combo, Level 0 AMD, Level 1 AMD
+      const priorityOrder = ['unbeatable-rtx-combo', 'level-0-amd', 'level-1-amd'];
+      const sortedPrebuilts = [...dbPrebuilts].sort((a, b) => {
+        const aIndex = priorityOrder.indexOf(a.slug);
+        const bIndex = priorityOrder.indexOf(b.slug);
+        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+        if (aIndex !== -1) return -1;
+        if (bIndex !== -1) return 1;
+        return a.price - b.price;
+      });
+
+      const formatted: PrebuiltPackageCard[] = sortedPrebuilts.slice(0, 3).map(p => {
+        const specs = (typeof p.specs === 'object' && p.specs !== null ? p.specs : {}) as Record<string, any>;
+        return {
+          id: p.id,
+          title: p.name,
+          tagline: specs.tagline || (p.name.toLowerCase().includes('rtx combo') ? 'Everyday gaming' : 'Gaming & everyday tasks'),
+          cpu: specs.cpu || 'AMD Ryzen 5 7500F',
+          gpu: specs.gpu || 'NVIDIA GeForce RTX 3050',
+          ram: specs.ram || '16GB RAM',
+          ssd: specs.ssd || '1TB SSD',
+          price: `RM ${Number(p.price).toLocaleString()}`,
+          image: p.image_url || '/assets/builds/unbeatable-rtx-combo.png',
+          link: `/prebuilt/${p.slug || p.id}`
+        };
+      });
+      setPrebuiltPackages(formatted);
+    }
   };
 
   useEffect(() => {
@@ -710,7 +808,7 @@ const Home: React.FC = () => {
         </div>
 
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
-          <div className="bg-[#F7F8FA] rounded-[2rem] md:rounded-[3.5rem] relative min-h-[400px] md:min-h-[550px] flex items-center overflow-hidden border border-slate-100 shadow-2xl shadow-slate-200/40">
+          <div className="bg-[#F7F8FA] rounded-2xl relative min-h-[400px] md:min-h-[550px] flex items-center overflow-hidden border border-slate-100 shadow-2xl shadow-slate-200/40">
           
           {/* Animated Background Slider */}
           <div className="absolute inset-0 z-0">
@@ -831,7 +929,7 @@ const Home: React.FC = () => {
             <Link 
               key={cat.slug || cat.name}
               to={`/products?category=${cat.slug}`}
-              className="group relative flex-shrink-0 w-[70vw] sm:w-[50vw] md:w-[350px] aspect-[16/11] sm:aspect-[4/3] md:aspect-[4/5] rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-lg border border-slate-100 flex flex-col justify-end p-5 md:p-8 snap-start"
+              className="group relative flex-shrink-0 w-[70vw] sm:w-[50vw] md:w-[350px] aspect-[16/11] sm:aspect-[4/3] md:aspect-[4/5] rounded-2xl overflow-hidden shadow-lg border border-slate-100 flex flex-col justify-end p-5 md:p-8 snap-start"
             >
               <img 
                 src={cat.image_url} 
@@ -854,7 +952,7 @@ const Home: React.FC = () => {
 
       {/* BUILD YOUR OWN PC Section */}
       <section className="px-4 md:px-10 py-4 md:py-0 max-w-[1440px] mx-auto">
-        <div className="relative min-h-[400px] sm:min-h-[440px] md:min-h-[480px] md:aspect-[21/9] rounded-2xl sm:rounded-3xl md:rounded-[3.5rem] overflow-hidden shadow-2xl group border border-slate-100 flex flex-col justify-center">
+        <div className="relative min-h-[400px] sm:min-h-[440px] md:min-h-[480px] md:aspect-[21/9] rounded-2xl overflow-hidden shadow-2xl group border border-slate-100 flex flex-col justify-center">
            <img 
              src={homeSettings?.custom_pc_bg_image || "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80"} 
              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
@@ -919,14 +1017,16 @@ const Home: React.FC = () => {
           >
             {/* Product Cards */}
             {featuredProducts.map((p) => (
-              <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+              <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-white rounded-2xl p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
                  <button 
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                    className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
+                    onClick={(e) => toggleWishlist(p, e)}
+                    className={`absolute top-4 right-4 w-8 h-8 rounded-full border transition-all duration-300 flex items-center justify-center z-10 cursor-pointer shadow-sm hover:scale-110 active:scale-90 ${isInWishlist(p.id) ? "bg-rose-50 border-rose-200 text-rose-600" : "bg-white border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-100"}`}
+                    title={isInWishlist(p.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                    aria-label={isInWishlist(p.id) ? 'Remove from wishlist' : 'Add to wishlist'}
                  >
-                    <Heart size={14} />
+                    <Heart size={14} className={isInWishlist(p.id) ? 'fill-rose-600 text-rose-600' : ''} />
                  </button>
-                 <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
+                 <div className="flex-1 rounded-xl overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
                      <img src={p.image_url || undefined} className="w-full h-full object-contain p-2 md:p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                  </div>
                  <div className="mb-1">
@@ -970,14 +1070,16 @@ const Home: React.FC = () => {
             {/* Product Cards */}
 
             {promoProducts.map((p) => (
-              <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+              <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-white rounded-2xl p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
                  <button 
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                    className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
+                    onClick={(e) => toggleWishlist(p, e)}
+                    className={`absolute top-4 right-4 w-8 h-8 rounded-full border transition-all duration-300 flex items-center justify-center z-10 cursor-pointer shadow-sm hover:scale-110 active:scale-90 ${isInWishlist(p.id) ? "bg-rose-50 border-rose-200 text-rose-600" : "bg-white border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-100"}`}
+                    title={isInWishlist(p.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                    aria-label={isInWishlist(p.id) ? 'Remove from wishlist' : 'Add to wishlist'}
                  >
-                    <Heart size={14} />
+                    <Heart size={14} className={isInWishlist(p.id) ? 'fill-rose-600 text-rose-600' : ''} />
                  </button>
-                 <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
+                 <div className="flex-1 rounded-xl overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
                      <img src={p.image_url || undefined} className="w-full h-full object-contain p-2 md:p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                  </div>
                  <div className="mb-1">
@@ -1019,14 +1121,16 @@ const Home: React.FC = () => {
           >
             {/* Product Cards */}
             {newArrivalProducts.map((p) => (
-              <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-slate-50 rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+              <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-slate-50 rounded-2xl p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
                  <button 
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                    className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
+                    onClick={(e) => toggleWishlist(p, e)}
+                    className={`absolute top-4 right-4 w-8 h-8 rounded-full border transition-all duration-300 flex items-center justify-center z-10 cursor-pointer shadow-sm hover:scale-110 active:scale-90 ${isInWishlist(p.id) ? "bg-rose-50 border-rose-200 text-rose-600" : "bg-white border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-100"}`}
+                    title={isInWishlist(p.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                    aria-label={isInWishlist(p.id) ? 'Remove from wishlist' : 'Add to wishlist'}
                  >
-                    <Heart size={14} />
+                    <Heart size={14} className={isInWishlist(p.id) ? 'fill-rose-600 text-rose-600' : ''} />
                  </button>
-                 <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
+                 <div className="flex-1 rounded-xl overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
                      <img src={p.image_url || undefined} className="w-full h-full object-contain p-2 md:p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                  </div>
                  <div className="mb-1">
@@ -1043,199 +1147,179 @@ const Home: React.FC = () => {
       </section>
 
       {/* PRE-BUILT SYSTEMS Section */}
-      <section className="bg-slate-50 py-20 md:py-32 overflow-hidden border-t border-slate-100">
-        <div className="max-w-[1440px] mx-auto px-4 md:px-10">
-          <div className="flex flex-col lg:flex-row gap-16 items-start">
-            {/* Left Content */}
-            <div className="lg:w-1/4 flex flex-col items-start pt-10">
-              <span className="text-xl font-bold text-rose-600 mb-6 uppercase tracking-tight">Ready To Go</span>
-              <h2 className="text-5xl md:text-[4rem] font-black text-slate-900 leading-[0.85] tracking-tightest uppercase mb-8">
-                PRE-BUILT PC<br /> PACKAGES
+      <section className="bg-white py-12 md:py-16 border-t border-slate-100 font-['Arial',sans-serif] text-left">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-10 text-left">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-10 gap-4 text-left">
+            <div className="text-left">
+              <span className="text-xs md:text-sm font-['Arial',sans-serif] font-bold uppercase tracking-[0.2em] text-[#e11d48] block mb-2 text-left">
+                MEADOW PC BUILDS
+              </span>
+              <h2 className="text-3xl md:text-5xl font-['Arial',sans-serif] font-bold text-slate-900 tracking-tight leading-tight text-left">
+                Pre-built PC packages
               </h2>
-              <p className="text-slate-500 font-bold mb-12 tracking-widest text-sm">Built for different budgets and performance needs.</p>
-              <Link 
-                to="/prebuilt" 
-                className="px-10 py-4 bg-white border border-slate-200 text-slate-900 rounded-full font-black text-xs uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-lg"
+              <p className="text-sm md:text-base font-['Arial',sans-serif] font-normal text-slate-500 mt-1.5 text-left">
+                Compare key specs and find a build for your budget.
+              </p>
+            </div>
+            <Link 
+              to="/prebuilt" 
+              className="inline-flex items-center gap-1.5 text-sm md:text-base font-['Arial',sans-serif] font-bold text-slate-900 hover:text-rose-600 transition-colors group/view-all shrink-0 self-start md:self-auto text-left"
+            >
+              <span>View All PC Builds</span>
+              <ArrowRight size={18} className="group-hover/view-all:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          {/* Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 text-left">
+            {prebuiltPackages.map((item) => (
+              <div 
+                key={item.id}
+                className="bg-white rounded-3xl border border-slate-200/80 p-5 md:p-6 flex flex-col justify-between shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-xl hover:border-slate-300 transition-all duration-300 group text-left"
               >
-                View all
-              </Link>
-            </div>
+                <div className="text-left">
+                  {/* Image Display */}
+                  <div className="w-full bg-[#f8fafc] rounded-2xl p-4 sm:p-6 flex items-center justify-center mb-6 overflow-hidden aspect-[4/3] group-hover:bg-slate-100/70 transition-colors">
+                    <img 
+                      src={item.image} 
+                      alt={item.title} 
+                      className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-sm" 
+                    />
+                  </div>
 
-            {/* Right Slider */}
-            <div className="lg:w-3/4 w-full">
-              <div id="prebuilt-container" className="flex gap-6 md:gap-10 overflow-x-auto pb-12 scrollbar-hide snap-x snap-mandatory">
-                {[
-                  {
-                    id: "unbeatable-rtx-combo",
-                    title: "UNBEATABLE RTX COMBO",
-                    cpu: "RYZEN 5 7500F",
-                    gpu: "GEFORCE RTX 3050",
-                    image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80",
-                    specs: ["AMD Ryzen 5 7500F", "NVIDIA RTX 3050", "16GB DDR5 RAM", "1TB Gen4 SSD"]
-                  },
-                  {
-                    id: "level-0-amd",
-                    title: "LEVEL 0 AMD",
-                    cpu: "RYZEN 5 7500F",
-                    gpu: "GEFORCE RTX 5050",
-                    image: "https://images.unsplash.com/photo-1591488320449-011701bb6704?auto=format&fit=crop&q=80",
-                    specs: ["AMD Ryzen 5 7500F", "NVIDIA RTX 5050", "16GB DDR5 RAM", "1TB Gen4 SSD"]
-                  },
-                  {
-                    id: "level-1-amd",
-                    title: "LEVEL 1 AMD",
-                    cpu: "RYZEN 5 7500F",
-                    gpu: "GEFORCE RTX 5060",
-                    image: "https://images.unsplash.com/photo-1547082299-de196ea013d6?auto=format&fit=crop&q=80",
-                    specs: ["AMD Ryzen 5 7500F", "NVIDIA RTX 5060", "16GB DDR5 RAM", "1TB Gen4 SSD"]
-                  },
-                  {
-                    id: "level-1-intel",
-                    title: "LEVEL 1 INTEL",
-                    cpu: "I5 14400F",
-                    gpu: "GEFORCE RTX 5060",
-                    image: "https://images.unsplash.com/photo-1593640408182-31c70c8268f5?auto=format&fit=crop&q=80",
-                    specs: ["Intel Core i5 14400F", "NVIDIA RTX 5060", "16GB DDR5 RAM", "1TB Gen4 SSD"]
-                  }
-                ].map((item, i) => (
-                  <Link 
-                    key={i} 
-                    to="/prebuilt"
-                    className="flex-shrink-0 !w-[18.4117647059rem] h-[410px] sm:h-[440px] md:h-[480px] rounded-[2rem] md:rounded-[2.5rem] bg-white overflow-hidden shadow-2xl border border-slate-100 flex flex-col snap-start group"
+                  {/* Title and Tagline */}
+                  <h3 className="text-xl md:text-2xl font-['Arial',sans-serif] font-bold text-slate-900 tracking-tight text-left">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs md:text-sm font-['Arial',sans-serif] font-normal text-slate-500 mt-1 mb-5 text-left">
+                    {item.tagline}
+                  </p>
+
+                  {/* CPU / GPU Specs */}
+                  <div className="space-y-2 mb-4 text-left">
+                    <div className="flex items-center text-xs md:text-sm text-left">
+                      <span className="w-12 text-slate-400 font-['Arial',sans-serif] font-normal tracking-wider text-left">CPU</span>
+                      <span className="text-slate-800 font-['Arial',sans-serif] font-normal text-left">{item.cpu}</span>
+                    </div>
+                    <div className="flex items-center text-xs md:text-sm text-left">
+                      <span className="w-12 text-slate-400 font-['Arial',sans-serif] font-normal tracking-wider text-left">GPU</span>
+                      <span className="text-slate-800 font-['Arial',sans-serif] font-normal text-left">{item.gpu}</span>
+                    </div>
+                  </div>
+
+                  {/* RAM & SSD */}
+                  <div className="text-xs md:text-sm text-slate-700 font-['Arial',sans-serif] font-normal pt-3.5 pb-4 border-t border-slate-100 text-left">
+                    <span className="text-left">{item.ram} · {item.ssd}</span>
+                  </div>
+                </div>
+
+                {/* Price and CTA Button */}
+                <div className="mt-2 text-left">
+                  <div className="text-2xl md:text-3xl font-['Arial',sans-serif] font-bold text-slate-900 tracking-tight mb-5 text-left">
+                    {item.price}
+                  </div>
+                  <Link
+                    to={item.link}
+                    className="w-full py-3.5 px-4 bg-[#0d1527] hover:bg-slate-900 active:scale-[0.99] text-white font-['Arial',sans-serif] font-bold text-sm rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm group/btn"
                   >
-                    <div className="p-4 pt-6 md:p-6 md:pt-8 text-center shrink-0">
-                       <h3 className="text-base md:text-lg font-black text-slate-900 tracking-tighter uppercase mb-1 md:mb-2 group-hover:text-rose-600 transition-colors">{item.title}</h3>
-                       <p className="text-[9px] font-black tracking-[0.2em] text-slate-400">
-                         <span className="text-rose-600">{item.cpu}</span> <span className="mx-2 opacity-50">+</span> <span className="text-emerald-500">{item.gpu}</span>
-                       </p>
-                    </div>
-                    <div className="flex-1 min-h-0 relative overflow-hidden mx-4 rounded-[1.5rem] border border-slate-50">
-                      <img src={item.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s]" alt={item.title} />
-                      <div className="absolute top-4 right-4">
-                        <span className="px-2 py-1 bg-blue-600 backdrop-blur-md rounded-lg text-[8px] font-black text-white uppercase tracking-widest flex items-center gap-1.5">
-                          <Zap size={8} fill="currentColor" /> WIFI 7
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-4 md:p-6 flex flex-col gap-4 bg-white shrink-0 mt-auto">
-                      <div className="pt-3 md:pt-4 border-t border-slate-100 flex items-center justify-between">
-                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">View all</span>
-                         <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-900 text-white flex items-center justify-center group-hover:bg-rose-600 transition-colors">
-                            <ArrowRight size={16} />
-                         </div>
-                      </div>
-                    </div>
+                    <span>View Build</span>
+                    <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
                   </Link>
-                ))}
-              </div>
-
-              {/* Navigation and Progress */}
-              <div className="flex items-center justify-between pt-8 border-t border-slate-200">
-                <div className="flex-1 max-w-[70%] h-px bg-slate-200 relative">
-                   <div className="absolute inset-y-0 left-0 w-1/4 bg-slate-900 h-px"></div>
-                </div>
-                <div className="flex gap-4 ml-8">
-                  <button 
-                    onClick={() => {
-                        const container = document.getElementById('prebuilt-container');
-                        if (container) container.scrollBy({ left: -400, behavior: 'smooth' });
-                    }}
-                    className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all bg-white shadow-sm"
-                  >
-                    <ChevronLeft size={24} />
-                  </button>
-                  <button 
-                    onClick={() => {
-                        const container = document.getElementById('prebuilt-container');
-                        if (container) container.scrollBy({ left: 400, behavior: 'smooth' });
-                    }}
-                    className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all bg-white shadow-sm"
-                  >
-                    <ChevronRight size={24} />
-                  </button>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* WHAT WE DO / Support Beyond the Purchase Section */}
-      <section className="bg-[#FAF9FB] py-20 md:py-28 border-t border-slate-100 font-sans">
+      <section className="bg-[#f8fafc] py-14 md:py-20 border-t border-slate-100 font-sans text-left">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
-            
-            {/* Left Header Info */}
-            <div className="lg:col-span-4 flex flex-col justify-center pr-0 lg:pr-6">
-              <span className="text-xs font-black uppercase tracking-[0.25em] text-[#e11d48] mb-3">
-                WHAT WE DO
-              </span>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
-                Support Beyond the Purchase
+          {/* Header Row */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 md:mb-12 gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-5 h-[2.5px] bg-[#e11d48] inline-block rounded-full"></span>
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#e11d48]">
+                  WHAT WE DO
+                </span>
+              </div>
+              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+                Support Beyond the <span className="text-[#e11d48]">Purchase</span>
               </h2>
-              <p className="text-sm md:text-base text-slate-500 font-medium leading-relaxed max-w-md">
-                At Meadow, our certified technicians provide expert repairs using genuine manufacturer parts, ensuring your device receives the highest quality care. We offer seamless, warranty-compliant services to get your technology up and running swiftly.
+            </div>
+            <p className="text-xs md:text-sm text-slate-500 font-medium md:text-right max-w-sm self-start md:self-end leading-relaxed">
+              Expert repairs, genuine parts, and dedicated customer care by certified specialists since 1995.
+            </p>
+          </div>
+
+          {/* 4 Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            {/* Card 1: Workshop Services */}
+            <Link 
+              to="/contact"
+              className="bg-white rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-slate-100/90 flex flex-col justify-start text-left hover:shadow-lg hover:border-rose-100 transition-all duration-300 group block"
+            >
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-[#e11d48] flex items-center justify-center mb-6 group-hover:scale-105 group-hover:bg-[#e11d48] group-hover:text-white transition-all duration-300">
+                <Wrench size={20} strokeWidth={2.2} />
+              </div>
+              <h3 className="text-base md:text-lg font-bold text-slate-900 mb-2.5 tracking-tight group-hover:text-[#e11d48] transition-colors">
+                Workshop Services
+              </h3>
+              <p className="text-xs md:text-sm text-slate-500 font-normal leading-relaxed">
+                Dust cleaning, thermal repasting, system optimization, diagnostics, formatting, and secure data backup.
               </p>
-            </div>
+            </Link>
 
-            {/* Right 3 Cards Grid */}
-            <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-              
-              {/* Card 1: Workshop Services */}
-              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
-                <div>
-                  <div className="w-12 h-12 rounded-full bg-rose-50 text-[#e11d48] flex items-center justify-center mb-6">
-                    <Wrench size={22} />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-3 tracking-tight">
-                    Workshop Services
-                  </h3>
-                  <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed mb-8">
-                    Dust cleaning, basic maintenance, problem diagnosis, formatting and data backup.
-                  </p>
-                </div>
-                <Link to="/contact" className="inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-900 hover:text-[#e11d48] transition-colors group/link mt-auto">
-                  Learn More <ArrowRight size={16} className="group-hover/link:translate-x-1 transition-transform" />
-                </Link>
+            {/* Card 2: Warranty & RMA Support */}
+            <Link 
+              to="/contact"
+              className="bg-white rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-slate-100/90 flex flex-col justify-start text-left hover:shadow-lg hover:border-rose-100 transition-all duration-300 group block"
+            >
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-[#e11d48] flex items-center justify-center mb-6 group-hover:scale-105 group-hover:bg-[#e11d48] group-hover:text-white transition-all duration-300">
+                <ShieldCheck size={20} strokeWidth={2.2} />
               </div>
+              <h3 className="text-base md:text-lg font-bold text-slate-900 mb-2.5 tracking-tight group-hover:text-[#e11d48] transition-colors">
+                Warranty & RMA Support
+              </h3>
+              <p className="text-xs md:text-sm text-slate-500 font-normal leading-relaxed">
+                Seamless warranty claim management from start to finish with 100% genuine manufacturer replacement parts.
+              </p>
+            </Link>
 
-              {/* Card 2: Warranty & RMA Support */}
-              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
-                <div>
-                  <div className="w-12 h-12 rounded-full bg-rose-50 text-[#e11d48] flex items-center justify-center mb-6">
-                    <ShieldCheck size={22} />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-3 tracking-tight">
-                    Warranty & RMA Support
-                  </h3>
-                  <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed mb-8">
-                    We manage the claim process from start to finish.
-                  </p>
-                </div>
-                <Link to="/contact" className="inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-900 hover:text-[#e11d48] transition-colors group/link mt-auto">
-                  View Support <ArrowRight size={16} className="group-hover/link:translate-x-1 transition-transform" />
-                </Link>
+            {/* Card 3: Delivery Nationwide */}
+            <Link 
+              to="/contact"
+              className="bg-white rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-slate-100/90 flex flex-col justify-start text-left hover:shadow-lg hover:border-rose-100 transition-all duration-300 group block"
+            >
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-[#e11d48] flex items-center justify-center mb-6 group-hover:scale-105 group-hover:bg-[#e11d48] group-hover:text-white transition-all duration-300">
+                <Truck size={20} strokeWidth={2.2} />
               </div>
+              <h3 className="text-base md:text-lg font-bold text-slate-900 mb-2.5 tracking-tight group-hover:text-[#e11d48] transition-colors">
+                Delivery Nationwide
+              </h3>
+              <p className="text-xs md:text-sm text-slate-500 font-normal leading-relaxed">
+                Safe, insured doorstep delivery across Malaysia for purchases above RM 1,500 arranged at no additional charge.
+              </p>
+            </Link>
 
-              {/* Card 3: Delivery Nationwide */}
-              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
-                <div>
-                  <div className="w-12 h-12 rounded-full bg-rose-50 text-[#e11d48] flex items-center justify-center mb-6">
-                    <Truck size={22} />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-3 tracking-tight">
-                    Delivery Nationwide
-                  </h3>
-                  <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed mb-8">
-                    We deliver nationwide across Malaysia for purchases above RM 1,500, arranged at no additional charges.
-                  </p>
-                </div>
-                <Link to="/contact" className="inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-900 hover:text-[#e11d48] transition-colors group/link mt-auto">
-                  Learn More <ArrowRight size={16} className="group-hover/link:translate-x-1 transition-transform" />
-                </Link>
+            {/* Card 4: Expert Tech Support */}
+            <Link 
+              to="/contact"
+              className="bg-white rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)] border border-slate-100/90 flex flex-col justify-start text-left hover:shadow-lg hover:border-rose-100 transition-all duration-300 group block"
+            >
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-[#e11d48] flex items-center justify-center mb-6 group-hover:scale-105 group-hover:bg-[#e11d48] group-hover:text-white transition-all duration-300">
+                <Headset size={20} strokeWidth={2.2} />
               </div>
-
-            </div>
+              <h3 className="text-base md:text-lg font-bold text-slate-900 mb-2.5 tracking-tight group-hover:text-[#e11d48] transition-colors">
+                Expert Tech Support
+              </h3>
+              <p className="text-xs md:text-sm text-slate-500 font-normal leading-relaxed">
+                Personalized technical assistance, custom build advice, and post-purchase guidance from certified specialists.
+              </p>
+            </Link>
 
           </div>
         </div>
@@ -1270,14 +1354,20 @@ const Home: React.FC = () => {
               className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10"
             >
               {laptopProducts.map((p) => (
-                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-white rounded-2xl p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
                    <button 
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                      className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
+                      onClick={(e) => toggleWishlist(p, e)}
+                      className={`absolute top-4 right-4 w-8 h-8 rounded-full border transition-all duration-300 flex items-center justify-center z-10 cursor-pointer shadow-sm hover:scale-110 active:scale-90 ${
+                        isInWishlist(p.id)
+                          ? 'bg-rose-50 border-rose-200 text-rose-600'
+                          : 'bg-white border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-100'
+                      }`}
+                      title={isInWishlist(p.id) ? "Remove from wishlist" : "Add to wishlist"}
+                      aria-label={isInWishlist(p.id) ? "Remove from wishlist" : "Add to wishlist"}
                    >
-                      <Heart size={14} />
+                      <Heart size={14} className={isInWishlist(p.id) ? "fill-rose-600 text-rose-600" : ""} />
                    </button>
-                   <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
+                   <div className="flex-1 rounded-xl overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
                        <img src={p.image_url || undefined} className="w-full h-full object-contain p-2 md:p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                    </div>
                    <div className="mb-1">
@@ -1323,14 +1413,20 @@ const Home: React.FC = () => {
               className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10"
             >
               {pcComponentProducts.map((p) => (
-                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-slate-50 rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-slate-50 rounded-2xl p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
                    <button 
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                      className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
+                      onClick={(e) => toggleWishlist(p, e)}
+                      className={`absolute top-4 right-4 w-8 h-8 rounded-full border transition-all duration-300 flex items-center justify-center z-10 cursor-pointer shadow-sm hover:scale-110 active:scale-90 ${
+                        isInWishlist(p.id)
+                          ? 'bg-rose-50 border-rose-200 text-rose-600'
+                          : 'bg-white border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-100'
+                      }`}
+                      title={isInWishlist(p.id) ? "Remove from wishlist" : "Add to wishlist"}
+                      aria-label={isInWishlist(p.id) ? "Remove from wishlist" : "Add to wishlist"}
                    >
-                      <Heart size={14} />
+                      <Heart size={14} className={isInWishlist(p.id) ? "fill-rose-600 text-rose-600" : ""} />
                    </button>
-                   <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
+                   <div className="flex-1 rounded-xl overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
                        <img src={p.image_url || undefined} className="w-full h-full object-contain p-2 md:p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                    </div>
                    <div className="mb-1">
@@ -1376,14 +1472,20 @@ const Home: React.FC = () => {
               className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10"
             >
               {displayProducts.map((p) => (
-                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[330px] sm:h-[360px] md:h-[400px] bg-white rounded-2xl p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
                    <button 
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                      className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
+                      onClick={(e) => toggleWishlist(p, e)}
+                      className={`absolute top-4 right-4 w-8 h-8 rounded-full border transition-all duration-300 flex items-center justify-center z-10 cursor-pointer shadow-sm hover:scale-110 active:scale-90 ${
+                        isInWishlist(p.id)
+                          ? 'bg-rose-50 border-rose-200 text-rose-600'
+                          : 'bg-white border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-100'
+                      }`}
+                      title={isInWishlist(p.id) ? "Remove from wishlist" : "Add to wishlist"}
+                      aria-label={isInWishlist(p.id) ? "Remove from wishlist" : "Add to wishlist"}
                    >
-                      <Heart size={14} />
+                      <Heart size={14} className={isInWishlist(p.id) ? "fill-rose-600 text-rose-600" : ""} />
                    </button>
-                   <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
+                   <div className="flex-1 rounded-xl overflow-hidden mb-2 md:mb-3 relative flex items-center justify-center">
                        <img src={p.image_url || undefined} className="w-full h-full object-contain p-2 md:p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                    </div>
                    <div className="mb-1">

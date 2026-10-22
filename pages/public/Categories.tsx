@@ -222,7 +222,7 @@ const Categories: React.FC = () => {
               <div key={cat.id} className="group flex flex-col">
                 <div 
                   onClick={() => setSelectedCategory(cat)}
-                  className="aspect-[4/5] bg-slate-50 rounded-[3rem] overflow-hidden relative border border-slate-100 transition-all duration-700 cursor-pointer shadow-xl group-hover:shadow-2xl group-hover:scale-[1.02]"
+                  className="aspect-[4/5] bg-slate-50 rounded-2xl overflow-hidden relative border border-slate-100 transition-all duration-700 cursor-pointer shadow-xl group-hover:shadow-2xl group-hover:scale-[1.02]"
                 >
                   {cat.image_url ? (
                     <img 
@@ -267,7 +267,7 @@ const Categories: React.FC = () => {
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 md:p-10">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-500" onClick={() => setSelectedCategory(null)}></div>
           
-          <div className="relative w-full max-w-2xl bg-white rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in slide-in-from-bottom-10 duration-500 flex flex-col max-h-[90vh]">
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in slide-in-from-bottom-10 duration-500 flex flex-col max-h-[90vh]">
             {/* Modal Header */}
             <div className="p-8 md:p-12 border-b border-slate-50 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-6">

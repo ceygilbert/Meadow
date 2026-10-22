@@ -211,7 +211,7 @@ const Customised: React.FC = () => {
       {/* Hero Section Slider */}
       <header className="relative pt-28 md:pt-36 pb-8 md:pb-12 z-10">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10">
-          <div className="bg-[#0a0b0d] rounded-[2rem] md:rounded-[3.5rem] relative min-h-[420px] md:min-h-[550px] lg:min-h-[580px] flex items-center overflow-hidden border border-white/10 shadow-2xl shadow-black/80 group">
+          <div className="bg-[#0a0b0d] rounded-2xl relative min-h-[420px] md:min-h-[550px] lg:min-h-[580px] flex items-center overflow-hidden border border-white/10 shadow-2xl shadow-black/80 group">
             
             {/* Background Slider */}
             <Link to="/buildpc" className="absolute inset-0 block cursor-pointer z-0">
@@ -413,7 +413,7 @@ const Customised: React.FC = () => {
 
       {/* Cinematic Video Section */}
       <section className="px-4 sm:px-8 md:px-20 py-3 sm:py-6 md:py-8 max-w-[1400px] mx-auto relative z-10">
-        <div className="relative w-full aspect-[16/9] max-h-[560px] rounded-xl sm:rounded-3xl md:rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl group bg-black">
+        <div className="relative w-full aspect-[16/9] max-h-[560px] rounded-2xl overflow-hidden border border-white/10 shadow-2xl group bg-black">
           <div className="absolute inset-0 bg-black/30 group-hover:bg-black/15 transition-all duration-700 z-10 pointer-events-none flex flex-col items-center justify-center">
              <div className="w-9 h-9 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-rose-600/90 backdrop-blur-md flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform duration-300">
                 <Play className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 fill-white ml-0.5" />
@@ -469,7 +469,7 @@ const Customised: React.FC = () => {
                   transition={{ duration: 0.5, delay: idx * 0.1 }}
                   className="group"
                 >
-                  <div className="bg-[#0a0b0c] border border-white/10 rounded-xl sm:rounded-2xl md:rounded-[2rem] overflow-hidden transition-all duration-500 hover:border-rose-600/30 hover:shadow-[0_20px_80px_rgba(225,29,72,0.1)]">
+                  <div className="bg-[#0a0b0c] border border-white/10 rounded-2xl overflow-hidden transition-all duration-500 hover:border-rose-600/30 hover:shadow-[0_20px_80px_rgba(225,29,72,0.1)]">
                     <div className="py-2.5 px-3 sm:p-5 md:p-8 text-center bg-gradient-to-b from-white/[0.03] to-transparent">
                       <h3 className="text-sm sm:text-lg md:text-2xl font-black text-white uppercase tracking-tight md:tracking-tighter mb-0.5 md:mb-2">{product.name}</h3>
                       <p className="text-[8px] sm:text-[9px] md:text-[10px] font-bold text-white/40 uppercase tracking-widest">{product.subtitle}</p>
@@ -686,7 +686,7 @@ const Customised: React.FC = () => {
         </div>
 
         {/* Main Store Display Box (Matching Reference Layout) */}
-        <div className="bg-[#090a0c] border border-white/15 rounded-[2.5rem] overflow-hidden shadow-2xl grid grid-cols-1 lg:grid-cols-12 min-h-[500px]">
+        <div className="bg-[#090a0c] border border-white/15 rounded-2xl overflow-hidden shadow-2xl grid grid-cols-1 lg:grid-cols-12 min-h-[500px]">
           {/* Left Side: Store Image */}
           <div className="lg:col-span-6 relative min-h-[350px] lg:min-h-[500px] bg-black overflow-hidden group">
             <AnimatePresence mode="wait">
@@ -814,7 +814,7 @@ const Customised: React.FC = () => {
                  feedback: "A workstation that actually keeps up with my workflow. Handled 4K video editing like a breeze."
                }
              ].map((review, i) => (
-               <div key={i} className="bg-[#111214] border border-white/10 rounded-[2.5rem] overflow-hidden group transition-all duration-500 hover:border-rose-600/30 flex flex-col min-h-[450px]">
+               <div key={i} className="bg-[#111214] border border-white/10 rounded-2xl overflow-hidden group transition-all duration-500 hover:border-rose-600/30 flex flex-col min-h-[450px]">
                   <div className="w-full aspect-video relative overflow-hidden bg-slate-900 flex-shrink-0">
                      <img 
                        src={review.productImage} 

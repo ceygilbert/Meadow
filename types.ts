@@ -45,6 +45,7 @@ export interface Product {
   discount_value: number;
   stock: number;
   image_url: string;
+  images?: string[];
   description: string;
   additional_details?: string;
   ddr_type?: 'DDR4' | 'DDR5' | '';

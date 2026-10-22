@@ -10,13 +10,16 @@ import {
   CreditCard,
   User,
   Star,
-  Loader2
+  Loader2,
+  Heart
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Profile, Order } from '../../types';
+import { useWishlist } from '../../lib/WishlistContext';
 
 const CustomerDashboard: React.FC = () => {
+  const { wishlistCount, openWishlist } = useWishlist();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -111,6 +114,27 @@ const CustomerDashboard: React.FC = () => {
                     <div className="h-full bg-blue-600 w-[65%] rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div>
                  </div>
                  <p className="text-[10px] text-slate-400 font-medium">You are 3 orders away from Platinum tier rewards.</p>
+              </div>
+           </div>
+
+           <div 
+             onClick={openWishlist}
+             className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/30 cursor-pointer hover:border-rose-300 hover:shadow-2xl transition-all group"
+           >
+              <div className="flex items-center justify-between mb-4">
+                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-rose-600 transition-colors">Saved Wishlist</h3>
+                 <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform">
+                    <Heart size={18} className={wishlistCount > 0 ? 'fill-rose-500' : ''} />
+                 </div>
+              </div>
+              <div className="flex items-baseline justify-between">
+                 <div>
+                   <span className="text-3xl font-black text-slate-900">{wishlistCount}</span>
+                   <span className="text-xs text-slate-400 font-bold ml-2">Units Bookmarked</span>
+                 </div>
+                 <span className="text-[10px] font-black uppercase tracking-wider text-rose-600 flex items-center gap-1">
+                   Manage &rarr;
+                 </span>
               </div>
            </div>
 

@@ -80,7 +80,7 @@ const ProductManagement: React.FC = () => {
   const [showDetailsPreview, setShowDetailsPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState<Partial<Product>>({
+  const [formData, setFormData] = useState<Partial<Product> & { images?: string[] }>({
     name: '',
     category_id: '',
     subcategory_id: '',
@@ -93,6 +93,7 @@ const ProductManagement: React.FC = () => {
     description: '',
     additional_details: '',
     image_url: '',
+    images: [],
     ddr_type: '',
     is_custom_build: false,
     is_customised: false
@@ -180,36 +181,111 @@ const ProductManagement: React.FC = () => {
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const [isDragging, setIsDragging] = useState(false);
 
-    if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file.');
+  const uploadFiles = async (filesList: File[]) => {
+    const validFiles = filesList.filter(f => f.type.startsWith('image/'));
+    if (validFiles.length === 0) {
+      alert('Please upload valid image files (JPG, PNG, WEBP).');
       return;
     }
 
     setIsUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `product-images/${fileName}`;
+      const uploadPromises = validFiles.map(async (file) => {
+        const fileExt = file.name.split('.').pop() || 'png';
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+        const filePath = `product-images/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('products')
-        .upload(filePath, file);
+        const { error: uploadError } = await supabase.storage
+          .from('products')
+          .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+        if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('products')
-        .getPublicUrl(filePath);
+        const { data: { publicUrl } } = supabase.storage
+          .from('products')
+          .getPublicUrl(filePath);
 
-      setFormData(prev => ({ ...prev, image_url: publicUrl }));
+        return publicUrl;
+      });
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+
+      setFormData(prev => {
+        const currentImages = (prev as any).images && Array.isArray((prev as any).images)
+          ? [...(prev as any).images]
+          : (prev.image_url ? [prev.image_url] : []);
+        
+        const updatedImages = [...currentImages, ...uploadedUrls];
+        return {
+          ...prev,
+          image_url: prev.image_url || updatedImages[0] || '',
+          images: updatedImages
+        };
+      });
     } catch (err: any) {
-      alert('Error uploading image: ' + err.message);
+      alert('Error uploading images: ' + err.message);
     } finally {
       setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    await uploadFiles(Array.from(e.target.files));
+  };
+
+  const handleRemoveImage = (indexToRemove: number) => {
+    setFormData(prev => {
+      const currentImages = (prev as any).images && Array.isArray((prev as any).images)
+        ? [...(prev as any).images]
+        : (prev.image_url ? [prev.image_url] : []);
+      
+      const updated = currentImages.filter((_, idx) => idx !== indexToRemove);
+      return {
+        ...prev,
+        images: updated,
+        image_url: updated[0] || ''
+      };
+    });
+  };
+
+  const handleSetCoverImage = (url: string) => {
+    setFormData(prev => {
+      const currentImages = (prev as any).images && Array.isArray((prev as any).images)
+        ? [...(prev as any).images]
+        : (prev.image_url ? [prev.image_url] : []);
+      
+      const filtered = currentImages.filter(u => u !== url);
+      const updated = [url, ...filtered];
+      return {
+        ...prev,
+        images: updated,
+        image_url: url
+      };
+    });
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      await uploadFiles(Array.from(e.dataTransfer.files));
     }
   };
 
@@ -232,15 +308,23 @@ const ProductManagement: React.FC = () => {
     setModalError(null);
     const slug = formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 
+    const imagesList = (formData as any).images && Array.isArray((formData as any).images) && (formData as any).images.length > 0
+      ? (formData as any).images
+      : (formData.image_url ? [formData.image_url] : []);
+    const primaryImage = imagesList[0] || formData.image_url || '';
+
     const specsWithExtra = {
       ...(formData.specs || {}),
       additional_details: formData.additional_details || '',
       ddr_type: formData.ddr_type || '',
+      images: imagesList,
     };
 
     const fullPayload: any = {
       ...formData,
       slug,
+      image_url: primaryImage,
+      images: imagesList,
       specs: specsWithExtra,
       additional_details: formData.additional_details || '',
       ddr_type: formData.ddr_type || '',
@@ -267,12 +351,13 @@ const ProductManagement: React.FC = () => {
         await saveToSupabase(fullPayload);
       } catch (firstErr: any) {
         const errMsg = firstErr?.message || '';
-        // If Supabase schema cache does not have additional_details or ddr_type column yet, fallback gracefully
-        if (errMsg.includes('additional_details') || errMsg.includes('ddr_type') || errMsg.includes('schema cache')) {
+        // If Supabase schema cache does not have optional columns yet, fallback gracefully
+        if (errMsg.includes('additional_details') || errMsg.includes('ddr_type') || errMsg.includes('images') || errMsg.includes('schema cache')) {
           console.warn("Retrying save without optional root columns (data safely stored in specs)...", errMsg);
           const safePayload = { ...fullPayload };
           delete safePayload.additional_details;
           delete safePayload.ddr_type;
+          delete safePayload.images;
           
           await saveToSupabase(safePayload);
         } else {
@@ -305,6 +390,7 @@ const ProductManagement: React.FC = () => {
       description: '',
       additional_details: '',
       image_url: '',
+      images: [],
       ddr_type: '',
       specs: {},
       is_custom_build: false,
@@ -314,6 +400,22 @@ const ProductManagement: React.FC = () => {
 
   const handleEdit = (product: Product) => {
     setModalError(null);
+    const rawImages = (product as any).images || product.specs?.images;
+    let initialImages: string[] = [];
+    if (Array.isArray(rawImages)) {
+      initialImages = rawImages.filter(Boolean);
+    } else if (typeof rawImages === 'string') {
+      try {
+        const parsed = JSON.parse(rawImages);
+        if (Array.isArray(parsed)) initialImages = parsed.filter(Boolean);
+      } catch {
+        initialImages = rawImages.split(',').map((s: string) => s.trim()).filter(Boolean);
+      }
+    }
+    if (product.image_url && !initialImages.includes(product.image_url)) {
+      initialImages.unshift(product.image_url);
+    }
+
     setFormData({
       name: product.name,
       category_id: product.category_id,
@@ -326,7 +428,8 @@ const ProductManagement: React.FC = () => {
       stock: product.stock,
       description: product.description,
       additional_details: (product as any).additional_details || '',
-      image_url: product.image_url,
+      image_url: product.image_url || initialImages[0] || '',
+      images: initialImages,
       ddr_type: product.ddr_type || '',
       specs: product.specs || {},
       is_custom_build: product.is_custom_build,
@@ -1062,32 +1165,139 @@ const ProductManagement: React.FC = () => {
 
                   {/* Media */}
                   <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                    <h4 className="text-lg font-semibold text-slate-900">Media</h4>
-                    <div className="w-full rounded-2xl bg-white border border-dashed border-slate-300 flex flex-col items-center justify-center p-10 relative overflow-hidden group transition-all hover:border-slate-400">
-                      {formData.image_url ? (
-                        <>
-                          <img src={formData.image_url} className="w-full max-h-64 object-contain p-2" alt="Preview" />
-                          <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm">
-                            <CloudUpload size={32} className="text-slate-400 mb-3" />
-                            <button type="button" onClick={() => fileInputRef.current?.click()} className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-full font-medium text-sm shadow-sm hover:bg-slate-50">Browse File</button>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="text-center flex flex-col items-center">
-                          <CloudUpload className="text-slate-900 mb-4" size={32} />
-                          <p className="text-sm text-slate-900 font-medium mb-1">Choose a file or drag & drop it here</p>
-                          <p className="text-xs text-slate-400 mb-6">JPG or PNG formats, up to 5MB</p>
-                          <button type="button" onClick={() => fileInputRef.current?.click()} className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-full font-medium text-sm shadow-sm hover:bg-slate-50 transition-all">Browse File</button>
-                        </div>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <h4 className="text-lg font-semibold text-slate-900">Media</h4>
+                        <p className="text-xs text-slate-500 mt-0.5">Upload multiple product images. The cover image will be used as the primary display.</p>
+                      </div>
+                      {((formData as any).images?.length > 0 || formData.image_url) && (
+                        <span className="text-xs font-bold px-3 py-1 bg-slate-100 text-slate-700 rounded-full">
+                          {((formData as any).images?.length || (formData.image_url ? 1 : 0))} {(((formData as any).images?.length || (formData.image_url ? 1 : 0)) === 1 ? 'image' : 'images')}
+                        </span>
                       )}
+                    </div>
+
+                    {/* Drag & Drop Upload Zone */}
+                    <div 
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      className={`w-full rounded-2xl bg-white border border-dashed transition-all p-8 md:p-10 flex flex-col items-center justify-center relative overflow-hidden group ${
+                        isDragging ? 'border-slate-900 bg-slate-50 scale-[0.99]' : 'border-slate-300 hover:border-slate-400'
+                      }`}
+                    >
+                      <div className="text-center flex flex-col items-center">
+                        <CloudUpload className={`mb-3 transition-transform ${isDragging ? 'scale-110 text-slate-900' : 'text-slate-800'}`} size={36} />
+                        <p className="text-sm text-slate-900 font-medium mb-1">
+                          {isDragging ? 'Drop images here to upload' : 'Choose files or drag & drop them here'}
+                        </p>
+                        <p className="text-xs text-slate-400 mb-6">JPG, PNG, or WEBP formats, up to 5MB each (select multiple)</p>
+                        <button 
+                          type="button" 
+                          onClick={() => fileInputRef.current?.click()} 
+                          className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-full font-medium text-sm shadow-sm hover:bg-slate-50 transition-all cursor-pointer"
+                        >
+                          Browse Files
+                        </button>
+                      </div>
+
                       {isUploading && (
-                        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
-                          <Loader2 className="animate-spin text-slate-900" size={24} />
-                          <span className="text-sm font-medium text-slate-900">Uploading...</span>
+                        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-30">
+                          <Loader2 className="animate-spin text-slate-900" size={28} />
+                          <span className="text-sm font-semibold text-slate-900">Uploading media files...</span>
                         </div>
                       )}
                     </div>
-                    <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
+
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      onChange={handleFileUpload} 
+                      className="hidden" 
+                      accept="image/*" 
+                      multiple 
+                    />
+
+                    {/* Uploaded Images Gallery Grid */}
+                    {(() => {
+                      const imagesList: string[] = (formData as any).images && Array.isArray((formData as any).images) && (formData as any).images.length > 0
+                        ? (formData as any).images
+                        : (formData.image_url ? [formData.image_url] : []);
+
+                      if (imagesList.length === 0) return null;
+
+                      return (
+                        <div className="space-y-3 pt-2">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                              Product Gallery ({imagesList.length})
+                            </label>
+                            <span className="text-[11px] text-slate-400">First image or designated cover is shown on listings</span>
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                            {imagesList.map((url, idx) => {
+                              const isCover = (formData.image_url === url) || (!formData.image_url && idx === 0);
+                              return (
+                                <div 
+                                  key={idx} 
+                                  className={`group relative aspect-square rounded-2xl border bg-slate-50 p-2 flex items-center justify-center overflow-hidden transition-all shadow-sm ${
+                                    isCover ? 'border-slate-900 ring-2 ring-slate-900/15' : 'border-slate-200 hover:border-slate-300'
+                                  }`}
+                                >
+                                  <img 
+                                    src={url} 
+                                    alt={`Product media ${idx + 1}`} 
+                                    className="w-full h-full object-contain"
+                                  />
+
+                                  {isCover && (
+                                    <div className="absolute top-2 left-2 z-10">
+                                      <span className="px-2 py-0.5 bg-slate-900 text-white text-[10px] font-bold rounded-md shadow-sm flex items-center gap-1">
+                                        <Check size={10} /> Cover
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  {/* Hover Actions Overlay */}
+                                  <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2 z-20">
+                                    {!isCover && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleSetCoverImage(url)}
+                                        className="px-3 py-1 bg-white text-slate-900 hover:bg-slate-100 rounded-lg text-xs font-bold shadow transition-all cursor-pointer"
+                                      >
+                                        Set as Cover
+                                      </button>
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveImage(idx)}
+                                      className="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-medium shadow transition-all cursor-pointer flex items-center gap-1"
+                                      title="Remove image"
+                                    >
+                                      <Trash2 size={12} />
+                                      <span>Remove</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+
+                            {/* Add More Button in Grid */}
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              className="aspect-square rounded-2xl border-2 border-dashed border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-100/50 flex flex-col items-center justify-center gap-2 transition-all text-slate-500 hover:text-slate-800 cursor-pointer"
+                              title="Upload more images"
+                            >
+                              <Plus size={22} />
+                              <span className="text-xs font-semibold">Add More</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Pricing */}

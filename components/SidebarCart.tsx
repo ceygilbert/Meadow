@@ -109,6 +109,29 @@ export const SidebarCart: React.FC<SidebarCartProps> = ({
     return null;
   };
 
+  const getItemLink = (item: SidebarCartItem): string => {
+    if (item.link && typeof item.link === 'string') return item.link;
+    if (item.url && typeof item.url === 'string') return item.url;
+    
+    const slug = item.slug || item.id;
+    if (!slug) return '/products';
+
+    if (slug.startsWith('/')) return slug;
+
+    const isPrebuilt = 
+      item.is_prebuilt || 
+      item.category?.toLowerCase() === 'prebuilt' || 
+      slug.startsWith('level-') || 
+      slug.includes('combo') || 
+      slug.includes('prebuilt');
+
+    if (isPrebuilt) {
+      return `/prebuilt/${slug}`;
+    }
+
+    return `/product/${slug}`;
+  };
+
   const handleCheckout = (e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
@@ -221,6 +244,7 @@ export const SidebarCart: React.FC<SidebarCartProps> = ({
                 items.map((item) => {
                   const finalUnitPrice = getItemPrice(item);
                   const subtitle = getItemSubtitle(item);
+                  const itemLink = getItemLink(item);
 
                   return (
                     <div
@@ -228,21 +252,37 @@ export const SidebarCart: React.FC<SidebarCartProps> = ({
                       className="flex items-start gap-3 pb-3 border-b border-slate-100 last:border-b-0"
                     >
                       {/* Product Thumbnail */}
-                      <div className="w-16 h-16 rounded-xl bg-slate-50 border border-slate-200/70 p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                      <Link
+                        to={itemLink}
+                        onClick={() => {
+                          onClose();
+                          window.scrollTo({ top: 0, behavior: 'instant' });
+                        }}
+                        className="w-16 h-16 rounded-xl bg-slate-50 border border-slate-200/70 p-1 flex items-center justify-center shrink-0 overflow-hidden hover:border-slate-300 transition-all cursor-pointer group/thumb"
+                        title={item.name}
+                      >
                         <img
                           src={getItemImage(item)}
                           alt={item.name}
-                          className="w-full h-full object-contain"
+                          className="w-full h-full object-contain group-hover/thumb:scale-105 transition-transform"
                           loading="lazy"
                         />
-                      </div>
+                      </Link>
 
                       {/* Product Info & Controls */}
                       <div className="flex-1 min-w-0">
-                        {/* Title */}
-                        <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-snug line-clamp-2">
+                        {/* Title - Clickable Link to Product */}
+                        <Link
+                          to={itemLink}
+                          onClick={() => {
+                            onClose();
+                            window.scrollTo({ top: 0, behavior: 'instant' });
+                          }}
+                          className="text-xs sm:text-sm font-bold text-slate-900 leading-snug line-clamp-2 hover:text-[#e11d48] transition-colors block cursor-pointer"
+                          title={item.name}
+                        >
                           {item.name}
-                        </h4>
+                        </Link>
 
                         {/* Optional Subtitle / Specs / Colour */}
                         {subtitle && (

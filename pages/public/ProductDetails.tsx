@@ -44,6 +44,7 @@ import Breadcrumbs from '../../components/Breadcrumbs';
 import Footer from '../../components/Footer';
 import SidebarCart from '../../components/SidebarCart';
 import { useCart } from '../../lib/CartContext';
+import { useWishlist } from '../../lib/WishlistContext';
 import { Product, Brand, Category, Profile } from '../../types';
 
 interface CartItem extends Product {
@@ -59,6 +60,7 @@ const ProductDetails: React.FC = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const [product, setProduct] = useState<Product | null>(null);
   const [brand, setBrand] = useState<Brand | null>(null);
   const [category, setCategory] = useState<Category | null>(null);
@@ -71,6 +73,35 @@ const ProductDetails: React.FC = () => {
   const [selectedColor, setSelectedColor] = useState('');
   const [viewingCount, setViewingCount] = useState(() => Math.floor(Math.random() * 21) + 12);
   const [activeDetailTab, setActiveDetailTab] = useState<'product' | 'warranty'>('product');
+  const [activeImage, setActiveImage] = useState<string>('');
+
+  const productImages = useMemo(() => {
+    if (!product) return [];
+    const imgs: string[] = [];
+    const rawImages = (product as any).images || product.specs?.images;
+    if (Array.isArray(rawImages)) {
+      imgs.push(...rawImages.filter(Boolean));
+    } else if (typeof rawImages === 'string') {
+      try {
+        const parsed = JSON.parse(rawImages);
+        if (Array.isArray(parsed)) imgs.push(...parsed.filter(Boolean));
+      } catch {
+        imgs.push(...rawImages.split(',').map((s: string) => s.trim()).filter(Boolean));
+      }
+    }
+    if (product.image_url && !imgs.includes(product.image_url)) {
+      imgs.unshift(product.image_url);
+    }
+    return imgs.length > 0 ? imgs : (product.image_url ? [product.image_url] : []);
+  }, [product]);
+
+  useEffect(() => {
+    if (productImages.length > 0) {
+      setActiveImage(productImages[0]);
+    } else if (product?.image_url) {
+      setActiveImage(product.image_url);
+    }
+  }, [productImages, product?.image_url]);
 
   const availableColors = useMemo(() => {
     if (!product) return [];
@@ -180,22 +211,34 @@ const ProductDetails: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
+      let prodData = null;
       const { data, error: prodError } = await supabase
         .from('products')
         .select('*')
         .eq('slug', slug)
         .maybeSingle();
 
-      if (prodError) throw prodError;
-      if (!data) throw new Error("Product not indexed.");
+      if (data) {
+        prodData = data;
+      } else {
+        const { data: byId } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', slug)
+          .maybeSingle();
+        if (byId) prodData = byId;
+      }
 
-      setProduct(data);
+      if (prodError && !prodData) throw prodError;
+      if (!prodData) throw new Error("Product not indexed.");
+
+      setProduct(prodData);
 
       const [brandRes, catRes, subCatRes, relatedRes] = await Promise.all([
-        data.brand_id ? supabase.from('brands').select('*').eq('id', data.brand_id).maybeSingle() : Promise.resolve({ data: null }),
-        data.category_id ? supabase.from('categories').select('*').eq('id', data.category_id).maybeSingle() : Promise.resolve({ data: null }),
-        data.subcategory_id ? supabase.from('subcategories').select('*').eq('id', data.subcategory_id).maybeSingle() : Promise.resolve({ data: null }),
-        data.category_id ? supabase.from('products').select('*').eq('category_id', data.category_id).neq('id', data.id).limit(4) : Promise.resolve({ data: [] })
+        prodData.brand_id ? supabase.from('brands').select('*').eq('id', prodData.brand_id).maybeSingle() : Promise.resolve({ data: null }),
+        prodData.category_id ? supabase.from('categories').select('*').eq('id', prodData.category_id).maybeSingle() : Promise.resolve({ data: null }),
+        prodData.subcategory_id ? supabase.from('subcategories').select('*').eq('id', prodData.subcategory_id).maybeSingle() : Promise.resolve({ data: null }),
+        prodData.category_id ? supabase.from('products').select('*').eq('category_id', prodData.category_id).neq('id', prodData.id).limit(4) : Promise.resolve({ data: [] })
       ]);
 
       if (brandRes.data) setBrand(brandRes.data);
@@ -354,10 +397,10 @@ const ProductDetails: React.FC = () => {
           
           {/* Visual Showcase (Left - 6 Columns) */}
           <div className="lg:col-span-6 space-y-8 animate-in fade-in slide-in-from-left duration-700">
-             <div className="w-full max-w-md lg:max-w-[420px] mx-auto aspect-[3/4] bg-[#F7F8FA] rounded-[2rem] md:rounded-[3rem] overflow-hidden flex items-center justify-center p-8 md:p-12 relative border border-slate-50 group">
+             <div className="w-full max-w-md lg:max-w-[420px] mx-auto aspect-[3/4] bg-[#F7F8FA] rounded-2xl overflow-hidden flex items-center justify-center p-8 md:p-12 relative border border-slate-50 group">
                 <img 
-                  src={product.image_url || undefined} 
-                  className="w-full h-full object-contain transition-transform duration-1000 group-hover:scale-110" 
+                  src={activeImage || product.image_url || undefined} 
+                  className="w-full h-full object-contain transition-transform duration-1000 group-hover:scale-105" 
                   alt={product.name} 
                 />
                 <div className="absolute top-6 left-6 md:top-8 md:left-8">
@@ -375,13 +418,24 @@ const ProductDetails: React.FC = () => {
                 )}
              </div>
 
-             <div className="flex flex-wrap justify-center gap-4">
-                {[...Array(4)].map((_, i) => (
-                   <div key={i} className="aspect-square w-[80px] md:w-[100px] bg-slate-50 rounded-2xl border border-slate-100 p-3 md:p-4 flex items-center justify-center opacity-60 hover:opacity-100 transition-all cursor-pointer">
-                      <img src={product.image_url || undefined} className="w-full h-full object-contain grayscale" />
-                   </div>
-                ))}
-             </div>
+             {productImages.length > 1 && (
+               <div className="flex flex-wrap justify-center gap-3 md:gap-4">
+                  {productImages.map((imgUrl, i) => (
+                     <button
+                       key={i}
+                       type="button"
+                       onClick={() => setActiveImage(imgUrl)}
+                       className={`aspect-square w-[72px] sm:w-[84px] md:w-[94px] bg-slate-50 rounded-2xl border p-2 flex items-center justify-center transition-all cursor-pointer ${
+                         activeImage === imgUrl 
+                           ? 'border-slate-900 ring-2 ring-slate-900/15 shadow-sm opacity-100' 
+                           : 'border-slate-200/80 opacity-60 hover:opacity-100 hover:border-slate-400'
+                       }`}
+                     >
+                        <img src={imgUrl} alt={`Thumbnail ${i + 1}`} className="w-full h-full object-contain" />
+                     </button>
+                  ))}
+               </div>
+             )}
           </div>
 
           {/* Product Info (Right - 6 Columns) */}
@@ -464,6 +518,18 @@ const ProductDetails: React.FC = () => {
                    >
                      {isAdded ? 'ADDED TO CART' : 'ADD TO CART'}
                    </button>
+                    <button
+                      onClick={(e) => product && toggleWishlist(product, e)}
+                      className={`w-14 h-12 rounded-xl border flex items-center justify-center transition-all shadow-sm active:scale-95 cursor-pointer shrink-0 ${
+                        product && isInWishlist(product.id)
+                          ? 'bg-rose-50 border-rose-200 text-rose-600'
+                          : 'bg-white border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-200'
+                      }`}
+                      title={product && isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                      aria-label={product && isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                    >
+                      <Heart size={20} className={product && isInWishlist(product.id) ? "fill-rose-600 text-rose-600" : ""} />
+                    </button>
                 </div>
                 
                 <button 
@@ -962,14 +1028,20 @@ const ProductDetails: React.FC = () => {
 
            <div className="flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-10 -mb-10">
               {relatedProducts.map((p) => (
-                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
-                   <button 
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                      className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10"
-                   >
-                      <Heart size={14} />
-                   </button>
-                   <div className="flex-1 rounded-[1.5rem] overflow-hidden mb-3 relative flex items-center justify-center">
+                <Link key={p.id} to={`/product/${p.slug}`} className="!w-[18.4117647059rem] h-[400px] bg-white rounded-2xl p-4 md:p-6 relative flex flex-col group transition-all duration-500 hover:shadow-2xl snap-start border border-slate-100 flex-shrink-0">
+                    <button 
+                       onClick={(e) => toggleWishlist(p, e)}
+                       className={`absolute top-4 right-4 w-8 h-8 rounded-full border transition-all duration-300 flex items-center justify-center z-10 cursor-pointer shadow-sm hover:scale-110 active:scale-90 ${
+                         isInWishlist(p.id)
+                           ? 'bg-rose-50 border-rose-200 text-rose-600'
+                           : 'bg-white border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-100'
+                       }`}
+                       title={isInWishlist(p.id) ? "Remove from wishlist" : "Add to wishlist"}
+                       aria-label={isInWishlist(p.id) ? "Remove from wishlist" : "Add to wishlist"}
+                    >
+                       <Heart size={14} className={isInWishlist(p.id) ? "fill-rose-600 text-rose-600" : ""} />
+                    </button>
+                   <div className="flex-1 rounded-xl overflow-hidden mb-3 relative flex items-center justify-center">
                        <img src={p.image_url || undefined} className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-1000" referrerPolicy="no-referrer" />
                    </div>
                    <div className="mb-1">

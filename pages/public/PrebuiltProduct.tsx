@@ -1,9 +1,11 @@
-import React, { useState, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Share2, RefreshCw, Copy, List, Calculator, MessageCircle, ArrowRight, X, Check, ChevronDown } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, Share2, RefreshCw, Copy, List, Calculator, MessageCircle, ArrowRight, X, Check, ChevronDown, CheckCircle2 } from 'lucide-react';
 import StudioNavbar from '../../components/StudioNavbar';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import { motion, AnimatePresence } from 'motion/react';
+import { supabase } from '../../lib/supabase';
+import { useCart } from '../../lib/CartContext';
 
 interface Option {
   id: string;
@@ -49,7 +51,11 @@ const OS_OPTIONS: Option[] = [
 
 const PrebuiltProduct: React.FC = () => {
   const { slug } = useParams();
+  const navigate = useNavigate();
+  const { addToCart, setIsCartOpen } = useCart();
+  const [product, setProduct] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
+  const [addedToast, setAddedToast] = useState(false);
   
   const [selectedRam, setSelectedRam] = useState(RAM_OPTIONS[0]);
   const [selectedSsd, setSelectedSsd] = useState(SSD_OPTIONS[0]);
@@ -60,12 +66,33 @@ const PrebuiltProduct: React.FC = () => {
   
   const [activeModal, setActiveModal] = useState<'RAM' | 'SSD' | 'FAN' | 'COOLER' | 'WIFI' | 'OS' | null>(null);
 
-  const basePrice = 2299.00;
-  const saved = 494.00;
+  useEffect(() => {
+    const loadProduct = async () => {
+      if (!slug) return;
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('slug', slug)
+          .maybeSingle();
+
+        if (!error && data) {
+          setProduct(data);
+        }
+      } catch (err) {
+        console.warn('Failed to load product by slug:', err);
+      }
+    };
+    loadProduct();
+  }, [slug]);
+
+  const defaultPrice = slug === 'level-0-amd' ? 3299 : slug === 'level-1-amd' ? 3999 : 2399;
+  const basePrice = product ? Number(product.price) : defaultPrice;
+  const saved = Math.round(basePrice * 0.15);
 
   const totalPrice = useMemo(() => {
     return (basePrice + selectedRam.price + selectedSsd.price + selectedFan.price + selectedCooler.price + selectedWifi.price + selectedOs.price) * quantity;
-  }, [selectedRam, selectedSsd, selectedFan, selectedCooler, selectedWifi, selectedOs, quantity]);
+  }, [basePrice, selectedRam, selectedSsd, selectedFan, selectedCooler, selectedWifi, selectedOs, quantity]);
 
   const getAddonPrice = (type: string) => {
     if (type === 'RAM') return selectedRam.price;
@@ -77,15 +104,21 @@ const PrebuiltProduct: React.FC = () => {
     return 0;
   };
 
+  const productSpecs = (product?.specs && typeof product.specs === 'object') ? product.specs : {};
+  const displayCpu = productSpecs.cpu || (slug?.includes('level') || slug?.includes('rtx') ? 'AMD Ryzen 5 7500F' : 'AMD RYZEN 5 5500');
+  const displayGpu = productSpecs.gpu || (slug === 'level-1-amd' ? 'NVIDIA GeForce RTX 5060 8GB' : slug === 'level-0-amd' ? 'NVIDIA GeForce RTX 5050 8GB' : 'NVIDIA GeForce RTX 3050 6GB');
+  const displayTitle = product?.name || (slug ? slug.replace(/-/g, ' ').toUpperCase() : 'MEADOW PRE-BUILT PC');
+  const displayImage = product?.image_url || (slug === 'unbeatable-rtx-combo' ? '/assets/builds/unbeatable-rtx-combo.png' : slug === 'level-0-amd' ? '/assets/builds/level-0-amd.png' : slug === 'level-1-amd' ? '/assets/builds/level-1-amd.png' : 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=800&auto=format&fit=crop');
+
   const specs = [
-    { label: "CPU", value: "AMD RYZEN 5 5500", reselectable: false },
+    { label: "CPU", value: displayCpu, reselectable: false },
     { label: "CPU COOLER", value: selectedCooler.label, reselectable: true, type: 'COOLER' },
-    { label: "MOTHERBOARD", value: "AMD A520M (MSI/GIGABYTE) (NON WIFI) ( 2x RAM SLOT | 1x NVME SLOT )", reselectable: false },
+    { label: "MOTHERBOARD", value: "Gigabyte B850M C WIFI7 (DDR5 / PCIe 4.0)", reselectable: false },
     { label: "RAM", value: selectedRam.label, reselectable: true, type: 'RAM' },
     { label: "SSD", value: selectedSsd.label, reselectable: true, type: 'SSD' },
-    { label: "GPU", value: "NVIDIA GEFORCE RTX 3050 6GB (MSI)", reselectable: false },
-    { label: "PSU", value: "THERMALTAKE 650W", reselectable: false },
-    { label: "CASE", value: "TECWARE VXO M BLACK", reselectable: false },
+    { label: "GPU", value: displayGpu, reselectable: false },
+    { label: "PSU", value: "550W Gigabyte 80+ Silver (ATX 3.0)", reselectable: false },
+    { label: "CASE", value: "MEADOW PANORAMIC TEMPERED GLASS CHASSIS", reselectable: false },
     { label: "FAN", value: selectedFan.label, reselectable: true, type: 'FAN' },
     { label: "WIFI", value: selectedWifi.label, reselectable: true, type: 'WIFI' },
     { label: "OS", value: selectedOs.label, reselectable: true, type: 'OS' },
@@ -181,7 +214,7 @@ const PrebuiltProduct: React.FC = () => {
         <Breadcrumbs 
           items={[
             { label: 'PRE-BUILT SYSTEMS', path: '/prebuilt' },
-            { label: slug?.replace(/-/g, ' ').toUpperCase() || "PC Package" }
+            { label: displayTitle }
           ]} 
         />
       </div>
@@ -195,21 +228,21 @@ const PrebuiltProduct: React.FC = () => {
           
           {/* Left: Image Gallery */}
           <div>
-            <div className="aspect-square bg-[#1a1a1a] rounded-3xl mb-6 flex items-center justify-center overflow-hidden border border-white/5">
+            <div className="aspect-square bg-[#1a1a1a] rounded-2xl mb-6 flex items-center justify-center overflow-hidden border border-white/5 p-6">
               <img 
-                src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=800&auto=format&fit=crop" 
-                alt="PC Build"
-                className="w-full h-full object-cover"
+                src={displayImage} 
+                alt={displayTitle}
+                className="w-full h-full object-contain drop-shadow-2xl"
                 referrerPolicy="no-referrer"
               />
             </div>
             <div className="grid grid-cols-4 gap-4">
               {[1, 2, 3, 4].map(i => (
-                <div key={i} className="aspect-square bg-[#1a1a1a] rounded-xl border border-white/10 overflow-hidden">
+                <div key={i} className="aspect-square bg-[#1a1a1a] rounded-xl border border-white/10 overflow-hidden flex items-center justify-center p-2">
                    <img 
-                    src={`https://picsum.photos/seed/pc-${i}/200/200`} 
+                    src={displayImage} 
                     alt={`View ${i}`}
-                    className="w-full h-full object-cover opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
+                    className="w-full h-full object-contain opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
                     referrerPolicy="no-referrer"
                   />
                 </div>
@@ -220,7 +253,7 @@ const PrebuiltProduct: React.FC = () => {
           {/* Right: Configuration */}
           <div>
             <h1 className="text-3xl font-black mb-6 uppercase tracking-tighter leading-tight">
-              {slug?.replace(/-/g, ' ').toUpperCase() || "STRIKER (AMD RYZEN 5 5500 | RTX3050)"}
+              {displayTitle}
             </h1>
             
             <div className="flex items-center gap-4 mb-8">
@@ -349,10 +382,45 @@ const PrebuiltProduct: React.FC = () => {
           </div>
           <p className="text-[10px] font-black text-green-500 uppercase tracking-widest">You save RM {saved.toFixed(2)}</p>
         </div>
-        <div className="flex flex-wrap justify-center gap-3">
+        <div className="flex flex-wrap justify-center items-center gap-3">
+          {addedToast && (
+            <div className="flex items-center gap-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-4 py-2 rounded-full text-xs font-bold animate-pulse">
+              <CheckCircle2 size={16} />
+              <span>Added to Cart!</span>
+            </div>
+          )}
           <button className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 rounded-full text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all"><Calculator size={16} /> Loan Calc.</button>
           <button className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 rounded-full text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all"><MessageCircle size={16} /> Talk To Us</button>
-          <button className="flex items-center gap-2 px-10 py-4 bg-rose-600 rounded-full text-xs font-black uppercase tracking-[0.2em] hover:bg-rose-700 transition-all shadow-[0_0_30px_rgba(225,29,72,0.3)]">Next <ArrowRight size={16} /></button>
+          <button 
+            onClick={() => {
+              const prodItem = product ? {
+                ...product,
+                price: totalPrice / quantity
+              } : {
+                id: slug || 'prebuilt-custom',
+                name: displayTitle,
+                slug: slug || 'prebuilt-custom',
+                price: totalPrice / quantity,
+                stock: 10,
+                image_url: displayImage,
+                description: `Pre-built PC configured with ${selectedRam.label}, ${selectedSsd.label}`,
+                specs: {
+                  cpu: displayCpu,
+                  gpu: displayGpu,
+                  ram: selectedRam.label,
+                  ssd: selectedSsd.label
+                }
+              };
+              addToCart(prodItem as any, quantity);
+              setAddedToast(true);
+              setTimeout(() => setAddedToast(false), 3000);
+              setIsCartOpen(true);
+            }}
+            className="flex items-center gap-2 px-10 py-4 bg-rose-600 rounded-full text-xs font-black uppercase tracking-[0.2em] hover:bg-rose-700 transition-all shadow-[0_0_30px_rgba(225,29,72,0.3)] active:scale-95"
+          >
+            <span>Add To Cart</span>
+            <ArrowRight size={16} />
+          </button>
         </div>
       </div>
     </div>

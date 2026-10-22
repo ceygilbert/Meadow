@@ -150,12 +150,15 @@ const AppContent: React.FC = () => {
 };
 
 import { CartProvider } from './lib/CartContext';
+import { WishlistProvider } from './lib/WishlistContext';
 
 const App: React.FC = () => {
   return (
     <AuthProvider>
       <CartProvider>
-        <AppContent />
+        <WishlistProvider>
+          <AppContent />
+        </WishlistProvider>
       </CartProvider>
     </AuthProvider>
   );

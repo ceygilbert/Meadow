@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { 
   Cpu, 
@@ -18,12 +18,9 @@ import {
 import StudioNavbar from '../../components/StudioNavbar';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import WaveGradient from '../../components/WaveGradient';
+import { supabase } from '../../lib/supabase';
 
-const Prebuilt: React.FC = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const activeType = searchParams.get('type') || 'all';
-
-  const packages = [
+const DEFAULT_PACKAGES = [
     {
       id: "unbeatable-rtx-combo",
       title: "UNBEATABLE RTX COMBO",
@@ -140,6 +137,73 @@ const Prebuilt: React.FC = () => {
     }
   ];
 
+const Prebuilt: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeType = searchParams.get('type') || 'all';
+  const [packages, setPackages] = useState(DEFAULT_PACKAGES);
+
+  useEffect(() => {
+    const fetchDbPrebuilts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_custom_build', true)
+          .order('price', { ascending: true });
+
+        if (!error && data && data.length > 0) {
+          const mapped = data.map((prod) => {
+            const s = (typeof prod.specs === 'object' && prod.specs !== null ? prod.specs : {}) as Record<string, any>;
+            const specsList: Array<{ icon: any; text: string }> = [];
+
+            if (Array.isArray(s.specs_list) && s.specs_list.length > 0) {
+              const icons = [
+                <Microchip size={18} key={1} />,
+                <Cpu size={18} key={2} />,
+                <MemoryStick size={18} key={3} />,
+                <HardDrive size={18} key={4} />,
+                <CircuitBoard size={18} key={5} />,
+                <Fan size={18} key={6} />,
+                <Power size={18} key={7} />
+              ];
+              s.specs_list.forEach((txt: string, idx: number) => {
+                specsList.push({ icon: icons[idx % icons.length], text: txt });
+              });
+            } else {
+              if (s.cpu) specsList.push({ icon: <Microchip size={18} />, text: s.cpu });
+              if (s.gpu) specsList.push({ icon: <Cpu size={18} />, text: s.gpu });
+              if (s.ram) specsList.push({ icon: <MemoryStick size={18} />, text: s.ram });
+              if (s.ssd) specsList.push({ icon: <HardDrive size={18} />, text: s.ssd });
+            }
+
+            return {
+              id: prod.slug || prod.id,
+              title: prod.name.toUpperCase(),
+              type: s.build_type || 'ready-to-ship',
+              cpuModel: s.cpu_model || s.cpu || 'Ryzen 5 7500F',
+              gpuModel: s.gpu_model || s.gpu || 'RTX Series',
+              image: prod.image_url || '/assets/builds/unbeatable-rtx-combo.png',
+              badge: s.badge || (s.build_type === 'powered-by-brand' ? 'POWERED BY BRAND' : 'READY TO SHIP'),
+              price: Number(prod.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+              specs: specsList.length > 0 ? specsList : [
+                { icon: <Microchip size={18} />, text: s.cpu || "High Performance Processor" },
+                { icon: <Cpu size={18} />, text: s.gpu || "Dedicated Graphics" },
+                { icon: <MemoryStick size={18} />, text: s.ram || "16GB High Speed RAM" },
+                { icon: <HardDrive size={18} />, text: s.ssd || "1TB NVMe SSD" }
+              ]
+            };
+          });
+
+          setPackages(mapped);
+        }
+      } catch (err) {
+        console.warn('Failed to load prebuilts from database:', err);
+      }
+    };
+
+    fetchDbPrebuilts();
+  }, []);
+
   const filteredPackages = packages.filter(pkg => {
     if (activeType === 'ready-to-ship') return pkg.type === 'ready-to-ship';
     if (activeType === 'powered-by-brand') return pkg.type === 'powered-by-brand';
@@ -154,7 +218,7 @@ const Prebuilt: React.FC = () => {
 
       <div className="max-w-[1600px] mx-auto px-8 md:px-16 pt-36 md:pt-44">
         {/* Build PC Hero Banner */}
-        <div className="relative mb-12 rounded-[2.5rem] overflow-hidden border border-white/10 bg-gradient-to-r from-[#0d0e11] via-[#121418] to-[#1a0a0f] p-8 md:p-12 shadow-2xl">
+        <div className="relative mb-12 rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-r from-[#0d0e11] via-[#121418] to-[#1a0a0f] p-8 md:p-12 shadow-2xl">
           {/* Ambient Glows */}
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-rose-600/15 rounded-full blur-[100px] pointer-events-none"></div>
           <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px] pointer-events-none"></div>
@@ -200,7 +264,7 @@ const Prebuilt: React.FC = () => {
 
             {/* Banner Image */}
             <div className="lg:col-span-5 relative">
-              <div className="relative rounded-3xl overflow-hidden border border-white/15 shadow-2xl group">
+              <div className="relative rounded-xl overflow-hidden border border-white/15 shadow-2xl group">
                 <img
                   src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1200&auto=format&fit=crop"
                   alt="Build PC Custom Rig Banner"
@@ -273,7 +337,7 @@ const Prebuilt: React.FC = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredPackages.map((pkg) => (
-              <div key={pkg.id} className="flex flex-col bg-[#0d0e0f] border border-white/5 rounded-[2rem] overflow-hidden group hover:border-red-600/30 transition-all duration-500 shadow-2xl">
+              <div key={pkg.id} className="flex flex-col bg-[#0d0e0f] border border-white/5 rounded-2xl overflow-hidden group hover:border-red-600/30 transition-all duration-500 shadow-2xl">
                 {/* Card Header */}
                 <div className="p-6 text-center bg-gradient-to-b from-white/[0.03] to-transparent border-b border-white/5">
                   <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-2">{pkg.title}</h3>

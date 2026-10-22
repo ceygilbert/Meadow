@@ -228,14 +228,14 @@ const Workstation: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-[#050607] rounded-[2.5rem] p-10 border border-white/5 flex flex-col h-full relative overflow-hidden group"
+                className="bg-[#050607] rounded-2xl p-10 border border-white/5 flex flex-col h-full relative overflow-hidden group"
               >
                 <div className={comp.reverse ? "order-2 mt-8" : "order-1 mb-8"}>
                   <h3 className="text-2xl font-black mb-4">{comp.title}</h3>
                   <p className="text-slate-400 text-sm leading-relaxed">{comp.description}</p>
                 </div>
                 
-                <div className={`relative rounded-3xl overflow-hidden flex-grow min-h-[350px] ${comp.reverse ? "order-1" : "order-2"}`}>
+                <div className={`relative rounded-xl overflow-hidden flex-grow min-h-[350px] ${comp.reverse ? "order-1" : "order-2"}`}>
                   <img 
                     src={comp.image} 
                     className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-1000"
@@ -363,8 +363,8 @@ const Workstation: React.FC = () => {
                   viewport={{ once: true }}
                   className="flex-shrink-0 w-[85vw] md:w-[600px] snap-center"
                 >
-                  <div className="bg-[#0a0b0c] rounded-[3rem] p-8 md:p-12 border border-white/5 h-full flex flex-col group/card hover:border-blue-500/30 transition-all duration-500">
-                    <div className="relative aspect-video mb-10 overflow-hidden rounded-[2rem]">
+                  <div className="bg-[#0a0b0c] rounded-2xl p-8 md:p-12 border border-white/5 h-full flex flex-col group/card hover:border-blue-500/30 transition-all duration-500">
+                    <div className="relative aspect-video mb-10 overflow-hidden rounded-xl">
                       <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover/card:opacity-100 transition-opacity duration-700 z-10" />
                       <img 
                         src={ws.image} 

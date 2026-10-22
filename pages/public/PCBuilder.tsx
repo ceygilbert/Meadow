@@ -875,7 +875,7 @@ const PCBuilder: React.FC = () => {
 
       <main className="relative pt-36 md:pt-44 px-8 md:px-16 max-w-[1800px] mx-auto z-10 pb-64">
         {/* Build PC Hero Banner */}
-        <div className="relative mb-12 rounded-[2.5rem] overflow-hidden border border-white/10 bg-gradient-to-r from-[#0d0e11] via-[#121418] to-[#1a0a0f] p-8 md:p-12 shadow-2xl">
+        <div className="relative mb-12 rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-r from-[#0d0e11] via-[#121418] to-[#1a0a0f] p-8 md:p-12 shadow-2xl">
           {/* Ambient Glows */}
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-rose-600/15 rounded-full blur-[100px] pointer-events-none"></div>
           <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px] pointer-events-none"></div>
@@ -921,7 +921,7 @@ const PCBuilder: React.FC = () => {
 
             {/* Banner Image */}
             <div className="lg:col-span-5 relative">
-              <div className="relative rounded-3xl overflow-hidden border border-white/15 shadow-2xl group">
+              <div className="relative rounded-xl overflow-hidden border border-white/15 shadow-2xl group">
                 <img
                   src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1200&auto=format&fit=crop"
                   alt="Build PC Custom Rig Banner"
@@ -965,7 +965,7 @@ const PCBuilder: React.FC = () => {
                           selected.map((sItem: any, sIdx: number) => (
                             <div
                               key={sIdx}
-                              className="relative p-6 bg-[#0c0d0e] border border-rose-600 rounded-[3rem] animate-in fade-in slide-in-from-top-4 duration-500 group overflow-hidden"
+                              className="relative p-6 bg-[#0c0d0e] border border-rose-600 rounded-2xl animate-in fade-in slide-in-from-top-4 duration-500 group overflow-hidden"
                             >
                               <div className="flex items-center gap-8 relative z-10">
                                 {/* Icon Capsule Pill */}
@@ -1000,7 +1000,7 @@ const PCBuilder: React.FC = () => {
                               <div
                                 onMouseEnter={() => setHoveredZone(item.id)}
                                 onMouseLeave={() => setHoveredZone(null)}
-                                className="relative p-6 bg-[#0c0d0e] border border-rose-600 rounded-[3rem] animate-in fade-in duration-500 group overflow-hidden"
+                                className="relative p-6 bg-[#0c0d0e] border border-rose-600 rounded-2xl animate-in fade-in duration-500 group overflow-hidden"
                               >
                                 <div className="flex items-center gap-8 relative z-10">
                                   {/* Icon Capsule Pill */}
@@ -1067,7 +1067,7 @@ const PCBuilder: React.FC = () => {
                                 onClick={() => handleOpenPopup(item.id)}
                                 onMouseEnter={() => setHoveredZone(item.id)}
                                 onMouseLeave={() => setHoveredZone(null)}
-                                className="relative p-8 rounded-[3rem] border border-white/10 bg-white/[0.02] hover:border-rose-600/50 hover:bg-white/[0.05] transition-all duration-500 group cursor-pointer overflow-hidden"
+                                className="relative p-8 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-rose-600/50 hover:bg-white/[0.05] transition-all duration-500 group cursor-pointer overflow-hidden"
                               >
                                 <div className="flex items-center justify-between relative z-10">
                                   <div className="flex items-center gap-10">
@@ -1330,7 +1330,7 @@ const PCBuilder: React.FC = () => {
             onClick={() => setActivePopup(null)}
           ></div>
 
-          <div className="relative w-full max-w-[650px] bg-[#0A0B0C] border border-white/10 rounded-[2rem] shadow-[0_30px_100px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col max-h-[80vh]">
+          <div className="relative w-full max-w-[650px] bg-[#0A0B0C] border border-white/10 rounded-2xl shadow-[0_30px_100px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col max-h-[80vh]">
             <div className="px-6 py-4 border-b border-white/10 shrink-0 bg-gradient-to-b from-white/[0.03] to-transparent relative">
               <button
                 onClick={() => setActivePopup(null)}

@@ -27,13 +27,15 @@ import {
   MapPin,
   Truck,
   Box,
-  Store
+  Store,
+  Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { Category, SubCategory, Brand, Profile } from '../types';
 import { useAuth } from '../lib/AuthContext';
 import { useCart } from '../lib/CartContext';
+import { useWishlist } from '../lib/WishlistContext';
 
 interface PublicNavbarProps {
   user?: any;
@@ -166,6 +168,14 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
 
   const effectiveCartCount = cartCount !== undefined ? cartCount : contextCartCount;
   const effectiveOpenCart = onOpenCart || contextOpenCart;
+
+  let effectiveWishlistCount = 0;
+  let effectiveOpenWishlist = () => {};
+  try {
+    const wCtx = useWishlist();
+    effectiveWishlistCount = wCtx.wishlistCount;
+    effectiveOpenWishlist = wCtx.openWishlist;
+  } catch (e) {}
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
@@ -375,6 +385,21 @@ const PublicNavbar: React.FC<PublicNavbarProps> = ({
                   />
                 </button>
               )}
+
+              {/* Wishlist Button */}
+              <button 
+                onClick={effectiveOpenWishlist}
+                className="bg-white border border-slate-200 text-slate-700 rounded-full flex items-center justify-center relative shadow-sm hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50/50 transition-all w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 hover:scale-105 cursor-pointer"
+                aria-label="View wishlist"
+                title="Wishlist"
+              >
+                <Heart size={18} className={effectiveWishlistCount > 0 ? "fill-rose-500 text-rose-500" : ""} />
+                {effectiveWishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-rose-600 text-white font-black flex items-center justify-center rounded-full border-2 border-white w-5 h-5 text-[9px] shadow-sm">
+                    {effectiveWishlistCount}
+                  </span>
+                )}
+              </button>
 
               {/* Cart Button */}
               <button 
