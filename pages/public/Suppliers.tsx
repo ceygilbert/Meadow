@@ -25,7 +25,7 @@ import Breadcrumbs from '../../components/Breadcrumbs';
 import Footer from '../../components/Footer';
 import SidebarCart from '../../components/SidebarCart';
 import { supabase } from '../../lib/supabase';
-import { Product, Category, Brand, Profile } from '../../types';
+import { Product, Category, Brand, Profile, isProductPublished } from '../../types';
 import { useAuth } from '../../lib/AuthContext';
 import { useCart } from '../../lib/CartContext';
 import { useSupplierConfig } from '../../lib/supplierConfig';
@@ -89,7 +89,7 @@ const SuppliersPage: React.FC = () => {
 
       if (prodsRes.error) throw prodsRes.error;
 
-      setProducts(prodsRes.data || []);
+      setProducts((prodsRes.data || []).filter(isProductPublished));
       if (catsRes.data) setCategories(catsRes.data);
       if (brandsRes.data) setBrands(brandsRes.data);
     } catch (err: any) {

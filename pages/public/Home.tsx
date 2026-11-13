@@ -45,7 +45,7 @@ import SidebarCart from '../../components/SidebarCart';
 import { useCart } from '../../lib/CartContext';
 import { useWishlist } from '../../lib/WishlistContext';
 import { supabase } from '../../lib/supabase';
-import { Product, Profile, Brand, HomePageSettings } from '../../types';
+import { Product, Profile, Brand, HomePageSettings, isProductPublished } from '../../types';
 import { fetchHomePageSettings } from '../../services/homepageService';
 
 interface CartItem extends Product {
@@ -144,7 +144,9 @@ const getStoredHomeProducts = (): Product[] => {
     const raw = localStorage.getItem(CACHE_KEY_HOME_PRODUCTS);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.filter(isProductPublished);
+      }
     }
   } catch (e) {}
   return [];
@@ -185,7 +187,7 @@ const DEFAULT_PREBUILT_PACKAGES: PrebuiltPackageCard[] = [
     ssd: "1TB SSD",
     price: "RM 2,399",
     image: "/assets/builds/unbeatable-rtx-combo.png",
-    link: "/prebuilt/unbeatable-rtx-combo"
+    link: "/product/unbeatable-rtx-combo"
   },
   {
     id: "level-0-amd",
@@ -197,7 +199,7 @@ const DEFAULT_PREBUILT_PACKAGES: PrebuiltPackageCard[] = [
     ssd: "1TB SSD",
     price: "RM 3,299",
     image: "/assets/builds/level-0-amd.png",
-    link: "/prebuilt/level-0-amd"
+    link: "/product/level-0-amd"
   },
   {
     id: "level-1-amd",
@@ -209,7 +211,7 @@ const DEFAULT_PREBUILT_PACKAGES: PrebuiltPackageCard[] = [
     ssd: "1TB SSD",
     price: "RM 3,999",
     image: "/assets/builds/level-1-amd.png",
-    link: "/prebuilt/level-1-amd"
+    link: "/product/level-1-amd"
   }
 ];
 
@@ -428,7 +430,7 @@ const Home: React.FC = () => {
           ssd: specs.ssd || '1TB SSD',
           price: `RM ${Number(p.price).toLocaleString()}`,
           image: p.image_url || '/assets/builds/unbeatable-rtx-combo.png',
-          link: `/prebuilt/${p.slug || p.id}`
+          link: `/product/${p.slug || p.id}`
         };
       });
       setPrebuiltPackages(formatted);
@@ -545,10 +547,12 @@ const Home: React.FC = () => {
         const categoriesList = (catOutcome.status === 'fulfilled' && catOutcome.value.data) ? catOutcome.value.data : [];
         const categoriesMap = new Map(categoriesList.map((c: any) => [c.id, c]));
 
-        const allProducts = (prodData || []).map((p: any) => ({
-          ...p,
-          categories: p.category_id ? categoriesMap.get(p.category_id) : undefined
-        })) as (Product & { categories?: any })[];
+        const allProducts = (prodData || [])
+          .filter(isProductPublished)
+          .map((p: any) => ({
+            ...p,
+            categories: p.category_id ? categoriesMap.get(p.category_id) : undefined
+          })) as (Product & { categories?: any })[];
 
         distributeProducts(allProducts);
 

@@ -55,6 +55,7 @@ const PRESET_BANNERS = [
 
 const SupplierSettingsPage: React.FC = () => {
   const [config, setConfig] = useState<SupplierPageConfig>(() => getSupplierConfig());
+  const [originalConfig, setOriginalConfig] = useState<SupplierPageConfig>(() => getSupplierConfig());
   const [activeTab, setActiveTab] = useState<'banner' | 'products' | 'headlines'>('banner');
   const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
   const [isDirty, setIsDirty] = useState(false);
@@ -79,34 +80,10 @@ const SupplierSettingsPage: React.FC = () => {
   useEffect(() => {
     fetchSupplierConfig().then((latest) => {
       setConfig(latest);
+      setOriginalConfig(JSON.parse(JSON.stringify(latest)));
     });
     fetchCatalogData();
   }, []);
-
-  // Debounced auto-save so user changes are NEVER lost
-  const isFirstRender = useRef(true);
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    if (!isDirty) return;
-
-    const timer = setTimeout(async () => {
-      setSaving(true);
-      try {
-        await saveSupplierConfig(config);
-        setIsDirty(false);
-        setSavedAt(new Date());
-      } catch (err) {
-        console.warn('Auto-save error:', err);
-      } finally {
-        setSaving(false);
-      }
-    }, 700);
-
-    return () => clearTimeout(timer);
-  }, [config, isDirty]);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
@@ -137,6 +114,7 @@ const SupplierSettingsPage: React.FC = () => {
     setSaving(true);
     try {
       const res = await saveSupplierConfig(config);
+      setOriginalConfig(JSON.parse(JSON.stringify(config)));
       setIsDirty(false);
       setSavedAt(new Date());
       showToast(res.message || "Supplier settings and product selections saved successfully!", 'success');
@@ -145,6 +123,12 @@ const SupplierSettingsPage: React.FC = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleCancel = () => {
+    setConfig(JSON.parse(JSON.stringify(originalConfig)));
+    setIsDirty(false);
+    showToast("Unsaved changes reverted.", 'info');
   };
 
   const handleReset = async () => {
@@ -278,121 +262,70 @@ const SupplierSettingsPage: React.FC = () => {
       )}
 
       {/* Top Header Card */}
-      <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="px-3 py-1 bg-red-50 text-[#c5161d] text-[10px] font-black uppercase tracking-widest rounded-full border border-red-100 flex items-center gap-1.5">
-              <Truck size={12} /> Supplier Management
-            </span>
-            <span className="px-2.5 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider rounded-md">
-              Frontend &amp; Catalog
-            </span>
-            {isDirty && (
-              <span className="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold uppercase tracking-wider rounded-md animate-pulse">
-                Unsaved Changes
-              </span>
-            )}
-          </div>
-          <h1 className="text-2xl md:text-3xl font-black text-slate-900 uppercase tracking-tight">
-            Supplier Page Settings
-          </h1>
-          <p className="text-xs md:text-sm text-slate-500 font-medium mt-1">
-            Customize the top hero banner, headlines, and select which products appear on the public Supplier page.
-          </p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Supplier Page Settings</h1>
+          <p className="text-slate-500 text-xs mt-1">Configure banner, headlines, and selected supplier products.</p>
         </div>
 
-        {/* Global Action Buttons */}
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-            {saving ? (
-              <span className="flex items-center gap-1.5 font-bold text-slate-700">
-                <Loader2 size={13} className="animate-spin text-[#c5161d]" />
-                Auto-saving...
-              </span>
-            ) : isDirty ? (
-              <span className="flex items-center gap-1.5 font-bold text-amber-600">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
-                Unsaved edits
-              </span>
-            ) : savedAt ? (
-              <span className="flex items-center gap-1.5 font-medium text-slate-500">
-                <CheckCircle2 size={13} className="text-emerald-500" />
-                Saved {savedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5 font-medium text-slate-500">
-                <CheckCircle2 size={13} className="text-emerald-500" />
-                Synchronized
-              </span>
-            )}
-          </div>
-
-          <a
-            href="/suppliers"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-all border border-slate-200 flex items-center gap-2"
-            title="Open public Supplier page in a new window"
-          >
-            <span>View Live Page</span>
-            <ExternalLink size={13} />
-          </a>
-
+        <div className="flex items-center gap-3">
           <button
-            onClick={handleReset}
-            className="px-4 py-2.5 bg-slate-50 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-slate-600 rounded-xl text-xs font-bold transition-all border border-slate-200 flex items-center gap-2 cursor-pointer"
-            title="Reset to default settings"
+            type="button"
+            onClick={handleCancel}
+            disabled={saving}
+            className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold rounded-xl transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            title="Revert unsaved changes"
           >
-            <RotateCcw size={14} />
-            <span>Reset</span>
+            <span>Cancel</span>
           </button>
 
           <button
+            type="button"
             onClick={handleSave}
             disabled={saving}
-            className="px-6 py-2.5 bg-[#c5161d] hover:bg-[#a81318] active:bg-[#991217] disabled:opacity-50 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center gap-2 cursor-pointer"
           >
             {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-            <span>{saving ? 'Saving...' : 'Save Changes'}</span>
+            <span>{saving ? 'Saving...' : 'Save'}</span>
           </button>
         </div>
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto">
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-px overflow-x-auto">
         <button
           onClick={() => setActiveTab('banner')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
+          className={`px-5 py-3 text-xs font-bold rounded-t-2xl border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
             activeTab === 'banner'
-              ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+              : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
-          <ImageIcon size={15} />
+          <ImageIcon size={16} />
           <span>1. Top Hero Banner &amp; Text</span>
         </button>
 
         <button
           onClick={() => setActiveTab('products')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
+          className={`px-5 py-3 text-xs font-bold rounded-t-2xl border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
             activeTab === 'products'
-              ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+              : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
-          <Package size={15} />
+          <Package size={16} />
           <span>2. Product Selection ({(config.selectedProductIds || []).length} Selected)</span>
         </button>
 
         <button
           onClick={() => setActiveTab('headlines')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
+          className={`px-5 py-3 text-xs font-bold rounded-t-2xl border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
             activeTab === 'headlines'
-              ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+              : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
-          <Layers size={15} />
+          <Layers size={16} />
           <span>3. Product Grid Headings</span>
         </button>
       </div>

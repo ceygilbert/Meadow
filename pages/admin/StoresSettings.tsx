@@ -47,6 +47,7 @@ const BADGE_PRESETS = [
 
 const StoresSettings: React.FC = () => {
   const [settings, setSettings] = useState<OurStoresSettings>(() => getStoredOurStoresSettings());
+  const [originalSettings, setOriginalSettings] = useState<OurStoresSettings>(() => getStoredOurStoresSettings());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -96,6 +97,7 @@ const StoresSettings: React.FC = () => {
     try {
       const data = await fetchOurStoresSettings();
       setSettings(data);
+      setOriginalSettings(JSON.parse(JSON.stringify(data)));
     } catch (err: any) {
       showToast('error', 'Failed to load store settings: ' + err.message);
     } finally {
@@ -107,12 +109,18 @@ const StoresSettings: React.FC = () => {
     setSaving(true);
     try {
       const res = await saveOurStoresSettings(settings);
+      setOriginalSettings(JSON.parse(JSON.stringify(settings)));
       showToast('success', res.message || 'Stores and locator page settings saved to database successfully!');
     } catch (err: any) {
       showToast('error', 'Failed to save settings: ' + err.message);
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleCancel = () => {
+    setSettings(JSON.parse(JSON.stringify(originalSettings)));
+    showToast('info', 'Unsaved changes reverted.');
   };
 
   const handleResetDefaults = async () => {
@@ -337,60 +345,43 @@ const StoresSettings: React.FC = () => {
       )}
 
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-slate-200">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-rose-600 mb-1">
-            <Building2 size={16} />
-            <span>Store Locator & Locations Module</span>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Our Stores & Branches
-          </h1>
-          <p className="text-slate-500 text-sm mt-1">
-            Manage physical retail showrooms, concept stores, service centers, and public locator page content.
-          </p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Our Stores Settings</h1>
+          <p className="text-slate-500 text-xs mt-1">Manage showroom locations, addresses, operating hours, and map links.</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <a
-            href="/our-stores"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
-          >
-            <ExternalLink size={14} />
-            <span>View Public Page</span>
-          </a>
-
+        <div className="flex items-center gap-3">
           <button
-            onClick={handleResetDefaults}
+            type="button"
+            onClick={handleCancel}
             disabled={saving}
-            className="px-4 py-2 bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 border border-slate-200 hover:border-rose-200 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-            title="Reset to factory default store locations"
+            className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold rounded-xl transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            title="Revert unsaved changes"
           >
-            <RotateCcw size={14} />
-            <span>Reset Defaults</span>
+            <span>Cancel</span>
           </button>
 
           <button
+            type="button"
             onClick={handleSaveAll}
             disabled={saving}
-            className="px-6 py-2 bg-[#c5161d] hover:bg-[#a81318] active:bg-[#991217] disabled:opacity-50 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center gap-2 cursor-pointer"
           >
             <Save size={15} className={saving ? 'animate-spin' : ''} />
-            <span>{saving ? 'Saving...' : 'Save Changes'}</span>
+            <span>{saving ? 'Saving...' : 'Save'}</span>
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 mb-8">
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-px mb-8">
         <button
           onClick={() => setActiveTab('stores')}
-          className={`flex items-center gap-2 px-5 py-3 border-b-2 font-bold text-xs uppercase tracking-wider transition-all ${
+          className={`px-5 py-3 text-xs font-bold rounded-t-2xl border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
             activeTab === 'stores'
-              ? 'border-slate-900 text-slate-900'
-              : 'border-transparent text-slate-400 hover:text-slate-700'
+              ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+              : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
           <Building2 size={16} />
@@ -399,22 +390,22 @@ const StoresSettings: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('hero')}
-          className={`flex items-center gap-2 px-5 py-3 border-b-2 font-bold text-xs uppercase tracking-wider transition-all ${
+          className={`px-5 py-3 text-xs font-bold rounded-t-2xl border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
             activeTab === 'hero'
-              ? 'border-slate-900 text-slate-900'
-              : 'border-transparent text-slate-400 hover:text-slate-700'
+              ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+              : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
           <Video size={16} />
-          <span>Hero & Page Copy</span>
+          <span>Hero &amp; Page Copy</span>
         </button>
 
         <button
           onClick={() => setActiveTab('preview')}
-          className={`flex items-center gap-2 px-5 py-3 border-b-2 font-bold text-xs uppercase tracking-wider transition-all ${
+          className={`px-5 py-3 text-xs font-bold rounded-t-2xl border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
             activeTab === 'preview'
-              ? 'border-slate-900 text-slate-900'
-              : 'border-transparent text-slate-400 hover:text-slate-700'
+              ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+              : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
           <Eye size={16} />
@@ -727,26 +718,26 @@ const StoresSettings: React.FC = () => {
       {/* EDIT / CREATE STORE MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 md:p-8 shadow-2xl border border-slate-200 my-8">
+          <div className="bg-white rounded-xl max-w-2xl w-full p-5 md:p-6 shadow-2xl border border-slate-200 my-8">
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
               <div>
-                <h3 className="text-lg font-black text-slate-900">
+                <h3 className="text-base md:text-lg font-black text-slate-900">
                   {editingStoreId ? 'Edit Store Location' : 'Add New Store Location'}
                 </h3>
                 <p className="text-xs text-slate-500">Provide branch details, contact information, and coordinates.</p>
               </div>
               <button 
                 onClick={() => setIsModalOpen(false)}
-                className="p-2 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Modal Form */}
-            <form onSubmit={handleSaveModalStore} className="space-y-5">
+            <form onSubmit={handleSaveModalStore} className="space-y-4">
               
               {/* Name & Category */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -759,7 +750,7 @@ const StoresSettings: React.FC = () => {
                     required
                     value={storeForm.name}
                     onChange={e => setStoreForm(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                     placeholder="e.g. Pelangi Plaza"
                   />
                 </div>
@@ -771,7 +762,7 @@ const StoresSettings: React.FC = () => {
                   <select
                     value={storeForm.category}
                     onChange={e => setStoreForm(prev => ({ ...prev, category: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                   >
                     <option value="Meadow Computer">Meadow Computer</option>
                     <option value="ASUS">ASUS</option>
@@ -792,7 +783,7 @@ const StoresSettings: React.FC = () => {
                     type="text"
                     value={storeForm.badge}
                     onChange={e => setStoreForm(prev => ({ ...prev, badge: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                     placeholder="e.g. MEADOW STORE"
                   />
                 </div>
@@ -804,7 +795,7 @@ const StoresSettings: React.FC = () => {
                   <select
                     value={storeForm.badgeType}
                     onChange={(e: any) => setStoreForm(prev => ({ ...prev, badgeType: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                   >
                     <option value="meadow">Rose / Meadow (Red/Pink)</option>
                     <option value="asus">Blue (ASUS)</option>
@@ -825,7 +816,7 @@ const StoresSettings: React.FC = () => {
                   required
                   value={storeForm.address}
                   onChange={e => setStoreForm(prev => ({ ...prev, address: e.target.value }))}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                   placeholder="e.g. Lot 3.26, Level 3, Plaza Pelangi, 80400 Johor Bahru, Johor"
                 />
               </div>
@@ -840,7 +831,7 @@ const StoresSettings: React.FC = () => {
                     type="text"
                     value={storeForm.phone}
                     onChange={e => setStoreForm(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                     placeholder="e.g. +60 7-333 3333"
                   />
                 </div>
@@ -853,7 +844,7 @@ const StoresSettings: React.FC = () => {
                     type="text"
                     value={storeForm.hours}
                     onChange={e => setStoreForm(prev => ({ ...prev, hours: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                     placeholder="e.g. 10:00 AM - 10:00 PM (Daily)"
                   />
                 </div>
@@ -869,10 +860,10 @@ const StoresSettings: React.FC = () => {
                     type="text"
                     value={storeForm.image}
                     onChange={e => setStoreForm(prev => ({ ...prev, image: e.target.value }))}
-                    className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                     placeholder="https://..."
                   />
-                  <label className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all whitespace-nowrap border border-slate-200">
+                  <label className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all whitespace-nowrap border border-slate-200">
                     <Upload size={13} className={uploadingImage ? 'animate-spin' : ''} />
                     <span>{uploadingImage ? 'Uploading...' : 'Upload'}</span>
                     <input
@@ -895,7 +886,7 @@ const StoresSettings: React.FC = () => {
                     type="text"
                     value={storeForm.googleMapsUrl}
                     onChange={e => setStoreForm(prev => ({ ...prev, googleMapsUrl: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                     placeholder="https://maps.google.com/?q=..."
                   />
                 </div>
@@ -908,7 +899,7 @@ const StoresSettings: React.FC = () => {
                     type="text"
                     value={storeForm.embedMapUrl}
                     onChange={e => setStoreForm(prev => ({ ...prev, embedMapUrl: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                     placeholder="https://www.google.com/maps?q=...&output=embed"
                   />
                 </div>
@@ -923,7 +914,7 @@ const StoresSettings: React.FC = () => {
                   rows={2}
                   value={storeForm.description}
                   onChange={e => setStoreForm(prev => ({ ...prev, description: e.target.value }))}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                   placeholder="e.g. Flagship retail experience featuring custom PC showroom and workshop."
                 />
               </div>
@@ -939,13 +930,13 @@ const StoresSettings: React.FC = () => {
                     value={tagInput}
                     onChange={e => setTagInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); } }}
-                    className="flex-1 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    className="flex-1 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                     placeholder="Type tag (e.g. PC Build) and press Add"
                   />
                   <button
                     type="button"
                     onClick={handleAddTag}
-                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 cursor-pointer"
+                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold border border-slate-200 cursor-pointer"
                   >
                     Add
                   </button>
@@ -973,13 +964,13 @@ const StoresSettings: React.FC = () => {
                     value={featureInput}
                     onChange={e => setFeatureInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddFeature(); } }}
-                    className="flex-1 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    className="flex-1 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                     placeholder="Type key feature and press Add"
                   />
                   <button
                     type="button"
                     onClick={handleAddFeature}
-                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 cursor-pointer"
+                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold border border-slate-200 cursor-pointer"
                   >
                     Add
                   </button>
@@ -1015,15 +1006,15 @@ const StoresSettings: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold cursor-pointer"
+                  className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-bold cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-md cursor-pointer"
+                  className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-md shadow-emerald-600/20 cursor-pointer transition-all"
                 >
-                  {editingStoreId ? 'Apply Changes' : 'Add Store'}
+                  {editingStoreId ? 'Save' : 'Save'}
                 </button>
               </div>
 

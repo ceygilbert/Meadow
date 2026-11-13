@@ -49,6 +49,8 @@ export interface Product {
   description: string;
   additional_details?: string;
   ddr_type?: 'DDR4' | 'DDR5' | '';
+  status?: 'published' | 'unpublished';
+  is_published?: boolean;
   specs: Record<string, string>;
   is_custom_build: boolean;
   is_customised: boolean;
@@ -56,6 +58,8 @@ export interface Product {
   is_Promo: boolean;
   created_at?: string;
 }
+
+export * from './lib/productStatus';
 
 export interface StockLog {
   id: string;

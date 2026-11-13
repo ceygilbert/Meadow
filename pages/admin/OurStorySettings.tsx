@@ -18,6 +18,7 @@ import { fetchOurStorySettings, saveOurStorySettings, DEFAULT_OUR_STORY_SETTINGS
 
 const OurStorySettingsPage: React.FC = () => {
   const [settings, setSettings] = useState<OurStorySettings>(DEFAULT_OUR_STORY_SETTINGS);
+  const [originalSettings, setOriginalSettings] = useState<OurStorySettings>(DEFAULT_OUR_STORY_SETTINGS);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -47,6 +48,7 @@ const OurStorySettingsPage: React.FC = () => {
     try {
       const data = await fetchOurStorySettings();
       setSettings(data);
+      setOriginalSettings(JSON.parse(JSON.stringify(data)));
     } catch (err: any) {
       showToast('error', 'Failed to load Our Story settings: ' + err.message);
     } finally {
@@ -58,12 +60,18 @@ const OurStorySettingsPage: React.FC = () => {
     setSaving(true);
     try {
       const res = await saveOurStorySettings(settings);
+      setOriginalSettings(JSON.parse(JSON.stringify(settings)));
       showToast('success', res.message || 'Our Story settings saved successfully!');
     } catch (err: any) {
       showToast('error', 'Failed to save settings: ' + err.message);
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleCancel = () => {
+    setSettings(JSON.parse(JSON.stringify(originalSettings)));
+    showToast('success', 'Unsaved changes reverted.');
   };
 
   const handleReset = () => {
@@ -168,32 +176,31 @@ const OurStorySettingsPage: React.FC = () => {
       )}
 
       {/* Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-lg">
-            <BookOpen size={24} />
-          </div>
-          <div>
-            <h1 className="text-xl font-black uppercase tracking-tight text-slate-900">Our Story Module</h1>
-            <p className="text-xs text-slate-400 font-medium">Customize copy, section text, and images for the /our-story page</p>
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Our Story Settings</h1>
+          <p className="text-slate-500 text-xs mt-1">Customize copy, milestones, and imagery for the Our Story page.</p>
         </div>
 
         <div className="flex items-center gap-3">
           <button
-            onClick={handleReset}
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-xs uppercase tracking-wider transition-all"
+            type="button"
+            onClick={handleCancel}
+            disabled={saving}
+            className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold rounded-xl transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            title="Revert unsaved changes"
           >
-            <RotateCcw size={16} />
-            Reset Defaults
+            <span>Cancel</span>
           </button>
+
           <button
+            type="button"
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-slate-900/20 disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-emerald-600/20 disabled:opacity-50 cursor-pointer"
           >
-            <Save size={16} />
-            {saving ? 'Saving...' : 'Save Changes'}
+            <Save size={15} />
+            <span>{saving ? 'Saving...' : 'Save'}</span>
           </button>
         </div>
       </div>

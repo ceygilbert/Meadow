@@ -37,17 +37,20 @@ import Footer from '../../components/Footer';
 
 const FooterSettingsPage: React.FC = () => {
   const [config, setConfig] = useState<FooterConfig>(() => getFooterConfig());
-  const [activeTab, setActiveTab] = useState<'menus' | 'content' | 'social' | 'preview'>('menus');
+  const [originalConfig, setOriginalConfig] = useState<FooterConfig>(() => getFooterConfig());
+  const [activeTab, setActiveTab] = useState<'menus' | 'content' | 'social'>('menus');
   const [toast, setToast] = useState<{ type: 'success' | 'info' | 'error'; message: string } | null>(null);
-  const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>('light');
   const [isDirty, setIsDirty] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setConfig(getFooterConfig());
+    const cached = getFooterConfig();
+    setConfig(cached);
+    setOriginalConfig(JSON.parse(JSON.stringify(cached)));
     fetchFooterConfig().then((serverConfig) => {
       if (serverConfig) {
         setConfig(serverConfig);
+        setOriginalConfig(JSON.parse(JSON.stringify(serverConfig)));
       }
     });
   }, []);
@@ -63,6 +66,7 @@ const FooterSettingsPage: React.FC = () => {
     setSaving(true);
     try {
       const ok = await saveFooterConfigAsync(config);
+      setOriginalConfig(JSON.parse(JSON.stringify(config)));
       setIsDirty(false);
       if (ok) {
         showToast("Footer configuration saved successfully and synced to database across all browsers!", 'success');
@@ -74,6 +78,12 @@ const FooterSettingsPage: React.FC = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleCancel = () => {
+    setConfig(JSON.parse(JSON.stringify(originalConfig)));
+    setIsDirty(false);
+    showToast("Unsaved changes reverted.", 'info');
   };
 
   const handleReset = async () => {
@@ -297,114 +307,71 @@ const FooterSettingsPage: React.FC = () => {
       )}
 
       {/* Top Header Card */}
-      <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="px-3 py-1 bg-red-50 text-[#c5161d] text-[10px] font-black uppercase tracking-widest rounded-full border border-red-100 flex items-center gap-1.5">
-              <Sparkles size={11} /> Client-Side Persistence
-            </span>
-            <span className="px-2.5 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider rounded-md">
-              Zero Database Calls
-            </span>
-            {isDirty && (
-              <span className="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold uppercase tracking-wider rounded-md animate-pulse">
-                Unsaved Changes
-              </span>
-            )}
-          </div>
-          <h1 className="text-2xl md:text-3xl font-black text-slate-900 uppercase tracking-tight">
-            Footer Management
-          </h1>
-          <p className="text-xs md:text-sm text-slate-500 font-medium mt-1">
-            Edit menu item display names, re-arrange columns &amp; links, and update branding. Stored locally without calling the database.
-          </p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Footer Settings</h1>
+          <p className="text-slate-500 text-xs mt-1">Configure footer columns, links, copyright, and social media channels.</p>
         </div>
 
-        {/* Global Action Buttons */}
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <label className="cursor-pointer px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-all border border-slate-200 flex items-center gap-2">
-            <Upload size={14} />
-            <span>Import</span>
-            <input type="file" accept=".json" onChange={handleImportJSON} className="hidden" />
-          </label>
-
+        <div className="flex items-center gap-3">
           <button
-            onClick={handleExportJSON}
-            className="px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-all border border-slate-200 flex items-center gap-2"
-            title="Export footer configuration as JSON backup"
+            type="button"
+            onClick={handleCancel}
+            disabled={saving}
+            className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold rounded-xl transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            title="Revert unsaved changes"
           >
-            <Download size={14} />
-            <span>Export</span>
+            <span>Cancel</span>
           </button>
 
           <button
-            onClick={handleReset}
-            className="px-3.5 py-2.5 bg-slate-50 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-slate-600 rounded-xl text-xs font-bold transition-all border border-slate-200 flex items-center gap-2"
-            title="Reset all footer menus and texts to default values"
-          >
-            <RotateCcw size={14} />
-            <span>Reset</span>
-          </button>
-
-          <button
+            type="button"
             onClick={handleSave}
             disabled={saving}
-            className="px-6 py-2.5 bg-[#c5161d] hover:bg-[#a81318] active:bg-[#991217] disabled:opacity-50 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center gap-2 cursor-pointer"
           >
             <Save size={15} className={saving ? 'animate-spin' : ''} />
-            <span>{saving ? 'Saving...' : 'Save Changes'}</span>
+            <span>{saving ? 'Saving...' : 'Save'}</span>
           </button>
         </div>
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto">
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-px overflow-x-auto">
         <button
           onClick={() => setActiveTab('menus')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
+          className={`px-5 py-3 text-xs font-bold rounded-t-2xl border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
             activeTab === 'menus'
-              ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+              : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
-          <Layers size={15} />
+          <Layers size={16} />
           <span>Footer Menus ({config.columns.length} Columns)</span>
         </button>
 
         <button
           onClick={() => setActiveTab('content')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
+          className={`px-5 py-3 text-xs font-bold rounded-t-2xl border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
             activeTab === 'content'
-              ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+              : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
-          <Type size={15} />
+          <Type size={16} />
           <span>Texts &amp; Copyright</span>
         </button>
 
         <button
           onClick={() => setActiveTab('social')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
+          className={`px-5 py-3 text-xs font-bold rounded-t-2xl border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
             activeTab === 'social'
-              ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+              : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
-          <Share2 size={15} />
+          <Share2 size={16} />
           <span>Newsletter &amp; Social Links</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('preview')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
-            activeTab === 'preview'
-              ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <LayoutTemplate size={15} />
-          <span>Live Preview</span>
         </button>
       </div>
 
@@ -743,11 +710,30 @@ const FooterSettingsPage: React.FC = () => {
                   setConfig({ ...config, copyrightText: e.target.value });
                   setIsDirty(true);
                 }}
-                placeholder="© {year} Meadow IT — ALL RIGHTS RESERVED"
+                placeholder="© {year} MEADOW COMPUTER - ALL RIGHT RESERVED"
                 className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#c5161d] focus:bg-white"
               />
               <p className="text-[11px] text-slate-400 mt-1">
                 Tip: <code className="text-[#c5161d] bg-red-50 px-1 py-0.5 rounded">{'{year}'}</code> will automatically be replaced with the current year ({new Date().getFullYear()}).
+              </p>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Company Registration / SSM Number
+              </label>
+              <input
+                type="text"
+                value={config.ssmNumber || ''}
+                onChange={(e) => {
+                  setConfig({ ...config, ssmNumber: e.target.value });
+                  setIsDirty(true);
+                }}
+                placeholder="e.g. 201001037969 [921893-M]"
+                className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#c5161d] focus:bg-white"
+              />
+              <p className="text-[11px] text-slate-400 mt-1">
+                Appears directly below the copyright line in the footer bottom bar. Leave blank if not applicable.
               </p>
             </div>
           </div>
@@ -882,44 +868,6 @@ const FooterSettingsPage: React.FC = () => {
         </div>
       )}
 
-      {/* ==================================================== */}
-      {/* TAB 4: LIVE PREVIEW                                  */}
-      {/* ==================================================== */}
-      {activeTab === 'preview' && (
-        <div className="space-y-4">
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-4">
-            <div className="text-xs font-medium text-slate-600">
-              Interactive preview rendered directly from the current configuration in real-time.
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Preview Theme:</span>
-              <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1">
-                <button
-                  onClick={() => setPreviewTheme('light')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    previewTheme === 'light' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  Light Theme
-                </button>
-                <button
-                  onClick={() => setPreviewTheme('dark')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    previewTheme === 'dark' ? 'bg-slate-900 text-white shadow-2xs' : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  Dark Theme
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-3xl overflow-hidden border border-slate-200 shadow-lg">
-            <Footer theme={previewTheme} />
-          </div>
-        </div>
-      )}
     </div>
   );
 };

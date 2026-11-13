@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Facebook, 
   Instagram, 
   ArrowRight,
   MessageCircle,
-  ExternalLink
+  ExternalLink,
+  Check,
+  Loader2
 } from 'lucide-react';
 import { useFooterConfig } from '../lib/footerConfig';
+import { submitNewsletterSubscription } from '../services/inboxService';
 
 const RED_LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/Red%20Full%20Logo.png";
 const WHITE_LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/White%20Full%20Logo.png";
@@ -20,6 +23,31 @@ interface FooterProps {
 const Footer: React.FC<FooterProps> = ({ theme = 'light', className = '' }) => {
   const isDark = theme === 'dark';
   const { config } = useFooterConfig();
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [submittingNewsletter, setSubmittingNewsletter] = useState(false);
+  const [newsletterSuccess, setNewsletterSuccess] = useState(false);
+  const [newsletterError, setNewsletterError] = useState<string | null>(null);
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail.trim() || submittingNewsletter) return;
+    setNewsletterError(null);
+    setSubmittingNewsletter(true);
+    try {
+      const result = await submitNewsletterSubscription(newsletterEmail, window.location.pathname || 'Footer');
+      if (result.success) {
+        setNewsletterSuccess(true);
+        setNewsletterEmail('');
+        setTimeout(() => setNewsletterSuccess(false), 5000);
+      } else {
+        setNewsletterError(result.error || 'Failed to subscribe');
+      }
+    } catch {
+      setNewsletterError('Failed to subscribe');
+    } finally {
+      setSubmittingNewsletter(false);
+    }
+  };
 
   const formattedCopyright = (config.copyrightText || "© {year} Meadow IT — ALL RIGHTS RESERVED")
     .replace('{year}', new Date().getFullYear().toString());
@@ -27,13 +55,13 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', className = '' }) => {
   const visibleColumns = (config.columns || []).filter(c => c.isVisible !== false);
 
   return (
-    <footer className={`pt-24 pb-16 border-t font-sans transition-colors relative z-20 ${
+    <footer className={`pt-14 pb-8 border-t font-sans transition-colors relative z-20 ${
       isDark 
         ? 'bg-[#050607] border-white/10 text-white' 
         : 'bg-[#F9FAFB] border-slate-100 text-slate-900'
     } ${className}`}>
       <div className="max-w-[1440px] mx-auto px-4 md:px-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-10 mb-10">
           
           {/* Column 1: Logo & Description & Payments & Logistics */}
           <div className="col-span-1 lg:col-span-1">
@@ -53,16 +81,25 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', className = '' }) => {
                 <h4 className={`text-[11px] font-black uppercase tracking-[0.3em] mb-3 text-left ${isDark ? 'text-white' : 'text-slate-900'}`}>
                   {config.paymentTitle || "Payment Method"}
                 </h4>
-                <div className="flex flex-wrap gap-2">
-                  <div className="bg-white px-2.5 py-1.5 rounded-lg shadow-sm border border-slate-200 flex items-center justify-center">
-                    <img src="/assets/icons/fpx.svg" className="h-5 w-auto object-contain" alt="FPX" />
-                  </div>
-                  <div className="bg-white px-2.5 py-1.5 rounded-lg shadow-sm border border-slate-200 flex items-center justify-center">
-                    <img src="/assets/icons/master.svg" className="h-5 w-auto object-contain" alt="Mastercard" />
-                  </div>
-                  <div className="bg-white px-2.5 py-1.5 rounded-lg shadow-sm border border-slate-200 flex items-center justify-center">
-                    <img src="/assets/icons/visa.svg" className="h-5 w-auto object-contain" alt="VISA" />
-                  </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <img 
+                    src="/assets/icons/fpx.svg" 
+                    className="w-[42px] h-auto object-contain rounded-[4px] shadow-2xs hover:opacity-95 transition-opacity" 
+                    alt="FPX" 
+                    draggable={false}
+                  />
+                  <img 
+                    src="/assets/icons/master.svg" 
+                    className="w-[42px] h-auto object-contain rounded-[4px] shadow-2xs hover:opacity-95 transition-opacity" 
+                    alt="Mastercard" 
+                    draggable={false}
+                  />
+                  <img 
+                    src="/assets/icons/visa.svg" 
+                    className="w-[42px] h-auto object-contain rounded-[4px] shadow-2xs hover:opacity-95 transition-opacity" 
+                    alt="VISA" 
+                    draggable={false}
+                  />
                 </div>
               </div>
 
@@ -70,10 +107,25 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', className = '' }) => {
                 <h4 className={`text-[11px] font-black uppercase tracking-[0.3em] mb-3 text-left ${isDark ? 'text-white' : 'text-slate-900'}`}>
                   {config.logisticTitle || "Logistic Services"}
                 </h4>
-                <div className="flex flex-wrap gap-2">
-                  <div className="bg-white px-2.5 py-1.5 rounded-lg shadow-sm border border-slate-200 flex items-center justify-center">
-                    <img src="/assets/icons/gdex.svg" className="h-5 w-auto object-contain" alt="GDEX" />
-                  </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <img 
+                    src="/assets/icons/gdex.svg" 
+                    className="w-[42px] h-auto object-contain rounded-[4px] shadow-2xs hover:opacity-95 transition-opacity" 
+                    alt="GDEX" 
+                    draggable={false}
+                  />
+                  <img 
+                    src="/assets/icons/poslaju.svg" 
+                    className="w-[42px] h-auto object-contain rounded-[4px] shadow-2xs hover:opacity-95 transition-opacity" 
+                    alt="POS Laju" 
+                    draggable={false}
+                  />
+                  <img 
+                    src="/assets/icons/lalamove.svg" 
+                    className="w-[42px] h-auto object-contain rounded-[4px] shadow-2xs hover:opacity-95 transition-opacity" 
+                    alt="Lalamove" 
+                    draggable={false}
+                  />
                 </div>
               </div>
             </div>
@@ -142,10 +194,13 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', className = '' }) => {
             <p className={`text-xs font-medium mb-4 ${isDark ? 'text-white/80' : 'text-slate-500'}`}>
               {config.newsletterText}
             </p>
-            <form className="flex gap-2 mb-8" onSubmit={(e) => e.preventDefault()}>
+            <form className="flex gap-2 mb-3" onSubmit={handleNewsletterSubmit}>
               <input 
                 type="email" 
+                required
                 placeholder="Email address" 
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
                 className={`flex-1 rounded-xl px-4 py-3 text-xs outline-none transition-colors ${
                   isDark 
                     ? 'bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:border-white focus:bg-white/15' 
@@ -153,17 +208,37 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', className = '' }) => {
                 }`} 
               />
               <button 
-                className={`p-3 rounded-xl transition-all ${
-                  isDark 
+                disabled={submittingNewsletter}
+                className={`p-3 rounded-xl transition-all cursor-pointer disabled:opacity-50 ${
+                  newsletterSuccess
+                    ? 'bg-emerald-600 text-white'
+                    : isDark 
                     ? 'bg-white text-black hover:bg-slate-100 shadow-md font-bold' 
                     : 'bg-slate-900 text-white hover:bg-black'
                 }`} 
-                type="button"
+                type="submit"
                 aria-label="Subscribe"
               >
-                <ArrowRight size={16} />
+                {submittingNewsletter ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : newsletterSuccess ? (
+                  <Check size={16} />
+                ) : (
+                  <ArrowRight size={16} />
+                )}
               </button>
             </form>
+            {newsletterSuccess ? (
+              <p className="text-[11px] font-semibold text-emerald-600 mb-6">
+                Thank you for subscribing to our newsletter!
+              </p>
+            ) : newsletterError ? (
+              <p className="text-[11px] font-semibold text-rose-500 mb-6">
+                {newsletterError}
+              </p>
+            ) : (
+              <div className="mb-5" />
+            )}
 
             {/* Social Icons */}
             <div className="flex items-center gap-3">
@@ -264,14 +339,21 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', className = '' }) => {
         </div>
 
         {/* Bottom bar */}
-        <div className={`flex flex-col items-center justify-center pt-10 border-t ${
+        <div className={`flex flex-col items-center justify-center pt-5 border-t ${
           isDark ? 'border-white/15' : 'border-slate-200'
         }`}>
-           <p className={`text-[11px] font-bold uppercase tracking-[0.35em] text-center ${
+           <p className={`text-[11px] font-bold uppercase tracking-[0.25em] text-center ${
              isDark ? 'text-white/70' : 'text-slate-500'
            }`}>
              {formattedCopyright}
            </p>
+           {config.ssmNumber && (
+             <p className={`text-[10px] font-semibold tracking-[0.18em] uppercase mt-1 text-center ${
+               isDark ? 'text-white/50' : 'text-slate-400'
+             }`}>
+               {config.ssmNumber}
+             </p>
+           )}
         </div>
       </div>
     </footer>

@@ -5,7 +5,8 @@
     "logisticTitle": "Logistic Services",
     "newsletterTitle": "Newsletter",
     "newsletterText": "Subscribe our newsletter on for received the latest promotion and campaign on IT Products",
-    "copyrightText": "© {year} Meadow IT — ALL RIGHTS RESERVED",
+    "copyrightText": "© {year} MEADOW COMPUTER - ALL RIGHT RESERVED",
+    "ssmNumber": "201001037969 [921893-M]",
     "socialLinks": {
       "facebook": "https://www.facebook.com/share/1K7NghHPxP/?mibextid=wwXIfr",
       "instagram": "https://www.instagram.com/meadow.it?igsh=MTBxejNkcmc5ZHJ6cw%3D%3D&utm_source=qr",
@@ -21,7 +22,7 @@
         "items": [
           {
             "id": "c-1",
-            "name": "About Meadow",
+            "name": "About Us",
             "url": "/our-story",
             "isVisible": true
           },

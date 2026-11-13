@@ -6,6 +6,7 @@ import Breadcrumbs from '../../components/Breadcrumbs';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../../lib/supabase';
 import { useCart } from '../../lib/CartContext';
+import { isProductPublished } from '../../types';
 
 interface Option {
   id: string;
@@ -77,6 +78,10 @@ const PrebuiltProduct: React.FC = () => {
           .maybeSingle();
 
         if (!error && data) {
+          if (!isProductPublished(data)) {
+            navigate('/prebuilt', { replace: true });
+            return;
+          }
           setProduct(data);
         }
       } catch (err) {

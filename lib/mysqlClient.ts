@@ -186,6 +186,8 @@ export class MysqlQueryBuilder<T = any> implements PromiseLike<{ data: T | null;
 /**
  * Storage adapter uploading files to Hostinger /public/uploads via /api/upload
  */
+const uploadedPathToPublicUrl = new Map<string, string>();
+
 export const mysqlStorage = {
   from: (_bucket: string) => ({
     upload: async (filePath: string, file: File | Blob) => {
@@ -193,7 +195,7 @@ export const mysqlStorage = {
         const formData = new FormData();
         formData.append('file', file, (file as File).name || filePath);
 
-        const res = await fetch('/api/upload', {
+        const res = await fetch(`/api/upload?targetPath=${encodeURIComponent(filePath)}`, {
           method: 'POST',
           body: formData,
         });
@@ -204,6 +206,16 @@ export const mysqlStorage = {
         }
 
         const data = await res.json();
+        if (data?.publicUrl) {
+          if (filePath) {
+            uploadedPathToPublicUrl.set(filePath, data.publicUrl);
+            const clean = filePath.replace(/^product-images\//, '').replace(/^generals\//, '');
+            uploadedPathToPublicUrl.set(clean, data.publicUrl);
+          }
+          if (data.filename) {
+            uploadedPathToPublicUrl.set(data.filename, data.publicUrl);
+          }
+        }
         return { data: { path: data.filename, publicUrl: data.publicUrl }, error: null };
       } catch (err: any) {
         return { data: null, error: { message: err.message } };
@@ -211,10 +223,16 @@ export const mysqlStorage = {
     },
 
     getPublicUrl: (filePath: string) => {
+      if (uploadedPathToPublicUrl.has(filePath)) {
+        return { data: { publicUrl: uploadedPathToPublicUrl.get(filePath)! } };
+      }
       if (filePath.startsWith('http://') || filePath.startsWith('https://') || filePath.startsWith('/uploads/')) {
         return { data: { publicUrl: filePath } };
       }
       const clean = filePath.replace(/^product-images\//, '').replace(/^generals\//, '');
+      if (uploadedPathToPublicUrl.has(clean)) {
+        return { data: { publicUrl: uploadedPathToPublicUrl.get(clean)! } };
+      }
       return { data: { publicUrl: `/uploads/${clean}` } };
     },
   }),

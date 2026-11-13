@@ -64,7 +64,7 @@ export const AdminTablePagination: React.FC<AdminTablePaginationProps> = ({
         <button
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage <= 1}
-          className="w-8 h-8 rounded-full border border-slate-200/90 hover:border-slate-300 flex items-center justify-center text-slate-600 disabled:opacity-30 disabled:hover:border-slate-200 transition-all"
+          className="w-8 h-8 rounded-xl border border-slate-200/90 hover:border-slate-300 flex items-center justify-center text-slate-600 disabled:opacity-30 disabled:hover:border-slate-200 transition-all cursor-pointer"
           title="Previous Page"
         >
           <ChevronLeft size={15} />
@@ -76,7 +76,7 @@ export const AdminTablePagination: React.FC<AdminTablePaginationProps> = ({
             <button
               key={pageNum}
               onClick={() => onPageChange(pageNum)}
-              className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition-all ${
+              className={`w-8 h-8 rounded-xl text-xs font-semibold flex items-center justify-center transition-all cursor-pointer ${
                 isActive
                   ? 'bg-slate-950 text-white shadow-xs'
                   : 'text-slate-600 hover:bg-slate-100'
@@ -90,7 +90,7 @@ export const AdminTablePagination: React.FC<AdminTablePaginationProps> = ({
         <button
           onClick={() => onPageChange(Math.min(safeTotalPages, currentPage + 1))}
           disabled={currentPage >= safeTotalPages}
-          className="w-8 h-8 rounded-full border border-slate-200/90 hover:border-slate-300 flex items-center justify-center text-slate-600 disabled:opacity-30 disabled:hover:border-slate-200 transition-all"
+          className="w-8 h-8 rounded-xl border border-slate-200/90 hover:border-slate-300 flex items-center justify-center text-slate-600 disabled:opacity-30 disabled:hover:border-slate-200 transition-all cursor-pointer"
           title="Next Page"
         >
           <ChevronRight size={15} />
@@ -101,14 +101,14 @@ export const AdminTablePagination: React.FC<AdminTablePaginationProps> = ({
       <div className="relative order-2 sm:order-none" ref={dropdownRef}>
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="bg-white border border-slate-200/90 hover:border-slate-300 text-slate-700 px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 shadow-xs transition-all"
+          className="bg-white border border-slate-200/90 hover:border-slate-300 text-slate-700 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-xs transition-all cursor-pointer"
         >
           <span>{pageSize} Data per row</span>
           <ChevronDown size={13} className="text-slate-400" />
         </button>
 
         {dropdownOpen && (
-          <div className="absolute right-0 bottom-full mb-1 w-36 bg-white border border-slate-200/90 rounded-2xl shadow-lg py-1 z-30 animate-in fade-in zoom-in-95 duration-100">
+          <div className="absolute right-0 bottom-full mb-1 w-36 bg-white border border-slate-200/90 rounded-xl shadow-lg py-1 z-30 animate-in fade-in zoom-in-95 duration-100">
             {pageSizeOptions.map((opt) => (
               <button
                 key={opt}

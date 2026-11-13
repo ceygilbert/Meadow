@@ -41,11 +41,12 @@ import {
   ArrowDownAZ,
   MoreHorizontal,
   Tag,
-  ChevronDown
+  ChevronDown,
+  EyeOff
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { generateProductDescription } from '../../services/geminiService';
-import { Product, Category, Brand, Unit, SubCategory } from '../../types';
+import { Product, Category, Brand, Unit, SubCategory, getProductStatus, isProductPublished } from '../../types';
 import { supabase } from '../../lib/supabase';
 import { AdminTablePagination } from '../../components/AdminTablePagination';
 
@@ -71,7 +72,7 @@ const ProductManagement: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBatchDeleting, setIsBatchDeleting] = useState(false);
   const [showBatchDeleteModal, setShowBatchDeleteModal] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'out_of_stock'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'unpublished' | 'out_of_stock'>('all');
   const [brandFilter, setBrandFilter] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [actionDropdownId, setActionDropdownId] = useState<string | null>(null);
@@ -80,7 +81,7 @@ const ProductManagement: React.FC = () => {
   const [showDetailsPreview, setShowDetailsPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState<Partial<Product> & { images?: string[] }>({
+  const [formData, setFormData] = useState<Partial<Product> & { images?: string[]; status?: 'published' | 'unpublished' }>({
     name: '',
     category_id: '',
     subcategory_id: '',
@@ -95,6 +96,7 @@ const ProductManagement: React.FC = () => {
     image_url: '',
     images: [],
     ddr_type: '',
+    status: 'published',
     is_custom_build: false,
     is_customised: false
   });
@@ -160,18 +162,28 @@ const ProductManagement: React.FC = () => {
       if (brandRes.error) throw brandRes.error;
       if (unitRes.error) throw unitRes.error;
 
-      setProducts(prodRes.data || []);
+      const normalized = (prodRes.data || []).map((p: any) => ({
+        ...p,
+        status: getProductStatus(p)
+      }));
+      setProducts(normalized);
       setCategories(catRes.data || []);
       setSubCategories(subRes.data || []);
       setBrands(brandRes.data || []);
-      setUnits((unitRes.data || []).filter(u => !u.name.startsWith('HOMEPAGE_SETTINGS:') && !u.name.startsWith('OUR_STORY_SETTINGS:') && u.id !== '00000000-0000-0000-0000-000000000001' && u.id !== '00000000-0000-0000-0000-000000000002'));
+      const filteredUnits = (unitRes.data || []).filter(
+        u =>
+          !String(u.name || '').includes('_SETTINGS:') &&
+          !String(u.name || '').startsWith('INBOX_MESSAGES:') &&
+          !String(u.id || '').startsWith('00000000-0000-0000-0000-')
+      );
+      setUnits(filteredUnits);
       
       if (!editingId && catRes.data?.[0]) {
         setFormData(prev => ({ 
           ...prev, 
           category_id: prev.category_id || catRes.data[0].id,
           brand_id: prev.brand_id || (brandRes.data?.[0]?.id || ''),
-          unit_id: prev.unit_id || (unitRes.data?.[0]?.id || '')
+          unit_id: prev.unit_id || (filteredUnits[0]?.id || '')
         }));
       }
     } catch (err: any) {
@@ -197,15 +209,19 @@ const ProductManagement: React.FC = () => {
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
         const filePath = `product-images/${fileName}`;
 
-        const { error: uploadError } = await supabase.storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
           .from('products')
           .upload(filePath, file);
 
         if (uploadError) throw uploadError;
 
+        if ((uploadData as any)?.publicUrl) {
+          return (uploadData as any).publicUrl as string;
+        }
+
         const { data: { publicUrl } } = supabase.storage
           .from('products')
-          .getPublicUrl(filePath);
+          .getPublicUrl(uploadData?.path || filePath);
 
         return publicUrl;
       });
@@ -313,35 +329,44 @@ const ProductManagement: React.FC = () => {
       : (formData.image_url ? [formData.image_url] : []);
     const primaryImage = imagesList[0] || formData.image_url || '';
 
+    const statusVal = formData.status || 'published';
+    const isPubVal = statusVal === 'published';
+
     const specsWithExtra = {
       ...(formData.specs || {}),
       additional_details: formData.additional_details || '',
       ddr_type: formData.ddr_type || '',
       images: imagesList,
+      status: statusVal,
+      is_published: isPubVal,
     };
 
+    const { images: _ignoreRootImages, ...restFormData } = formData as any;
+
     const fullPayload: any = {
-      ...formData,
+      ...restFormData,
       slug,
       image_url: primaryImage,
-      images: imagesList,
       specs: specsWithExtra,
       additional_details: formData.additional_details || '',
       ddr_type: formData.ddr_type || '',
+      status: statusVal,
+      is_published: isPubVal,
     };
 
     const saveToSupabase = async (payloadToSave: any) => {
       if (editingId) {
-        const { stock, id, created_at, ...updatePayload } = payloadToSave;
+        const { stock, id, created_at, images, ...updatePayload } = payloadToSave;
         const { error: updateError } = await supabase
           .from('products')
           .update(updatePayload)
           .eq('id', editingId);
         if (updateError) throw updateError;
       } else {
+        const { images, ...insertPayload } = payloadToSave;
         const { error: insertError } = await supabase
           .from('products')
-          .insert([payloadToSave]);
+          .insert([insertPayload]);
         if (insertError) throw insertError;
       }
     };
@@ -351,13 +376,15 @@ const ProductManagement: React.FC = () => {
         await saveToSupabase(fullPayload);
       } catch (firstErr: any) {
         const errMsg = firstErr?.message || '';
-        // If Supabase schema cache does not have optional columns yet, fallback gracefully
-        if (errMsg.includes('additional_details') || errMsg.includes('ddr_type') || errMsg.includes('images') || errMsg.includes('schema cache')) {
-          console.warn("Retrying save without optional root columns (data safely stored in specs)...", errMsg);
+        // If database schema does not have optional columns yet, fallback gracefully
+        if (errMsg.includes('additional_details') || errMsg.includes('ddr_type') || errMsg.includes('images') || errMsg.includes('status') || errMsg.includes('is_published') || errMsg.includes('Unknown column') || errMsg.includes('schema cache') || errMsg.includes('column')) {
+          console.warn("Retrying save without optional root columns (status & data safely stored in specs)...", errMsg);
           const safePayload = { ...fullPayload };
           delete safePayload.additional_details;
           delete safePayload.ddr_type;
           delete safePayload.images;
+          delete safePayload.status;
+          delete safePayload.is_published;
           
           await saveToSupabase(safePayload);
         } else {
@@ -372,6 +399,68 @@ const ProductManagement: React.FC = () => {
     } catch (err: any) {
       console.error("Error saving product:", err);
       setModalError(err.message || "Failed to save product. Please check connection or database schema.");
+    }
+  };
+
+  const handleToggleStatus = async (product: Product, newStatus: 'published' | 'unpublished') => {
+    try {
+      const isPub = newStatus === 'published';
+      const updatedSpecs = {
+        ...(typeof product.specs === 'object' && product.specs !== null ? product.specs : {}),
+        status: newStatus,
+        is_published: isPub,
+      };
+
+      try {
+        const { error } = await supabase
+          .from('products')
+          .update({ status: newStatus, is_published: isPub, specs: updatedSpecs })
+          .eq('id', product.id);
+        if (error) throw error;
+      } catch (err: any) {
+        // Fallback to updating specs only if root status column does not exist in schema
+        const { error: fallbackErr } = await supabase
+          .from('products')
+          .update({ specs: updatedSpecs })
+          .eq('id', product.id);
+        if (fallbackErr) throw fallbackErr;
+      }
+
+      setProducts(prev => prev.map(p => p.id === product.id ? { ...p, status: newStatus, specs: updatedSpecs } : p));
+    } catch (err: any) {
+      console.error('Failed to toggle product status:', err);
+      alert('Failed to update status: ' + err.message);
+    }
+  };
+
+  const handleBatchStatus = async (newStatus: 'published' | 'unpublished') => {
+    if (selectedIds.length === 0) return;
+    try {
+      const isPub = newStatus === 'published';
+      for (const id of selectedIds) {
+        const prod = products.find(p => p.id === id);
+        if (!prod) continue;
+        const updatedSpecs = {
+          ...(typeof prod.specs === 'object' && prod.specs !== null ? prod.specs : {}),
+          status: newStatus,
+          is_published: isPub,
+        };
+        try {
+          await supabase.from('products').update({ status: newStatus, is_published: isPub, specs: updatedSpecs }).eq('id', id);
+        } catch {
+          await supabase.from('products').update({ specs: updatedSpecs }).eq('id', id);
+        }
+      }
+
+      setProducts(prev => prev.map(p => selectedIds.includes(p.id) ? {
+        ...p,
+        status: newStatus,
+        specs: { ...(p.specs || {}), status: newStatus, is_published: isPub }
+      } : p));
+      setSelectedIds([]);
+    } catch (err: any) {
+      console.error('Batch status update failed:', err);
+      alert('Failed to update status for selected products.');
     }
   };
 
@@ -392,6 +481,7 @@ const ProductManagement: React.FC = () => {
       image_url: '',
       images: [],
       ddr_type: '',
+      status: 'published',
       specs: {},
       is_custom_build: false,
       is_customised: false
@@ -416,6 +506,8 @@ const ProductManagement: React.FC = () => {
       initialImages.unshift(product.image_url);
     }
 
+    const prodStatus = getProductStatus(product);
+
     setFormData({
       name: product.name,
       category_id: product.category_id,
@@ -431,6 +523,7 @@ const ProductManagement: React.FC = () => {
       image_url: product.image_url || initialImages[0] || '',
       images: initialImages,
       ddr_type: product.ddr_type || '',
+      status: prodStatus,
       specs: product.specs || {},
       is_custom_build: product.is_custom_build,
       is_customised: product.is_customised
@@ -501,10 +594,10 @@ const ProductManagement: React.FC = () => {
       categories.find(c => c.id === p.category_id)?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       brands.find(b => b.id === p.brand_id)?.name.toLowerCase().includes(searchTerm.toLowerCase());
     
-    if (!matchesSearch) return false;
-
-    if (statusFilter === 'published') return p.stock > 0;
-    if (statusFilter === 'out_of_stock') return p.stock === 0;
+    const pStatus = getProductStatus(p);
+    if (statusFilter === 'published') return pStatus === 'published';
+    if (statusFilter === 'unpublished') return pStatus === 'unpublished';
+    if (statusFilter === 'out_of_stock') return (p.stock || 0) <= 0;
 
     if (brandFilter !== 'all') {
       if (p.brand_id !== brandFilter) return false;
@@ -590,10 +683,10 @@ const ProductManagement: React.FC = () => {
             resetForm();
             setIsModalOpen(true);
           }} 
-          className="bg-slate-950 text-white rounded-full px-5 py-2.5 text-xs font-semibold hover:bg-slate-800 transition-all shadow-xs flex items-center gap-2"
+          className="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-full px-5 py-2.5 text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center gap-1.5 cursor-pointer"
         >
           <Plus size={15} />
-          <span>Add Product</span>
+          <span>Add</span>
         </button>
       </div>
 
@@ -642,19 +735,28 @@ const ProductManagement: React.FC = () => {
             <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           </div>
 
-          {/* Status Filter Pill */}
+          {/* Status Filter Dropdown */}
           <div className="relative">
-            <button
-              onClick={() => {
-                const nextFilter = statusFilter === 'all' ? 'published' : statusFilter === 'published' ? 'out_of_stock' : 'all';
-                setStatusFilter(nextFilter);
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value as any);
                 setCurrentPage(1);
               }}
-              className="bg-white border border-slate-200/90 hover:border-slate-300 text-slate-700 px-4 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 shadow-xs transition-all"
+              className={`appearance-none bg-white border ${
+                statusFilter !== 'all' 
+                  ? 'border-slate-800 text-slate-900 font-bold bg-slate-50 ring-1 ring-slate-800/10' 
+                  : 'border-slate-200/90 hover:border-slate-300 text-slate-700 font-semibold'
+              } pl-9 pr-8 py-2.5 rounded-full text-xs shadow-xs focus:outline-none cursor-pointer transition-all`}
+              title="Filter by status"
             >
-              <SlidersHorizontal size={14} className="text-slate-500" />
-              <span>{statusFilter === 'all' ? 'Show All Products' : statusFilter === 'published' ? 'Published Only' : 'Out of Stock'}</span>
-            </button>
+              <option value="all">All Status</option>
+              <option value="published">Published Only</option>
+              <option value="unpublished">Unpublished Only</option>
+              <option value="out_of_stock">Out of Stock</option>
+            </select>
+            <SlidersHorizontal size={13} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${statusFilter !== 'all' ? 'text-slate-900' : 'text-slate-400'} pointer-events-none`} />
+            <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           </div>
 
           {/* Sort Pill */}
@@ -711,6 +813,24 @@ const ProductManagement: React.FC = () => {
                   className="px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
                 >
                   Clear Selection
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleBatchStatus('published')}
+                  className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-xs flex items-center gap-1.5"
+                  title="Publish selected products"
+                >
+                  <Eye size={13} />
+                  <span>Publish</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleBatchStatus('unpublished')}
+                  className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-700 hover:bg-slate-600 text-white transition-all shadow-xs flex items-center gap-1.5"
+                  title="Unpublish selected products"
+                >
+                  <EyeOff size={13} />
+                  <span>Unpublish</span>
                 </button>
                 <button
                   type="button"
@@ -772,6 +892,7 @@ const ProductManagement: React.FC = () => {
                     const finalPrice = calculateDiscountedPrice(p.price, p.discount_type, p.discount_value);
                     const isSelected = selectedIds.includes(p.id);
                     const isOutOfStock = p.stock === 0;
+                    const productStatus = getProductStatus(p);
 
                     return (
                       <tr 
@@ -811,12 +932,19 @@ const ProductManagement: React.FC = () => {
 
                         {/* Status Pill Badge */}
                         <td className="py-4 px-4 whitespace-nowrap">
-                          {isOutOfStock ? (
-                            <span className="px-3 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-600 border border-rose-200/40">
+                          {productStatus === 'unpublished' ? (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200/80">
+                              <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                              Unpublished
+                            </span>
+                          ) : isOutOfStock ? (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-600 border border-rose-200/40">
+                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                               Sold out
                             </span>
                           ) : (
-                            <span className="px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/40">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/40">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                               Published
                             </span>
                           )}
@@ -849,7 +977,26 @@ const ProductManagement: React.FC = () => {
                           </div>
 
                           {actionDropdownId === p.id && (
-                            <div className="absolute right-6 top-12 w-32 bg-white border border-slate-200/90 rounded-2xl shadow-lg py-1.5 z-20 text-left animate-in fade-in zoom-in-95 duration-100">
+                            <div className="absolute right-6 top-12 w-36 bg-white border border-slate-200/90 rounded-2xl shadow-lg py-1.5 z-20 text-left animate-in fade-in zoom-in-95 duration-100">
+                              <button
+                                onClick={() => {
+                                  setActionDropdownId(null);
+                                  handleToggleStatus(p, productStatus === 'published' ? 'unpublished' : 'published');
+                                }}
+                                className="w-full px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors"
+                              >
+                                {productStatus === 'published' ? (
+                                  <>
+                                    <EyeOff size={13} className="text-slate-500" />
+                                    <span>Unpublish</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Eye size={13} className="text-emerald-600" />
+                                    <span className="text-emerald-700">Publish</span>
+                                  </>
+                                )}
+                              </button>
                               <button
                                 onClick={() => {
                                   setActionDropdownId(null);
@@ -1016,46 +1163,54 @@ const ProductManagement: React.FC = () => {
       {/* Form Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 sm:p-6">
-          <div className="bg-slate-50 w-full max-w-6xl rounded-3xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col animate-in fade-in zoom-in duration-200">
-            <div className="px-6 md:px-8 py-5 bg-white border-b border-slate-200 flex flex-wrap gap-4 items-center justify-between shrink-0">
-              <h3 className="text-xl md:text-2xl font-semibold text-slate-900">
+          <div className="bg-slate-50 w-full max-w-6xl rounded-xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col animate-in fade-in zoom-in duration-200 border border-slate-200">
+            <div className="px-6 py-4 bg-white border-b border-slate-200 flex flex-wrap gap-4 items-center justify-between shrink-0">
+              <h3 className="text-lg md:text-xl font-bold text-slate-900">
                 {editingId ? 'Edit Product' : 'Add New Product'}
               </h3>
-              <div className="flex items-center gap-3">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-medium rounded-full hover:bg-slate-50 transition-colors text-sm">
-                  Discard
+              <div className="flex items-center gap-2.5">
+                <button 
+                  type="button" 
+                  onClick={() => setIsModalOpen(false)} 
+                  className="px-4 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold rounded-lg transition-colors text-xs cursor-pointer"
+                >
+                  Cancel
                 </button>
-                <button type="submit" form="product-form" className="px-8 py-2.5 bg-slate-900 text-white font-medium rounded-full hover:bg-slate-800 transition-all text-sm">
-                  {editingId ? 'Save Changes' : 'Save'}
+                <button 
+                  type="submit" 
+                  form="product-form" 
+                  className="px-5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-lg transition-all text-xs shadow-md shadow-emerald-600/20 cursor-pointer"
+                >
+                  Save
                 </button>
               </div>
             </div>
             
-            <form id="product-form" onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 md:p-8">
+            <form id="product-form" onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 md:p-6">
               {modalError && (
-                <div className="mb-6 p-6 bg-rose-50 border border-rose-100 rounded-3xl flex items-center gap-4 text-rose-600 animate-in fade-in slide-in-from-top-4 duration-300">
-                  <AlertCircle size={24} className="shrink-0" />
+                <div className="mb-5 p-4 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-3 text-rose-600 animate-in fade-in slide-in-from-top-4 duration-300">
+                  <AlertCircle size={20} className="shrink-0" />
                   <div className="flex-1">
-                    <p className="font-bold text-sm uppercase tracking-wider">Critical Fault Detected</p>
+                    <p className="font-bold text-xs uppercase tracking-wider">Critical Fault Detected</p>
                     <p className="text-xs opacity-80 font-medium">{modalError}</p>
                     {modalError.includes('column') && (
-                      <p className="text-[10px] mt-2 font-black uppercase text-rose-400">Action Required: Add 'ddr_type' column to 'products' table in Supabase.</p>
+                      <p className="text-[10px] mt-1 font-black uppercase text-rose-400">Action Required: Add 'ddr_type' column to 'products' table in Supabase.</p>
                     )}
                   </div>
                 </div>
               )}
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-6">
                 {/* Left Column */}
-                <div className="lg:col-span-2 space-y-6 md:space-y-8">
+                <div className="lg:col-span-2 space-y-5 md:space-y-6">
                   
                   {/* Product */}
-                  <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                    <h4 className="text-lg font-semibold text-slate-900">Product</h4>
+                  <div className="bg-white p-5 md:p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                    <h4 className="text-base font-bold text-slate-900">Product</h4>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Product Name</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Product Name</label>
                       <input 
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 placeholder:text-slate-400 transition-all" 
+                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 placeholder:text-slate-400 transition-all text-sm" 
                         required 
                         value={formData.name || ''} 
                         onChange={e => setFormData({...formData, name: e.target.value})}
@@ -1064,21 +1219,21 @@ const ProductManagement: React.FC = () => {
                     </div>
                     
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="block text-sm font-medium text-slate-700">Description</label>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">Description</label>
                         <button 
                           type="button"
                           onClick={handleGenerateAI}
                           disabled={isGenerating || !formData.name}
                           className="flex items-center gap-1.5 text-slate-500 hover:text-slate-900 text-xs font-medium transition-all"
                         >
-                          {isGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                          {isGenerating ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
                           Auto-Generate
                         </button>
                       </div>
                       <textarea 
-                        rows={6}
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-600 text-sm leading-relaxed"
+                        rows={4}
+                        className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-600 text-sm leading-relaxed"
                         placeholder="Product description..."
                         value={formData.description || ''}
                         onChange={e => setFormData({...formData, description: e.target.value})}
@@ -1086,25 +1241,25 @@ const ProductManagement: React.FC = () => {
                     </div>
 
                     <div>
-                      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                        <label className="text-sm font-medium text-slate-700">
+                      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
                           Additional Details (Text & Images)
                         </label>
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <button type="button" onClick={insertSampleDetails} className="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg transition-all border border-slate-200">+ Sample</button>
-                          <button type="button" onClick={insertFeatureLine} className="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg transition-all border border-slate-200">+ Bold</button>
-                          <button type="button" onClick={insertImageTemplate} className="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg transition-all border border-slate-200">+ Image</button>
-                          <button type="button" onClick={() => setShowDetailsPreview(!showDetailsPreview)} className={`px-3 py-1 text-xs font-medium rounded-lg transition-all flex items-center gap-1 border border-slate-200 ${showDetailsPreview ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 hover:bg-slate-50'}`}>
+                          <button type="button" onClick={insertSampleDetails} className="px-2 py-0.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-md transition-all border border-slate-200">+ Sample</button>
+                          <button type="button" onClick={insertFeatureLine} className="px-2 py-0.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-md transition-all border border-slate-200">+ Bold</button>
+                          <button type="button" onClick={insertImageTemplate} className="px-2 py-0.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-md transition-all border border-slate-200">+ Image</button>
+                          <button type="button" onClick={() => setShowDetailsPreview(!showDetailsPreview)} className={`px-2.5 py-0.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 border border-slate-200 ${showDetailsPreview ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 hover:bg-slate-50'}`}>
                             <Eye size={12} /> {showDetailsPreview ? 'Edit Text' : 'Preview'}
                           </button>
                         </div>
                       </div>
 
                       {showDetailsPreview ? (
-                        <div className="p-4 bg-white border border-slate-200 rounded-xl min-h-[180px] space-y-4">
+                        <div className="p-3.5 bg-white border border-slate-200 rounded-lg min-h-[140px] space-y-3">
                           <div className="text-xs font-semibold text-slate-500 pb-2 border-b border-slate-100">Live Preview</div>
                           {formData.additional_details ? (
-                            <div className="space-y-3.5 text-sm text-slate-800 leading-relaxed font-sans">
+                            <div className="space-y-3 text-sm text-slate-800 leading-relaxed font-sans">
                               {formData.additional_details.split('\n').map((line, idx) => {
                                 const lineTrim = line.trim();
                                 if (!lineTrim) return null;
@@ -1113,8 +1268,8 @@ const ProductManagement: React.FC = () => {
                                 const url = imgMatch ? (imgMatch[2] || imgMatch[1]) : (isDirectImg ? lineTrim : '');
                                 if (url) {
                                   return (
-                                    <div key={idx} className="my-3 p-2 bg-slate-50 border border-slate-200 rounded-xl flex justify-center">
-                                      <img src={url} alt="Preview" className="max-h-56 object-contain rounded-lg" />
+                                    <div key={idx} className="my-2 p-2 bg-slate-50 border border-slate-200 rounded-lg flex justify-center">
+                                      <img src={url} alt="Preview" className="max-h-48 object-contain rounded-md" />
                                     </div>
                                   );
                                 }
@@ -1153,8 +1308,8 @@ const ProductManagement: React.FC = () => {
                         </div>
                       ) : (
                         <textarea 
-                          rows={8}
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-600 text-sm leading-relaxed"
+                          rows={5}
+                          className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-600 text-sm leading-relaxed"
                           placeholder="Supports **Bold Title** - Description or ![Image](https://...)"
                           value={formData.additional_details || ''}
                           onChange={e => setFormData({...formData, additional_details: e.target.value})}
@@ -1164,14 +1319,14 @@ const ProductManagement: React.FC = () => {
                   </div>
 
                   {/* Media */}
-                  <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                  <div className="bg-white p-5 md:p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
-                        <h4 className="text-lg font-semibold text-slate-900">Media</h4>
+                        <h4 className="text-base font-bold text-slate-900">Media</h4>
                         <p className="text-xs text-slate-500 mt-0.5">Upload multiple product images. The cover image will be used as the primary display.</p>
                       </div>
                       {((formData as any).images?.length > 0 || formData.image_url) && (
-                        <span className="text-xs font-bold px-3 py-1 bg-slate-100 text-slate-700 rounded-full">
+                        <span className="text-xs font-bold px-2.5 py-0.5 bg-slate-100 text-slate-700 rounded-full">
                           {((formData as any).images?.length || (formData.image_url ? 1 : 0))} {(((formData as any).images?.length || (formData.image_url ? 1 : 0)) === 1 ? 'image' : 'images')}
                         </span>
                       )}
@@ -1182,29 +1337,29 @@ const ProductManagement: React.FC = () => {
                       onDragOver={handleDragOver}
                       onDragLeave={handleDragLeave}
                       onDrop={handleDrop}
-                      className={`w-full rounded-2xl bg-white border border-dashed transition-all p-8 md:p-10 flex flex-col items-center justify-center relative overflow-hidden group ${
+                      className={`w-full rounded-xl bg-white border border-dashed transition-all p-6 md:p-8 flex flex-col items-center justify-center relative overflow-hidden group ${
                         isDragging ? 'border-slate-900 bg-slate-50 scale-[0.99]' : 'border-slate-300 hover:border-slate-400'
                       }`}
                     >
                       <div className="text-center flex flex-col items-center">
-                        <CloudUpload className={`mb-3 transition-transform ${isDragging ? 'scale-110 text-slate-900' : 'text-slate-800'}`} size={36} />
-                        <p className="text-sm text-slate-900 font-medium mb-1">
+                        <CloudUpload className={`mb-2.5 transition-transform ${isDragging ? 'scale-110 text-slate-900' : 'text-slate-800'}`} size={32} />
+                        <p className="text-xs font-semibold text-slate-900 mb-1">
                           {isDragging ? 'Drop images here to upload' : 'Choose files or drag & drop them here'}
                         </p>
-                        <p className="text-xs text-slate-400 mb-6">JPG, PNG, or WEBP formats, up to 5MB each (select multiple)</p>
+                        <p className="text-[11px] text-slate-400 mb-4">JPG, PNG, or WEBP formats, up to 5MB each (select multiple)</p>
                         <button 
                           type="button" 
                           onClick={() => fileInputRef.current?.click()} 
-                          className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-full font-medium text-sm shadow-sm hover:bg-slate-50 transition-all cursor-pointer"
+                          className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg font-medium text-xs shadow-sm hover:bg-slate-50 transition-all cursor-pointer"
                         >
                           Browse Files
                         </button>
                       </div>
 
                       {isUploading && (
-                        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-30">
-                          <Loader2 className="animate-spin text-slate-900" size={28} />
-                          <span className="text-sm font-semibold text-slate-900">Uploading media files...</span>
+                        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center gap-2 z-30">
+                          <Loader2 className="animate-spin text-slate-900" size={24} />
+                          <span className="text-xs font-semibold text-slate-900">Uploading media files...</span>
                         </div>
                       )}
                     </div>
@@ -1227,7 +1382,7 @@ const ProductManagement: React.FC = () => {
                       if (imagesList.length === 0) return null;
 
                       return (
-                        <div className="space-y-3 pt-2">
+                        <div className="space-y-2.5 pt-1">
                           <div className="flex items-center justify-between">
                             <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
                               Product Gallery ({imagesList.length})
@@ -1235,13 +1390,13 @@ const ProductManagement: React.FC = () => {
                             <span className="text-[11px] text-slate-400">First image or designated cover is shown on listings</span>
                           </div>
 
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                             {imagesList.map((url, idx) => {
                               const isCover = (formData.image_url === url) || (!formData.image_url && idx === 0);
                               return (
                                 <div 
                                   key={idx} 
-                                  className={`group relative aspect-square rounded-2xl border bg-slate-50 p-2 flex items-center justify-center overflow-hidden transition-all shadow-sm ${
+                                  className={`group relative aspect-square rounded-lg border bg-slate-50 p-2 flex items-center justify-center overflow-hidden transition-all shadow-sm ${
                                     isCover ? 'border-slate-900 ring-2 ring-slate-900/15' : 'border-slate-200 hover:border-slate-300'
                                   }`}
                                 >
@@ -1252,20 +1407,20 @@ const ProductManagement: React.FC = () => {
                                   />
 
                                   {isCover && (
-                                    <div className="absolute top-2 left-2 z-10">
-                                      <span className="px-2 py-0.5 bg-slate-900 text-white text-[10px] font-bold rounded-md shadow-sm flex items-center gap-1">
-                                        <Check size={10} /> Cover
+                                    <div className="absolute top-1.5 left-1.5 z-10">
+                                      <span className="px-1.5 py-0.5 bg-slate-900 text-white text-[9px] font-bold rounded shadow-sm flex items-center gap-1">
+                                        <Check size={9} /> Cover
                                       </span>
                                     </div>
                                   )}
 
                                   {/* Hover Actions Overlay */}
-                                  <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2 z-20">
+                                  <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-2 z-20">
                                     {!isCover && (
                                       <button
                                         type="button"
                                         onClick={() => handleSetCoverImage(url)}
-                                        className="px-3 py-1 bg-white text-slate-900 hover:bg-slate-100 rounded-lg text-xs font-bold shadow transition-all cursor-pointer"
+                                        className="px-2.5 py-1 bg-white text-slate-900 hover:bg-slate-100 rounded-md text-[11px] font-bold shadow transition-all cursor-pointer"
                                       >
                                         Set as Cover
                                       </button>
@@ -1273,10 +1428,10 @@ const ProductManagement: React.FC = () => {
                                     <button
                                       type="button"
                                       onClick={() => handleRemoveImage(idx)}
-                                      className="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-medium shadow transition-all cursor-pointer flex items-center gap-1"
+                                      className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-[11px] font-medium shadow transition-all cursor-pointer flex items-center gap-1"
                                       title="Remove image"
                                     >
-                                      <Trash2 size={12} />
+                                      <Trash2 size={11} />
                                       <span>Remove</span>
                                     </button>
                                   </div>
@@ -1288,11 +1443,11 @@ const ProductManagement: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => fileInputRef.current?.click()}
-                              className="aspect-square rounded-2xl border-2 border-dashed border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-100/50 flex flex-col items-center justify-center gap-2 transition-all text-slate-500 hover:text-slate-800 cursor-pointer"
+                              className="aspect-square rounded-lg border-2 border-dashed border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-100/50 flex flex-col items-center justify-center gap-1.5 transition-all text-slate-500 hover:text-slate-800 cursor-pointer"
                               title="Upload more images"
                             >
-                              <Plus size={22} />
-                              <span className="text-xs font-semibold">Add More</span>
+                              <Plus size={20} />
+                              <span className="text-[11px] font-semibold">Add More</span>
                             </button>
                           </div>
                         </div>
@@ -1301,23 +1456,23 @@ const ProductManagement: React.FC = () => {
                   </div>
 
                   {/* Pricing */}
-                  <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                    <h4 className="text-lg font-semibold text-slate-900">Pricing</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="bg-white p-5 md:p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                    <h4 className="text-base font-bold text-slate-900">Pricing</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Base Price</label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Base Price</label>
                         <input 
                           type="number" 
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all" 
+                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all text-sm" 
                           required 
                           value={formData.price || 0} 
                           onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})} 
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Discount Type</label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Discount Type</label>
                         <select 
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all"
+                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all text-sm"
                           value={formData.discount_type || 'none'}
                           onChange={e => setFormData({...formData, discount_type: e.target.value as any})}
                         >
@@ -1328,10 +1483,10 @@ const ProductManagement: React.FC = () => {
                       </div>
                       {formData.discount_type !== 'none' && (
                         <div className="sm:col-span-2">
-                          <label className="block text-sm font-medium text-slate-700 mb-2">Discount Value</label>
+                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Discount Value</label>
                           <input 
                             type="number" 
-                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all" 
+                            className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all text-sm" 
                             value={formData.discount_value || 0} 
                             onChange={e => setFormData({...formData, discount_value: parseFloat(e.target.value)})} 
                           />
@@ -1341,23 +1496,23 @@ const ProductManagement: React.FC = () => {
                   </div>
 
                   {/* Variation */}
-                  <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                    <h4 className="text-lg font-semibold text-slate-900">Variation</h4>
+                  <div className="bg-white p-5 md:p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                    <h4 className="text-base font-bold text-slate-900">Variation</h4>
                     
-                    <label className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-all">
+                    <label className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 transition-all">
                       <div>
-                        <span className="block font-medium text-slate-900 text-sm">Allow Customised Options</span>
-                        <span className="text-xs text-slate-500">Enable unique hardware variations</span>
+                        <span className="block font-bold text-slate-900 text-xs">Allow Customised Options</span>
+                        <span className="text-[11px] text-slate-500">Enable unique hardware variations</span>
                       </div>
                       <button type="button" onClick={() => setFormData({...formData, is_customised: !formData.is_customised})}>
-                        {formData.is_customised ? <ToggleRight size={28} className="text-slate-900" /> : <ToggleLeft size={28} className="text-slate-300" />}
+                        {formData.is_customised ? <ToggleRight size={26} className="text-slate-900" /> : <ToggleLeft size={26} className="text-slate-300" />}
                       </button>
                     </label>
 
                     {isDesktopOrLaptopCategory && (
-                      <div className="pt-6 border-t border-slate-100 space-y-6 mt-6">
-                        <h4 className="text-sm font-semibold text-slate-900 mb-6">1. SYSTEM SPECIFICATION</h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div className="pt-4 border-t border-slate-100 space-y-4 mt-4">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 mb-3">1. SYSTEM SPECIFICATION</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {[
                             {l: 'PROCESSOR (CPU)', k: 'Processor', placeholder: 'e.g. AMD Ryzen™ 5 7535HS Processor'},
                             {l: 'GRAPHICS (GPU)', k: 'Graphics', placeholder: 'e.g. AMD Radeon™ 660M'},
@@ -1367,11 +1522,11 @@ const ProductManagement: React.FC = () => {
                             {l: 'SECURITY', k: 'Security', placeholder: 'e.g. Firmware TPM, Fingerprint'}
                           ].map(spec => (
                             <div key={spec.k}>
-                              <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">{spec.l}</label>
+                              <label className="block text-[11px] font-bold text-slate-500 mb-1 uppercase tracking-wide">{spec.l}</label>
                               <input 
                                 type="text"
                                 placeholder={spec.placeholder}
-                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-slate-900 transition-all placeholder:text-slate-400"
+                                className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:border-slate-900 transition-all placeholder:text-slate-400"
                                 value={getSpecValue(spec.k)}
                                 onChange={e => updateSpecField(spec.k, e.target.value)}
                               />
@@ -1379,12 +1534,12 @@ const ProductManagement: React.FC = () => {
                           ))}
                         </div>
 
-                        <div className="my-8 border-t border-slate-100"></div>
-                        <h4 className="text-sm font-semibold text-slate-900 mb-6 flex items-center gap-2">
-                          <svg className="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        <div className="my-5 border-t border-slate-100"></div>
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 mb-3 flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                           2. ADDITIONAL INFORMATION
                         </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {[
                             {l: 'OPERATING SYSTEM', k: 'Operating System', placeholder: 'e.g. Windows 11 Home'},
                             {l: 'COLOR', k: 'Color', placeholder: 'e.g. Misty Grey / Eclipse Gray'},
@@ -1392,11 +1547,11 @@ const ProductManagement: React.FC = () => {
                             {l: "WHAT'S INCLUDED?", k: 'Included Items', placeholder: 'e.g. Backpack, 65W Power Adapter'}
                           ].map(spec => (
                             <div key={spec.k}>
-                              <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">{spec.l}</label>
+                              <label className="block text-[11px] font-bold text-slate-500 mb-1 uppercase tracking-wide">{spec.l}</label>
                               <input 
                                 type="text"
                                 placeholder={spec.placeholder}
-                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-slate-900 transition-all placeholder:text-slate-400"
+                                className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:border-slate-900 transition-all placeholder:text-slate-400"
                                 value={getSpecValue(spec.k)}
                                 onChange={e => updateSpecField(spec.k, e.target.value)}
                               />
@@ -1404,12 +1559,12 @@ const ProductManagement: React.FC = () => {
                           ))}
                         </div>
 
-                        <div className="my-8 border-t border-slate-100"></div>
-                        <h4 className="text-sm font-semibold text-slate-900 mb-6 flex items-center gap-2">
-                          <svg className="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+                        <div className="my-5 border-t border-slate-100"></div>
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 mb-3 flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
                           3. ADDITIONAL SPECIFICATION / FEATURE SPECIFICATION
                         </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                           {[
                             {l: 'TOTAL WEIGHT', k: 'Total Weight', placeholder: 'e.g. 1.60 kg'},
                             {l: 'BATTERY & CHARGING', k: 'Battery', placeholder: 'e.g. 50WHrs, 3-cell Li-ion'},
@@ -1419,12 +1574,12 @@ const ProductManagement: React.FC = () => {
                             {l: 'WIRELESS CONNECTIVITY', k: 'Wireless', placeholder: 'e.g. Wi-Fi 6E(802.11ax) (Dual band) 2*2 + Bluetooth® 5.3'}
                           ].map(spec => (
                             <div key={spec.k}>
-                              <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">{spec.l}</label>
+                              <label className="block text-[11px] font-bold text-slate-500 mb-1 uppercase tracking-wide">{spec.l}</label>
                               {spec.k === 'Ports' || spec.k === 'Wireless' ? (
                                 <textarea 
                                   rows={2}
                                   placeholder={spec.placeholder}
-                                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-slate-900 transition-all placeholder:text-slate-400"
+                                  className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:border-slate-900 transition-all placeholder:text-slate-400"
                                   value={getSpecValue(spec.k)}
                                   onChange={e => updateSpecField(spec.k, e.target.value)}
                                 />
@@ -1432,7 +1587,7 @@ const ProductManagement: React.FC = () => {
                                 <input 
                                   type="text"
                                   placeholder={spec.placeholder}
-                                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-slate-900 transition-all placeholder:text-slate-400"
+                                  className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:border-slate-900 transition-all placeholder:text-slate-400"
                                   value={getSpecValue(spec.k)}
                                   onChange={e => updateSpecField(spec.k, e.target.value)}
                                 />
@@ -1446,15 +1601,48 @@ const ProductManagement: React.FC = () => {
                 </div>
 
                 {/* Right Column */}
-                <div className="space-y-6 md:space-y-8">
+                <div className="space-y-5 md:space-y-6">
+                  {/* Status & Visibility */}
+                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-base font-bold text-slate-900">Product Status</h4>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                        (formData.status || 'published') === 'published'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-slate-100 text-slate-600 border border-slate-300'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          (formData.status || 'published') === 'published' ? 'bg-emerald-500' : 'bg-slate-400'
+                        }`} />
+                        {(formData.status || 'published') === 'published' ? 'Published' : 'Unpublished'}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-500">
+                      Unpublished products are saved in the backend but completely hidden from customers on the website.
+                    </p>
+
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Visibility</label>
+                      <select 
+                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all text-sm font-semibold cursor-pointer"
+                        value={formData.status || 'published'}
+                        onChange={e => setFormData({ ...formData, status: e.target.value as 'published' | 'unpublished' })}
+                      >
+                        <option value="published">Published (Show on frontend)</option>
+                        <option value="unpublished">Unpublished (Hide from frontend)</option>
+                      </select>
+                    </div>
+                  </div>
+
                   {/* Organization */}
-                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                    <h4 className="text-lg font-semibold text-slate-900">Organization</h4>
+                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                    <h4 className="text-base font-bold text-slate-900">Organization</h4>
                     
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Main Category</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Main Category</label>
                       <select 
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all appearance-none"
+                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all appearance-none text-sm"
                         value={formData.category_id || ''}
                         onChange={e => setFormData({...formData, category_id: e.target.value, subcategory_id: ''})}
                         required
@@ -1465,9 +1653,9 @@ const ProductManagement: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Sub-category</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Sub-category</label>
                       <select 
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all appearance-none disabled:bg-slate-50 disabled:text-slate-400"
+                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all appearance-none disabled:bg-slate-50 disabled:text-slate-400 text-sm"
                         value={formData.subcategory_id || ''}
                         onChange={e => {
                           const subId = e.target.value;
@@ -1487,9 +1675,9 @@ const ProductManagement: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Manufacturer</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Manufacturer</label>
                       <select 
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all appearance-none"
+                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all appearance-none text-sm"
                         value={formData.brand_id || ''}
                         onChange={e => setFormData({...formData, brand_id: e.target.value})}
                         required
@@ -1501,30 +1689,30 @@ const ProductManagement: React.FC = () => {
                   </div>
 
                   {/* Inventory & Tags */}
-                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                    <h4 className="text-lg font-semibold text-slate-900">Inventory</h4>
+                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                    <h4 className="text-base font-bold text-slate-900">Inventory</h4>
                     
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Initial Stock</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Initial Stock</label>
                       <input 
                         type="number" 
                         disabled={!!editingId}
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all disabled:bg-slate-50 disabled:text-slate-400" 
+                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all disabled:bg-slate-50 disabled:text-slate-400 text-sm" 
                         required 
                         value={formData.stock || 0} 
                         onChange={e => setFormData({...formData, stock: parseInt(e.target.value)})} 
                       />
                       {editingId && (
-                        <p className="text-xs text-slate-500 mt-2">
+                        <p className="text-[11px] text-slate-500 mt-1.5">
                           Use the Stock Take Module to adjust inventory.
                         </p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Stock Unit</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Stock Unit</label>
                       <select 
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all appearance-none"
+                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all appearance-none text-sm"
                         value={formData.unit_id || ''}
                         onChange={e => setFormData({...formData, unit_id: e.target.value})}
                         required
@@ -1536,9 +1724,9 @@ const ProductManagement: React.FC = () => {
 
                     {showDDRDropdown && (
                       <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Memory Standard (DDR)</label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Memory Standard (DDR)</label>
                         <select 
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all appearance-none"
+                          className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 transition-all appearance-none text-sm"
                           value={formData.ddr_type || ''}
                           onChange={e => setFormData({...formData, ddr_type: e.target.value as any})}
                           required

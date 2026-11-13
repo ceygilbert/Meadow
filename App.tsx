@@ -24,6 +24,7 @@ import Suppliers from './pages/public/Suppliers';
 import AllBrands from './pages/public/AllBrands';
 import Events from './pages/public/Events';
 import Contact from './pages/public/Contact';
+import Career from './pages/public/Career';
 import AdminLogin from './pages/admin/Login';
 import CustomerLogin from './pages/customer/Login';
 import CustomerSignup from './pages/customer/Signup';
@@ -43,6 +44,7 @@ import Orders from './pages/admin/Orders';
 import Finances from './pages/admin/Finances';
 import Customers from './pages/admin/Customers';
 import UsersPage from './pages/admin/Users';
+import AdminInbox from './pages/admin/Inbox';
 import AdminLayout from './components/AdminLayout';
 import CustomerLayout from './components/CustomerLayout';
 import CustomerDashboard from './pages/customer/Dashboard';
@@ -81,6 +83,8 @@ const AppContent: React.FC = () => {
       <Route path="/supplier" element={<Suppliers />} />
       <Route path="/events" element={<Events />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/career" element={<Career />} />
+      <Route path="/careers" element={<Career />} />
       <Route path="/customised" element={<Customised />} />
       <Route path="/prebuilt" element={<Prebuilt />} />
       <Route path="/prebuilt/:slug" element={<PrebuiltProduct />} />
@@ -127,6 +131,8 @@ const AppContent: React.FC = () => {
         <Route path="orders" element={<Orders />} />
         <Route path="finances" element={<Finances />} />
         <Route path="customers" element={<Customers />} />
+        <Route path="inbox" element={<AdminInbox />} />
+        <Route path="mailbox" element={<AdminInbox />} />
         <Route path="users" element={<UsersPage />} />
         <Route path="categories" element={<CategoryManagement />} />
         <Route path="subcategories" element={<SubCategoryManagement />} />

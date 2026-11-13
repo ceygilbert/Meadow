@@ -19,6 +19,7 @@ import StudioNavbar from '../../components/StudioNavbar';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import WaveGradient from '../../components/WaveGradient';
 import { supabase } from '../../lib/supabase';
+import { isProductPublished } from '../../types';
 
 const DEFAULT_PACKAGES = [
     {
@@ -152,7 +153,8 @@ const Prebuilt: React.FC = () => {
           .order('price', { ascending: true });
 
         if (!error && data && data.length > 0) {
-          const mapped = data.map((prod) => {
+          const publishedData = data.filter(isProductPublished);
+          const mapped = publishedData.map((prod) => {
             const s = (typeof prod.specs === 'object' && prod.specs !== null ? prod.specs : {}) as Record<string, any>;
             const specsList: Array<{ icon: any; text: string }> = [];
 

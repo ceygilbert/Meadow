@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
+import { createClient } from '@supabase/supabase-js';
 import { query, execute, getDbPool, isMysqlConfigured, getDbStatus } from './db';
 
 export const apiRouter = Router();
@@ -685,3 +686,314 @@ apiRouter.post('/stores/sync', async (req: Request, res: Response) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// =========================================================================
+// INBOX / MAILBOX DATABASE PERSISTENCE (Newsletter & Career Applications)
+// =========================================================================
+const INBOX_DB_ID = '00000000-0000-0000-0000-000000000008';
+const INBOX_DB_PREFIX = 'INBOX_MESSAGES:';
+
+function getSupabaseServerClient() {
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) return null;
+  return createClient(supabaseUrl, supabaseKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
+async function readInboxMessages(): Promise<any[]> {
+  let dbList: any[] = [];
+
+  // 1. Read from Supabase database
+  const sb = getSupabaseServerClient();
+  if (sb) {
+    try {
+      const { data, error } = await sb
+        .from('units')
+        .select('*')
+        .eq('id', INBOX_DB_ID)
+        .maybeSingle();
+
+      if (!error && data && typeof data.name === 'string' && data.name.startsWith(INBOX_DB_PREFIX)) {
+        const parsed = JSON.parse(data.name.substring(INBOX_DB_PREFIX.length));
+        if (Array.isArray(parsed)) {
+          dbList = parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('[Inbox] Supabase read warning:', e);
+    }
+  }
+
+  // 2. Read from MySQL app_settings if configured
+  if (isMysqlConfigured() && dbList.length === 0) {
+    try {
+      const rows = await query<any>("SELECT setting_value FROM app_settings WHERE setting_key = 'inbox_messages' LIMIT 1");
+      if (rows.length > 0 && rows[0].setting_value) {
+        const parsed = JSON.parse(rows[0].setting_value);
+        if (Array.isArray(parsed)) {
+          dbList = parsed;
+        }
+      }
+    } catch (e) {}
+  }
+
+  // 3. Merge with local settings file if any
+  const fileData = readSettingsFile();
+  const localInbox = Array.isArray(fileData['inbox_messages']) ? fileData['inbox_messages'] : [];
+  const legacyCareer = Array.isArray(fileData['career_applications']) ? fileData['career_applications'] : [];
+
+  const mergedMap = new Map<string, any>();
+
+  for (const item of [...dbList, ...localInbox]) {
+    if (item && item.id) {
+      mergedMap.set(item.id, item);
+    }
+  }
+
+  // Migrate any legacy career_applications entries
+  for (const c of legacyCareer) {
+    if (c && c.id && !mergedMap.has(c.id)) {
+      mergedMap.set(c.id, {
+        id: c.id,
+        type: 'career',
+        fullName: c.fullName || '',
+        email: c.email || '',
+        phone: c.phone || '',
+        position: c.position || 'General Application',
+        employmentType: c.employmentType || 'Full-Time',
+        preferredBranch: c.preferredBranch || 'Any Johor Branch',
+        earliestStartDate: c.earliestStartDate || '',
+        coverLetter: c.coverLetter || '',
+        resume: c.resume || null,
+        isRead: false,
+        isStarred: false,
+        status: 'unread',
+        createdAt: c.submittedAt || new Date().toISOString(),
+      });
+    }
+  }
+
+  const finalItems = Array.from(mergedMap.values()).sort(
+    (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+  );
+
+  return finalItems;
+}
+
+async function saveInboxMessages(messages: any[]): Promise<void> {
+  // 1. Write to local file backup
+  writeSettingsFile('inbox_messages', messages);
+
+  // 2. Persist to Supabase database
+  const sb = getSupabaseServerClient();
+  if (sb) {
+    try {
+      await sb.from('units').upsert(
+        {
+          id: INBOX_DB_ID,
+          name: INBOX_DB_PREFIX + JSON.stringify(messages),
+        },
+        { onConflict: 'id' }
+      );
+    } catch (e) {
+      console.warn('[Inbox] Supabase write warning:', e);
+    }
+  }
+
+  // 3. Persist to MySQL app_settings if configured
+  if (isMysqlConfigured()) {
+    try {
+      await execute(
+        `INSERT INTO app_settings (setting_key, setting_value, updated_at)
+         VALUES ('inbox_messages', ?, NOW())
+         ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = NOW()`,
+        [JSON.stringify(messages)]
+      );
+    } catch (e) {
+      console.warn('[Inbox] MySQL write warning:', e);
+    }
+  }
+}
+
+// GET /api/inbox - Retrieve all inbox messages (Career Resumes + Newsletter Subscriptions)
+apiRouter.get('/inbox', async (_req: Request, res: Response) => {
+  try {
+    const messages = await readInboxMessages();
+    res.json({ data: messages });
+  } catch (err: any) {
+    console.error('[Inbox GET Error]:', err);
+    res.status(500).json({ error: err.message || 'Failed to load inbox messages' });
+  }
+});
+
+// POST /api/inbox/newsletter - Save a newsletter subscription to database
+apiRouter.post('/inbox/newsletter', async (req: Request, res: Response) => {
+  try {
+    const { email, source } = req.body;
+    if (!email || typeof email !== 'string' || !email.includes('@')) {
+      return res.status(400).json({ error: 'Valid email address is required.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const existing = await readInboxMessages();
+
+    const record = {
+      id: uuidv4(),
+      type: 'newsletter',
+      fullName: cleanEmail.split('@')[0],
+      email: cleanEmail,
+      subject: 'Newsletter Subscription',
+      source: source || 'Website Footer',
+      isRead: false,
+      isStarred: false,
+      status: 'unread',
+      createdAt: new Date().toISOString(),
+    };
+
+    const updated = [record, ...existing];
+    await saveInboxMessages(updated);
+
+    res.json({
+      success: true,
+      message: 'Subscribed to newsletter successfully.',
+      data: record,
+    });
+  } catch (err: any) {
+    console.error('[Newsletter Subscribe Error]:', err);
+    res.status(500).json({ error: err.message || 'Failed to subscribe' });
+  }
+});
+
+// POST /api/inbox/career & POST /api/career/apply - Save a career application + resume to database
+const handleCareerApply = async (req: Request, res: Response) => {
+  try {
+    const application = req.body;
+    if (!application || !application.fullName || !application.email) {
+      return res.status(400).json({ error: 'Full name and email are required.' });
+    }
+
+    const existing = await readInboxMessages();
+
+    const record = {
+      id: uuidv4(),
+      type: 'career',
+      fullName: application.fullName.trim(),
+      email: application.email.trim(),
+      phone: application.phone || '',
+      position: application.position || 'General Application',
+      employmentType: application.employmentType || 'Full-Time',
+      preferredBranch: application.preferredBranch || 'Any Johor Branch',
+      earliestStartDate: application.earliestStartDate || '',
+      coverLetter: application.coverLetter || '',
+      resume: application.resume || null,
+      subject: `Job Application: ${application.position || 'General Application'}`,
+      isRead: false,
+      isStarred: false,
+      status: 'unread',
+      createdAt: new Date().toISOString(),
+      submittedAt: new Date().toISOString(),
+    };
+
+    const updated = [record, ...existing];
+    await saveInboxMessages(updated);
+
+    res.json({
+      success: true,
+      message: 'Career application submitted and saved to database.',
+      data: record,
+    });
+  } catch (err: any) {
+    console.error('[Career Apply Error]:', err);
+    res.status(500).json({ error: err.message || 'Failed to submit application' });
+  }
+};
+
+apiRouter.post('/inbox/career', handleCareerApply);
+apiRouter.post('/career/apply', handleCareerApply);
+
+// PATCH /api/inbox/:id - Update read/starred/status state of a message
+apiRouter.patch('/inbox/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body || {};
+    const existing = await readInboxMessages();
+
+    let updatedRecord: any = null;
+    const updatedList = existing.map((item) => {
+      if (item.id === id) {
+        updatedRecord = {
+          ...item,
+          ...updates,
+          updatedAt: new Date().toISOString(),
+        };
+        return updatedRecord;
+      }
+      return item;
+    });
+
+    await saveInboxMessages(updatedList);
+    res.json({ success: true, data: updatedRecord });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/inbox/batch - Batch mark read/unread or delete
+apiRouter.post('/inbox/batch', async (req: Request, res: Response) => {
+  try {
+    const { ids, action } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'No message IDs provided' });
+    }
+
+    const idSet = new Set(ids);
+    const existing = await readInboxMessages();
+    let updatedList: any[] = [];
+
+    if (action === 'delete') {
+      updatedList = existing.filter((item) => !idSet.has(item.id));
+    } else if (action === 'mark_read') {
+      updatedList = existing.map((item) =>
+        idSet.has(item.id) ? { ...item, isRead: true, status: item.status === 'unread' ? 'read' : item.status } : item
+      );
+    } else if (action === 'mark_unread') {
+      updatedList = existing.map((item) =>
+        idSet.has(item.id) ? { ...item, isRead: false, status: 'unread' } : item
+      );
+    } else {
+      updatedList = existing;
+    }
+
+    await saveInboxMessages(updatedList);
+    res.json({ success: true, data: updatedList });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/inbox/:id - Delete a single inbox message
+apiRouter.delete('/inbox/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const existing = await readInboxMessages();
+    const updated = existing.filter((item) => item.id !== id);
+    await saveInboxMessages(updated);
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/career/applications - Retrieve submitted career applications
+apiRouter.get('/career/applications', async (_req: Request, res: Response) => {
+  try {
+    const all = await readInboxMessages();
+    res.json({ data: all.filter((m) => m.type === 'career') });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+

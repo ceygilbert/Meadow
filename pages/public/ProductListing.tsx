@@ -31,7 +31,7 @@ import Breadcrumbs from '../../components/Breadcrumbs';
 import Footer from '../../components/Footer';
 import SidebarCart from '../../components/SidebarCart';
 import { supabase } from '../../lib/supabase';
-import { Product, Category, SubCategory, Brand, Profile } from '../../types';
+import { Product, Category, SubCategory, Brand, Profile, isProductPublished } from '../../types';
 
 const LOGO_URL = "https://hxfftpvzumcvtnzbpegb.supabase.co/storage/v1/object/public/generals/Red%20Full%20Logo.png";
 
@@ -141,11 +141,13 @@ const ProductListing: React.FC = () => {
       const catMap = new Map(categoriesData.map(c => [c.id, c]));
       const subMap = new Map(subcategoriesData.map(s => [s.id, s]));
 
-      let allData = (prodRes.data || []).map(p => ({
-        ...p,
-        categories: p.category_id ? catMap.get(p.category_id) : undefined,
-        subcategories: p.subcategory_id ? subMap.get(p.subcategory_id) : undefined
-      }));
+      let allData = (prodRes.data || [])
+        .filter(isProductPublished)
+        .map(p => ({
+          ...p,
+          categories: p.category_id ? catMap.get(p.category_id) : undefined,
+          subcategories: p.subcategory_id ? subMap.get(p.subcategory_id) : undefined
+        }));
 
       if (categorySlug) {
         const matchedCat = categoriesData.find(c => c.slug === categorySlug);

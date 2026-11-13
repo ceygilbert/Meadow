@@ -31,6 +31,7 @@ import { fetchHomePageSettings, saveHomePageSettings, DEFAULT_HOMEPAGE_SETTINGS 
 
 const HomePageSettingsPage: React.FC = () => {
   const [settings, setSettings] = useState<HomePageSettings>(DEFAULT_HOMEPAGE_SETTINGS);
+  const [originalSettings, setOriginalSettings] = useState<HomePageSettings>(DEFAULT_HOMEPAGE_SETTINGS);
   const [categoriesFromDb, setCategoriesFromDb] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -62,6 +63,7 @@ const HomePageSettingsPage: React.FC = () => {
       ]);
 
       setSettings(homeSettings);
+      setOriginalSettings(JSON.parse(JSON.stringify(homeSettings)));
       if (dbCategoriesRes.data) {
         setCategoriesFromDb(dbCategoriesRes.data);
       }
@@ -81,12 +83,18 @@ const HomePageSettingsPage: React.FC = () => {
     setSaving(true);
     try {
       const res = await saveHomePageSettings(settings);
+      setOriginalSettings(JSON.parse(JSON.stringify(settings)));
       showToast('success', res.message || 'Home page settings saved successfully!');
     } catch (err: any) {
       showToast('error', 'Failed to save settings: ' + err.message);
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleCancel = () => {
+    setSettings(JSON.parse(JSON.stringify(originalSettings)));
+    showToast('success', 'Unsaved changes reverted.');
   };
 
   const handleReset = () => {
@@ -295,39 +303,31 @@ const HomePageSettingsPage: React.FC = () => {
       )}
 
       {/* Top Header & Actions Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-wider">CMS Module</span>
-            <span className="text-slate-400 text-xs font-bold">• Real-time Store Sync</span>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Home Page Management</h1>
-          <p className="text-slate-500 text-sm font-medium">Control hero banner sliders, links, and featured category cards displayed on your storefront.</p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Home Page Settings</h1>
+          <p className="text-slate-500 text-xs mt-1">Manage hero banner sliders, links, and featured categories.</p>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
-          <Link 
-            to="/" 
-            target="_blank" 
-            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all flex items-center gap-2"
-          >
-            <ExternalLink size={14} /> Preview Storefront
-          </Link>
-
+        <div className="flex items-center gap-3">
           <button 
-            onClick={handleReset}
-            className="px-4 py-2.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-bold rounded-xl transition-all"
+            type="button"
+            onClick={handleCancel}
+            disabled={saving}
+            className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold rounded-xl transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            title="Revert unsaved changes"
           >
-            Reset Defaults
+            <span>Cancel</span>
           </button>
 
           <button 
+            type="button"
             onClick={handleSave}
             disabled={saving}
-            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2"
+            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-emerald-600/20 flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
             {saving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
-            {saving ? 'Saving...' : 'Save Settings'}
+            <span>{saving ? 'Saving...' : 'Save'}</span>
           </button>
         </div>
       </div>

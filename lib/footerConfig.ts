@@ -30,6 +30,7 @@ export interface FooterConfig {
   newsletterTitle: string;
   newsletterText: string;
   copyrightText: string;
+  ssmNumber?: string;
   columns: FooterColumn[];
   socialLinks: FooterSocialLinks;
 }
@@ -43,7 +44,8 @@ export const DEFAULT_FOOTER_CONFIG: FooterConfig = {
   logisticTitle: "Logistic Services",
   newsletterTitle: "Newsletter",
   newsletterText: "Subscribe our newsletter on for received the latest promotion and campaign on IT Products",
-  copyrightText: "© {year} Meadow IT — ALL RIGHTS RESERVED",
+  copyrightText: "© {year} MEADOW COMPUTER - ALL RIGHT RESERVED",
+  ssmNumber: "201001037969 [921893-M]",
   socialLinks: {
     facebook: "https://www.facebook.com/share/1K7NghHPxP/?mibextid=wwXIfr",
     instagram: "https://www.instagram.com/meadow.it?igsh=MTBxejNkcmc5ZHJ6cw%3D%3D&utm_source=qr",
@@ -61,6 +63,7 @@ export const DEFAULT_FOOTER_CONFIG: FooterConfig = {
         { id: "c-2", name: "Our Store", url: "/our-stores", isVisible: true },
         { id: "c-3", name: "Events", url: "/events", isVisible: true },
         { id: "c-4", name: "Suppliers", url: "/suppliers", isVisible: true },
+        { id: "c-5", name: "Career", url: "/career", isVisible: true },
       ],
     },
     {
@@ -99,15 +102,27 @@ function formatParsedConfig(parsed: any): FooterConfig {
     Array.isArray(col.items) && col.items.some((item) => item.url === '/suppliers' || item.url === '/supplier')
   );
 
+  // Check if a career link exists in any column; if not, inject it
+  const hasCareerLink = parsedColumns.some((col: FooterColumn) =>
+    Array.isArray(col.items) && col.items.some((item) => item.url === '/career' || item.url === '/careers')
+  );
+
   let finalColumns = parsedColumns;
-  if (!hasSupplierLink && finalColumns.length > 0) {
+  if ((!hasSupplierLink || !hasCareerLink) && finalColumns.length > 0) {
     finalColumns = finalColumns.map((col: FooterColumn, idx: number) => {
       if (idx === 0 || col.id === 'col-company') {
+        const extraItems: FooterMenuItem[] = [];
+        if (!hasSupplierLink) {
+          extraItems.push({ id: "c-supplier", name: "Suppliers", url: "/suppliers", isVisible: true });
+        }
+        if (!hasCareerLink) {
+          extraItems.push({ id: "c-career", name: "Career", url: "/career", isVisible: true });
+        }
         return {
           ...col,
           items: [
             ...(col.items || []),
-            { id: "c-supplier", name: "Suppliers", url: "/suppliers", isVisible: true },
+            ...extraItems,
           ],
         };
       }
@@ -118,6 +133,7 @@ function formatParsedConfig(parsed: any): FooterConfig {
   return {
     ...DEFAULT_FOOTER_CONFIG,
     ...parsed,
+    ssmNumber: parsed?.ssmNumber !== undefined ? parsed.ssmNumber : (DEFAULT_FOOTER_CONFIG.ssmNumber || ''),
     socialLinks: {
       ...DEFAULT_FOOTER_CONFIG.socialLinks,
       ...(parsed?.socialLinks || {}),

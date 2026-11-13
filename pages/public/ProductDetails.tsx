@@ -45,7 +45,7 @@ import Footer from '../../components/Footer';
 import SidebarCart from '../../components/SidebarCart';
 import { useCart } from '../../lib/CartContext';
 import { useWishlist } from '../../lib/WishlistContext';
-import { Product, Brand, Category, Profile } from '../../types';
+import { Product, Brand, Category, Profile, isProductPublished } from '../../types';
 
 interface CartItem extends Product {
   quantity: number;
@@ -206,6 +206,168 @@ const ProductDetails: React.FC = () => {
     fetchProductData();
   }, [slug]);
 
+  const PREBUILT_FALLBACK_PRODUCTS: Record<string, Product> = {
+    'unbeatable-rtx-combo': {
+      id: 'd1000000-0000-0000-0000-000000000001',
+      name: 'Unbeatable RTX Combo',
+      slug: 'unbeatable-rtx-combo',
+      category_id: '14f5d7d2-4e87-4b71-bb56-63a3a77d5c9a',
+      subcategory_id: 'ab7eb263-7eb9-415d-a5e6-a73bed5230bc',
+      brand_id: '64430d26-e138-4423-b3b5-63772e5fd047',
+      unit_id: '67f3a75f-2ea1-482f-90e2-3f8d69bf7fbc',
+      price: 2399,
+      discount_type: 'none',
+      discount_value: 0,
+      stock: 20,
+      image_url: '/assets/builds/unbeatable-rtx-combo.png',
+      description: 'Built for everyday 1080p gaming and smooth daily computing. Powered by the AMD Ryzen 5 7500F 6-Core processor paired with NVIDIA GeForce RTX 3050 graphics, 16GB high-speed RAM, and a fast 1TB NVMe SSD.',
+      additional_details: [
+        '**AMD Ryzen 5 7500F 6-Core Processor** - High-efficiency Zen 4 architecture with 6 cores and 12 threads delivering responsive gaming and multitasking performance.',
+        '**NVIDIA GeForce RTX 3050 Graphics** - Dedicated Ray Tracing Cores and NVIDIA DLSS support for smooth 1080p esports and modern gaming titles.',
+        '**16GB High-Speed Memory & 1TB NVMe SSD** - Fast system responsiveness, quick game load times, and generous storage space for your library and work files.',
+        '**High-Airflow ARGB Tempered Glass Chassis** - Engineered for cool, quiet operation with multi-fan ARGB airflow and clean professional cable management.',
+        '**Plug & Play Ready with Full Local Warranty** - Stress-tested by Meadow Computer technicians and backed by up to 3 years component warranty.'
+      ].join('\n\n'),
+      ddr_type: 'DDR5',
+      specs: {
+        status: 'published',
+        SKU: 'MDW-PC-RTXCOMBO',
+        tagline: 'Everyday gaming',
+        cpu: 'AMD Ryzen 5 7500F',
+        gpu: 'NVIDIA GeForce RTX 3050',
+        ram: '16GB RAM',
+        ssd: '1TB SSD',
+        Processor: 'AMD Ryzen™ 5 7500F Processor (6 Cores / 12 Threads, up to 5.0GHz, 32MB L3 Cache)',
+        Graphics: 'NVIDIA® GeForce RTX™ 3050 Dedicated Graphics (DLSS & Ray Tracing Support)',
+        Display: 'Supports up to 4x Displays via DisplayPort™ 1.4a & HDMI® 2.1 (Monitor Sold Separately)',
+        Memory: '16GB DDR5 High-Speed Dual-Channel Memory (Expandable up to 64GB)',
+        Storage: '1TB M.2 NVMe™ PCIe® Gen4 SSD',
+        Security: 'Firmware TPM 2.0 (Windows 11 Ready)',
+        'Operating System': 'Windows 11 Home',
+        Color: 'Matte Black ARGB',
+        'Included Software': 'Windows 11 Drivers & System Utilities Pre-installed',
+        Included: 'Power Cord, Wi-Fi Antenna, Component Warranty Documentation',
+        'Total Weight': '7.80 kg',
+        Battery: '550W 80+ Certified Power Supply Unit (PSU)',
+        Ports: '1x USB 3.2 Gen 2 Type-C, 4x USB 3.2 Gen 1 Type-A, 2x USB 2.0, 1x Gigabit LAN RJ45, 3x Audio Jacks, HDMI & DisplayPort',
+        Camera: 'N/A (External Webcam Supported)',
+        Keyboard: 'N/A (Desktop System Unit Only)',
+        Wireless: 'Wi-Fi 6 (802.11ax) + Bluetooth 5.2 Ready'
+      },
+      is_custom_build: true,
+      is_customised: false,
+      is_featured: true,
+      is_Promo: false,
+      created_at: new Date().toISOString()
+    },
+    'level-0-amd': {
+      id: 'd1000000-0000-0000-0000-000000000002',
+      name: 'Level 0 AMD',
+      slug: 'level-0-amd',
+      category_id: '14f5d7d2-4e87-4b71-bb56-63a3a77d5c9a',
+      subcategory_id: 'ab7eb263-7eb9-415d-a5e6-a73bed5230bc',
+      brand_id: '64430d26-e138-4423-b3b5-63772e5fd047',
+      unit_id: '67f3a75f-2ea1-482f-90e2-3f8d69bf7fbc',
+      price: 3299,
+      discount_type: 'none',
+      discount_value: 0,
+      stock: 15,
+      image_url: '/assets/builds/level-0-amd.png',
+      description: 'Designed for modern gaming and everyday productivity. Featuring the AMD Ryzen 5 7500F processor paired with next-generation NVIDIA GeForce RTX 5050 graphics, 16GB DDR5 memory, and a 1TB PCIe NVMe SSD.',
+      additional_details: [
+        '**AMD Ryzen 5 7500F Processor** - 6-core / 12-thread Zen 4 processor built for high frame rates and responsive creator workflows.',
+        '**NVIDIA GeForce RTX 5050 Graphics** - Next-gen Blackwell architecture with DLSS 4 Multi Frame Generation and enhanced Ray Tracing performance.',
+        '**16GB DDR5 Memory & 1TB NVMe SSD** - High-bandwidth DDR5 memory paired with a 1TB NVMe SSD for rapid bootups and seamless game loading.',
+        '**Optimized Multi-Fan Thermal Design** - High-airflow mesh chassis with synchronized ARGB cooling fans to keep temperatures low under load.',
+        '**Professionally Assembled & Tested** - Built, cable-managed, and burn-in tested by Meadow Computer specialists with full local warranty support.'
+      ].join('\n\n'),
+      ddr_type: 'DDR5',
+      specs: {
+        status: 'published',
+        SKU: 'MDW-PC-LVL0AMD',
+        tagline: 'Gaming & everyday tasks',
+        cpu: 'AMD Ryzen 5 7500F',
+        gpu: 'NVIDIA GeForce RTX 5050',
+        ram: '16GB RAM',
+        ssd: '1TB SSD',
+        Processor: 'AMD Ryzen™ 5 7500F Processor (6 Cores / 12 Threads, up to 5.0GHz, 32MB L3 Cache)',
+        Graphics: 'NVIDIA® GeForce RTX™ 5050 Dedicated Graphics (DLSS 4 & Ray Tracing)',
+        Display: 'Supports up to 4x 4K Displays via DisplayPort™ 2.1 & HDMI® 2.1b (Monitor Sold Separately)',
+        Memory: '16GB DDR5-5600 Dual-Channel Memory (Expandable up to 64GB)',
+        Storage: '1TB M.2 NVMe™ PCIe® Gen4 SSD (Extra M.2 Slot Available)',
+        Security: 'Firmware TPM 2.0 (Windows 11 Ready)',
+        'Operating System': 'Windows 11 Home',
+        Color: 'Stealth Black ARGB',
+        'Included Software': 'Windows 11 Drivers & System Utilities Pre-installed',
+        Included: 'Power Cord, Wi-Fi Antenna, Component Warranty Documentation',
+        'Total Weight': '8.20 kg',
+        Battery: '650W 80+ Bronze Certified Power Supply Unit (PSU)',
+        Ports: '1x USB 3.2 Gen 2 Type-C, 4x USB 3.2 Gen 1 Type-A, 2x USB 2.0, 1x 2.5GbE LAN RJ45, 3x Audio Jacks, HDMI & DisplayPort',
+        Camera: 'N/A (External Webcam Supported)',
+        Keyboard: 'N/A (Desktop System Unit Only)',
+        Wireless: 'Wi-Fi 6 (802.11ax) + Bluetooth 5.3 Ready'
+      },
+      is_custom_build: true,
+      is_customised: false,
+      is_featured: true,
+      is_Promo: false,
+      created_at: new Date().toISOString()
+    },
+    'level-1-amd': {
+      id: 'd1000000-0000-0000-0000-000000000003',
+      name: 'Level 1 AMD',
+      slug: 'level-1-amd',
+      category_id: '14f5d7d2-4e87-4b71-bb56-63a3a77d5c9a',
+      subcategory_id: 'ab7eb263-7eb9-415d-a5e6-a73bed5230bc',
+      brand_id: '64430d26-e138-4423-b3b5-63772e5fd047',
+      unit_id: '67f3a75f-2ea1-482f-90e2-3f8d69bf7fbc',
+      price: 3999,
+      discount_type: 'none',
+      discount_value: 0,
+      stock: 12,
+      image_url: '/assets/builds/level-1-amd.png',
+      description: 'High-performance gaming and heavy multitasking powerhouse. Equipped with the AMD Ryzen 5 7500F processor, NVIDIA GeForce RTX 5060 graphics, 32GB DDR5 RAM, and a 1TB PCIe 4.0 NVMe SSD in a signature white panoramic showcase chassis.',
+      additional_details: [
+        '**AMD Ryzen 5 7500F Processor** - High-clock 6-core / 12-thread Zen 4 architecture engineered for competitive gaming, streaming, and content creation.',
+        '**NVIDIA GeForce RTX 5060 Graphics** - High-FPS 1080p and 1440p gaming performance powered by NVIDIA Blackwell architecture and DLSS 4.',
+        '**32GB Dual-Channel DDR5 RAM & 1TB Gen4 NVMe SSD** - Double the memory capacity for effortless multitasking, streaming, and demanding modern titles.',
+        '**Panoramic White ARGB Showcase Build** - Clean white Dual-Chamber tempered glass aesthetic with high-static-pressure ARGB cooling fans.',
+        '**Meadow Precision Assembly & Warranty** - Individually stress-tested, BIOS-tuned, and backed by official manufacturer warranties.'
+      ].join('\n\n'),
+      ddr_type: 'DDR5',
+      specs: {
+        status: 'published',
+        SKU: 'MDW-PC-LVL1AMD',
+        tagline: 'Gaming & multitasking',
+        cpu: 'AMD Ryzen 5 7500F',
+        gpu: 'NVIDIA GeForce RTX 5060',
+        ram: '32GB RAM',
+        ssd: '1TB SSD',
+        Processor: 'AMD Ryzen™ 5 7500F Processor (6 Cores / 12 Threads, up to 5.0GHz, 32MB L3 Cache)',
+        Graphics: 'NVIDIA® GeForce RTX™ 5060 Dedicated Graphics (DLSS 4 & Full Ray Tracing)',
+        Display: 'Supports up to 4x 4K Displays via DisplayPort™ 2.1 & HDMI® 2.1b (Monitor Sold Separately)',
+        Memory: '32GB (2×16GB) DDR5-6000 Dual-Channel RGB Memory',
+        Storage: '1TB M.2 NVMe™ PCIe® Gen4 SSD (Extra M.2 Slot Available)',
+        Security: 'Firmware TPM 2.0 (Windows 11 Ready)',
+        'Operating System': 'Windows 11 Home',
+        Color: 'Frost White ARGB',
+        'Included Software': 'Windows 11 Drivers & System Utilities Pre-installed',
+        Included: 'Power Cord, Wi-Fi Antenna, Component Warranty Documentation',
+        'Total Weight': '8.60 kg',
+        Battery: '650W 80+ Bronze Certified Power Supply Unit (PSU)',
+        Ports: '1x USB 3.2 Gen 2 Type-C, 4x USB 3.2 Gen 1 Type-A, 2x USB 2.0, 1x 2.5GbE LAN RJ45, 3x Audio Jacks, HDMI & DisplayPort',
+        Camera: 'N/A (External Webcam Supported)',
+        Keyboard: 'N/A (Desktop System Unit Only)',
+        Wireless: 'Wi-Fi 6E (802.11ax) + Bluetooth 5.3 Ready'
+      },
+      is_custom_build: true,
+      is_customised: false,
+      is_featured: true,
+      is_Promo: false,
+      created_at: new Date().toISOString()
+    }
+  };
+
   const fetchProductData = async () => {
     if (!slug) return;
     setLoading(true);
@@ -220,7 +382,7 @@ const ProductDetails: React.FC = () => {
 
       if (data) {
         prodData = data;
-      } else {
+      } else if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug)) {
         const { data: byId } = await supabase
           .from('products')
           .select('*')
@@ -229,8 +391,18 @@ const ProductDetails: React.FC = () => {
         if (byId) prodData = byId;
       }
 
+      if (!prodData) {
+        const fallbackBySlug = PREBUILT_FALLBACK_PRODUCTS[slug];
+        const fallbackById = Object.values(PREBUILT_FALLBACK_PRODUCTS).find((p) => p.id === slug);
+        if (fallbackBySlug || fallbackById) {
+          prodData = fallbackBySlug || fallbackById || null;
+        }
+      }
+
       if (prodError && !prodData) throw prodError;
-      if (!prodData) throw new Error("Product not indexed.");
+      if (!prodData || !isProductPublished(prodData)) {
+        throw new Error("This product is currently unpublished or unavailable.");
+      }
 
       setProduct(prodData);
 
@@ -238,13 +410,25 @@ const ProductDetails: React.FC = () => {
         prodData.brand_id ? supabase.from('brands').select('*').eq('id', prodData.brand_id).maybeSingle() : Promise.resolve({ data: null }),
         prodData.category_id ? supabase.from('categories').select('*').eq('id', prodData.category_id).maybeSingle() : Promise.resolve({ data: null }),
         prodData.subcategory_id ? supabase.from('subcategories').select('*').eq('id', prodData.subcategory_id).maybeSingle() : Promise.resolve({ data: null }),
-        prodData.category_id ? supabase.from('products').select('*').eq('category_id', prodData.category_id).neq('id', prodData.id).limit(4) : Promise.resolve({ data: [] })
+        prodData.category_id ? supabase.from('products').select('*').eq('category_id', prodData.category_id).neq('id', prodData.id).limit(6) : Promise.resolve({ data: [] })
       ]);
 
-      if (brandRes.data) setBrand(brandRes.data);
-      if (catRes.data) setCategory(catRes.data);
-      if (subCatRes.data) setSubcategory(subCatRes.data);
-      if (relatedRes.data) setRelatedProducts(relatedRes.data);
+      if (brandRes.data) {
+        setBrand(brandRes.data);
+      } else if (prodData.slug in PREBUILT_FALLBACK_PRODUCTS) {
+        setBrand({ id: '64430d26-e138-4423-b3b5-63772e5fd047', name: 'AMD', logo_url: '', created_at: '' });
+      }
+      if (catRes.data) {
+        setCategory(catRes.data);
+      } else if (prodData.slug in PREBUILT_FALLBACK_PRODUCTS) {
+        setCategory({ id: '14f5d7d2-4e87-4b71-bb56-63a3a77d5c9a', name: 'Desktop', slug: 'desktop', created_at: '' });
+      }
+      if (subCatRes.data) {
+        setSubcategory(subCatRes.data);
+      } else if (prodData.slug in PREBUILT_FALLBACK_PRODUCTS) {
+        setSubcategory({ id: 'ab7eb263-7eb9-415d-a5e6-a73bed5230bc', name: 'Gaming Desktop', slug: 'gaming-desktop', category_id: '14f5d7d2-4e87-4b71-bb56-63a3a77d5c9a' });
+      }
+      if (relatedRes.data) setRelatedProducts(relatedRes.data.filter(isProductPublished));
     } catch (err: any) {
       setError(err.message);
     } finally {

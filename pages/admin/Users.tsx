@@ -137,9 +137,9 @@ const UsersPage: React.FC = () => {
             setPassword("");
             setIsEditing(true);
           }}
-          className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2"
+          className="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-emerald-600/20 cursor-pointer transition-all"
         >
-          <Plus size={16} /> Add Admin
+          <Plus size={16} /> Add
         </button>
       </div>
 
@@ -249,94 +249,94 @@ const UsersPage: React.FC = () => {
       {/* Edit/Create Modal */}
       {isEditing && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex justify-end">
-          <div className="bg-[#F5F6F8] w-full max-w-3xl h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
-            <div className="px-6 md:px-8 py-5 bg-white border-b border-slate-200 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-4">
-                <button onClick={() => setIsEditing(false)} className="p-2 -ml-2 text-slate-400 hover:text-slate-900 rounded-full transition-colors">
-                  <ArrowRight size={20} className="rotate-180" />
-                </button>
-                <h3 className="text-lg font-semibold text-slate-900">{currentUser.id ? 'Edit User' : 'Add New Admin'}</h3>
-              </div>
+          <div className="bg-[#F5F6F8] w-full max-w-2xl h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
+            <div className="px-6 py-4 bg-white border-b border-slate-200 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <button type="button" onClick={() => setIsEditing(false)} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-medium rounded-full hover:bg-slate-50 transition-colors text-sm">
-                  Discard
+                <button onClick={() => setIsEditing(false)} className="p-1.5 -ml-1 text-slate-400 hover:text-slate-900 rounded-lg transition-colors cursor-pointer">
+                  <ArrowRight size={18} className="rotate-180" />
                 </button>
-                <button type="submit" form="user-form" disabled={formLoading} className="px-8 py-2.5 bg-slate-900 text-white font-medium rounded-full hover:bg-slate-800 transition-all text-sm flex items-center gap-2">
-                  {formLoading && <Loader2 size={16} className="animate-spin" />}
-                  {currentUser.id ? 'Save Changes' : 'Save'}
+                <h3 className="text-base md:text-lg font-bold text-slate-900">{currentUser.id ? 'Edit User' : 'Add New Admin'}</h3>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <button type="button" onClick={() => setIsEditing(false)} className="px-4 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold rounded-lg transition-colors text-xs cursor-pointer">
+                  Cancel
+                </button>
+                <button type="submit" form="user-form" disabled={formLoading} className="px-5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-lg transition-all text-xs shadow-md shadow-emerald-600/20 cursor-pointer flex items-center gap-1.5">
+                  {formLoading && <Loader2 size={14} className="animate-spin" />}
+                  Save
                 </button>
               </div>
             </div>
             
-            <form id="user-form" onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
-              <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                <h4 className="text-lg font-semibold text-slate-900">User Details</h4>
+            <form id="user-form" onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 md:p-6 space-y-5">
+              <div className="bg-white p-5 md:p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                <h4 className="text-sm font-bold uppercase tracking-wider text-slate-900">User Details</h4>
                 
                 {!currentUser.id ? (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Email</label>
                       <input 
                         type="email" 
                         required
                         value={currentUser.email || ''} 
                         onChange={e => setCurrentUser({...currentUser, email: e.target.value})}
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 placeholder:text-slate-400 transition-all"
+                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 placeholder:text-slate-400 transition-all text-sm"
                         placeholder="Enter email address"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Password</label>
                       <input 
                         type="password" 
                         required
                         value={password} 
                         onChange={e => setPassword(e.target.value)}
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 placeholder:text-slate-400 transition-all"
+                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 placeholder:text-slate-400 transition-all text-sm"
                         placeholder="Create a password"
                       />
                     </div>
                   </>
                 ) : (
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Reset Password <span className="text-slate-400 font-normal ml-1">(Leave blank to keep current)</span></label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Reset Password <span className="text-slate-400 font-normal ml-1 lowercase">(leave blank to keep current)</span></label>
                     <input 
                       type="password" 
                       value={password} 
                       onChange={e => setPassword(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 placeholder:text-slate-400 transition-all"
+                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 placeholder:text-slate-400 transition-all text-sm"
                       placeholder="Enter new password"
                     />
                   </div>
                 )}
                 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Full Name</label>
                   <input 
                     type="text" 
                     required
                     value={currentUser.full_name || ''} 
                     onChange={e => setCurrentUser({...currentUser, full_name: e.target.value})}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 placeholder:text-slate-400 transition-all"
+                    className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 placeholder:text-slate-400 transition-all text-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Phone</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Phone</label>
                   <input 
                     type="text" 
                     value={currentUser.phone || ''} 
                     onChange={e => setCurrentUser({...currentUser, phone: e.target.value})}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 placeholder:text-slate-400 transition-all"
+                    className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 placeholder:text-slate-400 transition-all text-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Role</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Role</label>
                   <select 
                     value={currentUser.role || 'admin'} 
                     onChange={e => setCurrentUser({...currentUser, role: e.target.value as any})}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 placeholder:text-slate-400 transition-all"
+                    className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 text-slate-900 placeholder:text-slate-400 transition-all text-sm"
                     disabled={currentUser.role === 'superadmin' && currentUser.id !== undefined}
                   >
                     <option value="admin">Admin</option>

@@ -183,7 +183,7 @@ const StockTake: React.FC = () => {
         <div className="flex items-center gap-2.5">
           <button 
             onClick={() => { setHistoryOpen(true); fetchLogs(); }}
-            className="bg-white border border-slate-200/90 text-slate-700 rounded-full px-4 py-2.5 text-xs font-semibold hover:bg-slate-50 transition-all shadow-xs flex items-center gap-1.5"
+            className="bg-white border border-slate-200/90 text-slate-700 rounded-xl px-3.5 py-2 text-xs font-semibold hover:bg-slate-50 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
           >
             <History size={14} className="text-slate-500" />
             <span>Audit History</span>
@@ -191,7 +191,7 @@ const StockTake: React.FC = () => {
           <button 
             onClick={handleAuditRequest}
             disabled={submitting || totalModifications === 0}
-            className="bg-slate-950 text-white rounded-full px-5 py-2.5 text-xs font-semibold hover:bg-slate-800 transition-all shadow-xs flex items-center gap-2 disabled:opacity-40"
+            className="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-sm shadow-emerald-600/20 flex items-center gap-2 disabled:opacity-40 cursor-pointer"
           >
             {submitting ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
             <span>Commit Audit {totalModifications > 0 && `(${totalModifications})`}</span>
@@ -200,24 +200,24 @@ const StockTake: React.FC = () => {
       </div>
 
       {statusMsg && (
-        <div className={`p-4 rounded-2xl flex items-center justify-between border animate-in slide-in-from-top duration-300 ${
+        <div className={`p-4 rounded-xl flex items-center justify-between border animate-in slide-in-from-top duration-300 ${
           statusMsg.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-rose-50 border-rose-100 text-rose-800'
         }`}>
           <div className="flex items-center gap-3">
             {statusMsg.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
             <span className="font-semibold text-xs">{statusMsg.text}</span>
           </div>
-          <button onClick={() => setStatusMsg(null)} className="p-1 hover:bg-black/5 rounded-full">
+          <button onClick={() => setStatusMsg(null)} className="p-1 hover:bg-black/5 rounded-lg cursor-pointer">
             <X size={15} />
           </button>
         </div>
       )}
 
-      {/* Filter & Search Bar Row Matching Screenshot */}
+      {/* Filter & Search Bar Row */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        {/* Search Pill Input */}
+        {/* Search Input */}
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input 
             type="text"
             placeholder="Search hardware asset..."
@@ -226,29 +226,29 @@ const StockTake: React.FC = () => {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200/90 rounded-full text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 shadow-xs transition-all font-medium"
+            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200/90 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 shadow-xs transition-all font-medium"
           />
         </div>
 
-        {/* Filter & Sort Pills */}
+        {/* Filter & Sort */}
         <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto">
-          {/* Status Filter Pill */}
+          {/* Status Filter */}
           <button
             onClick={() => {
               const next = statusFilter === 'all' ? 'variance' : statusFilter === 'variance' ? 'in_sync' : 'all';
               setStatusFilter(next);
               setCurrentPage(1);
             }}
-            className="bg-white border border-slate-200/90 hover:border-slate-300 text-slate-700 px-4 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 shadow-xs transition-all"
+            className="bg-white border border-slate-200/90 hover:border-slate-300 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-xs transition-all cursor-pointer"
           >
             <SlidersHorizontal size={14} className="text-slate-500" />
             <span>{statusFilter === 'all' ? 'Show All Products' : statusFilter === 'variance' ? 'Variances Only' : 'In Sync Only'}</span>
           </button>
 
-          {/* Sort Pill */}
+          {/* Sort Button */}
           <button
             onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className="bg-white border border-slate-200/90 hover:border-slate-300 text-slate-700 px-4 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 shadow-xs transition-all"
+            className="bg-white border border-slate-200/90 hover:border-slate-300 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-xs transition-all cursor-pointer"
           >
             <ArrowDownAZ size={14} className="text-slate-500" />
             <span>Sort {sortOrder === 'asc' ? 'A-Z' : 'Z-A'}</span>
@@ -422,27 +422,29 @@ const StockTake: React.FC = () => {
       {/* Confirmation Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[120] flex items-center justify-center p-6">
-          <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-            <div className="p-10 text-center">
-              <div className="w-20 h-20 bg-amber-50 text-amber-600 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-amber-100">
-                <AlertTriangle size={40} />
+          <div className="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 border border-slate-200">
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center mx-auto mb-5 border border-amber-100">
+                <AlertTriangle size={32} />
               </div>
-              <h3 className="text-2xl font-black text-slate-900 mb-2">Sync Inventory?</h3>
-              <p className="text-slate-500 text-sm leading-relaxed mb-8">
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Sync Inventory?</h3>
+              <p className="text-slate-500 text-xs leading-relaxed mb-6">
                 You are about to adjust stock levels for <span className="font-bold text-slate-900">{totalModifications} items</span> based on your physical audit. This will update the live catalog.
               </p>
-              <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
                 <button 
-                  onClick={commitAudit}
-                  className="w-full py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-black transition-all shadow-xl shadow-slate-900/20 uppercase tracking-widest text-[11px]"
+                  type="button"
+                  onClick={() => setShowConfirmModal(false)} 
+                  className="flex-1 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold rounded-xl transition-all uppercase tracking-wider text-xs cursor-pointer"
                 >
-                  Apply Adjustments
+                  Cancel
                 </button>
                 <button 
-                  onClick={() => setShowConfirmModal(false)} 
-                  className="w-full py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition-all uppercase tracking-widest text-[11px]"
+                  type="button"
+                  onClick={commitAudit}
+                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-xl transition-all shadow-sm shadow-emerald-600/20 uppercase tracking-wider text-xs cursor-pointer"
                 >
-                  Keep Reviewing
+                  Save
                 </button>
               </div>
             </div>
