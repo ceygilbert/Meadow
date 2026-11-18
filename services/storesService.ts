@@ -1,7 +1,8 @@
 /**
  * Service for Managing Physical Stores & Store Locator Page Settings
- * Syncs seamlessly with Hostinger MySQL / MariaDB (app_settings & stores table).
+ * Syncs seamlessly with Supabase, Backend API, and Hostinger MySQL / MariaDB.
  */
+import { supabase } from '../lib/supabase';
 
 export interface StoreItem {
   id: string;
@@ -181,6 +182,8 @@ export const DEFAULT_OUR_STORES_SETTINGS: OurStoresSettings = {
 };
 
 const LOCAL_STORAGE_KEY = 'meadow_our_stores_settings';
+const STORES_DB_ID = '00000000-0000-0000-0000-000000000009';
+const STORES_DB_PREFIX = 'OUR_STORES_SETTINGS:';
 export const STORES_UPDATED_EVENT = 'meadow_stores_updated';
 
 function getApiUrl(path: string): string {
@@ -240,9 +243,11 @@ export function getStoredOurStoresSettings(): OurStoresSettings {
  * Fetch authoritative settings from backend/database across all devices and browsers.
  */
 export async function fetchOurStoresSettings(): Promise<OurStoresSettings> {
-  // 1. Try reading from backend API (MariaDB/MySQL `app_settings` table)
+  // 1. Try reading from backend API (Supabase + MariaDB + file backup)
   try {
-    const res = await fetch(getApiUrl('/api/settings/our_stores'));
+    const res = await fetch(getApiUrl(`/api/settings/our_stores?t=${Date.now()}`), {
+      cache: 'no-store'
+    });
     if (res.ok) {
       const json = await res.json();
       if (json && json.data && typeof json.data === 'object') {
@@ -255,10 +260,31 @@ export async function fetchOurStoresSettings(): Promise<OurStoresSettings> {
       }
     }
   } catch (err) {
-    console.warn('[StoresService] Error fetching stores settings from database:', err);
+    console.warn('[StoresService] Error fetching stores settings from backend API:', err);
   }
 
-  // 2. Fallback to localStorage
+  // 2. Fallback to direct Supabase query
+  try {
+    const { data, error } = await supabase
+      .from('units')
+      .select('name')
+      .eq('id', STORES_DB_ID)
+      .maybeSingle();
+
+    if (!error && data && typeof data.name === 'string' && data.name.startsWith(STORES_DB_PREFIX)) {
+      const parsed = JSON.parse(data.name.substring(STORES_DB_PREFIX.length));
+      const merged = sanitizeStoresSettings(parsed);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(merged));
+        window.dispatchEvent(new CustomEvent(STORES_UPDATED_EVENT, { detail: merged }));
+      }
+      return merged;
+    }
+  } catch (err) {
+    console.warn('[StoresService] Error fetching stores settings from Supabase:', err);
+  }
+
+  // 3. Fallback to localStorage
   return getStoredOurStoresSettings();
 }
 
@@ -266,7 +292,7 @@ export async function fetchOurStoresSettings(): Promise<OurStoresSettings> {
  * Save store settings and store locations to database.
  */
 export async function saveOurStoresSettings(settings: OurStoresSettings): Promise<{ success: boolean; message?: string }> {
-  const payload = {
+  const payload: OurStoresSettings = {
     ...settings,
     updated_at: new Date().toISOString()
   };
@@ -283,7 +309,7 @@ export async function saveOurStoresSettings(settings: OurStoresSettings): Promis
 
   let savedToDb = false;
 
-  // 2. Persist to MariaDB/MySQL via authoritative sync endpoint
+  // 2. Persist via backend authoritative sync endpoint (saves to Supabase + File + MySQL)
   try {
     const syncRes = await fetch(getApiUrl('/api/stores/sync'), {
       method: 'POST',
@@ -294,10 +320,10 @@ export async function saveOurStoresSettings(settings: OurStoresSettings): Promis
       savedToDb = true;
     }
   } catch (err: any) {
-    console.warn('[StoresService] Error syncing stores to database:', err);
+    console.warn('[StoresService] Error syncing stores to backend API:', err);
   }
 
-  // Secondary fallback to app_settings if needed
+  // 3. Secondary fallback to /api/settings/our_stores
   if (!savedToDb) {
     try {
       const res = await fetch(getApiUrl('/api/settings/our_stores'), {
@@ -310,6 +336,26 @@ export async function saveOurStoresSettings(settings: OurStoresSettings): Promis
       }
     } catch (err: any) {
       console.warn('[StoresService] Error saving to app_settings:', err);
+    }
+  }
+
+  // 4. Tertiary direct Supabase fallback
+  if (!savedToDb) {
+    try {
+      const { error } = await supabase
+        .from('units')
+        .upsert(
+          {
+            id: STORES_DB_ID,
+            name: STORES_DB_PREFIX + JSON.stringify(payload),
+          },
+          { onConflict: 'id' }
+        );
+      if (!error) {
+        savedToDb = true;
+      }
+    } catch (err: any) {
+      console.warn('[StoresService] Direct Supabase fallback error:', err);
     }
   }
 
@@ -333,6 +379,10 @@ export async function resetOurStoresSettings(): Promise<OurStoresSettings> {
 
   try {
     await fetch(getApiUrl('/api/settings/our_stores'), { method: 'DELETE' });
+  } catch {}
+
+  try {
+    await supabase.from('units').delete().eq('id', STORES_DB_ID);
   } catch {}
 
   return DEFAULT_OUR_STORES_SETTINGS;

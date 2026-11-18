@@ -448,6 +448,59 @@ function writeSettingsFile(key: string, value: any) {
   }
 }
 
+const OUR_STORES_DB_ID = '00000000-0000-0000-0000-000000000009';
+const OUR_STORES_DB_PREFIX = 'OUR_STORES_SETTINGS:';
+
+async function readStoresFromSupabase(): Promise<any | null> {
+  const sb = getSupabaseServerClient();
+  if (!sb) return null;
+  try {
+    const { data, error } = await sb
+      .from('units')
+      .select('name')
+      .eq('id', OUR_STORES_DB_ID)
+      .maybeSingle();
+    if (!error && data && typeof data.name === 'string' && data.name.startsWith(OUR_STORES_DB_PREFIX)) {
+      return JSON.parse(data.name.substring(OUR_STORES_DB_PREFIX.length));
+    }
+  } catch (e: any) {
+    console.warn('[Stores] Supabase read warning:', e.message);
+  }
+  return null;
+}
+
+async function writeStoresToSupabase(value: any): Promise<boolean> {
+  const sb = getSupabaseServerClient();
+  if (!sb) return false;
+  try {
+    const { error } = await sb.from('units').upsert(
+      {
+        id: OUR_STORES_DB_ID,
+        name: OUR_STORES_DB_PREFIX + JSON.stringify(value),
+      },
+      { onConflict: 'id' }
+    );
+    if (error) {
+      console.warn('[Stores] Supabase write warning:', error.message);
+      return false;
+    }
+    return true;
+  } catch (e: any) {
+    console.warn('[Stores] Supabase write warning:', e.message);
+    return false;
+  }
+}
+
+async function deleteStoresFromSupabase(): Promise<void> {
+  const sb = getSupabaseServerClient();
+  if (!sb) return;
+  try {
+    await sb.from('units').delete().eq('id', OUR_STORES_DB_ID);
+  } catch (e: any) {
+    console.warn('[Stores] Supabase delete warning:', e.message);
+  }
+}
+
 // GET & POST & DELETE /api/settings/:key
 apiRouter.get('/settings/:key', async (req: Request, res: Response) => {
   try {
@@ -473,10 +526,30 @@ apiRouter.get('/settings/:key', async (req: Request, res: Response) => {
       }
     }
 
-    // 2. Fallback to file storage
+    // 2. For our_stores, check Supabase & local file and pick newest by updated_at
     const fileData = readSettingsFile();
-    if (key in fileData) {
-      return res.json({ data: fileData[key] });
+    const localVal = key in fileData ? fileData[key] : null;
+
+    if (key === 'our_stores') {
+      const sbVal = await readStoresFromSupabase();
+      if (sbVal && localVal) {
+        const sbTs = sbVal.updated_at ? new Date(sbVal.updated_at).getTime() : 0;
+        const localTs = localVal.updated_at ? new Date(localVal.updated_at).getTime() : 0;
+        if (sbTs >= localTs) {
+          writeSettingsFile(key, sbVal);
+          return res.json({ data: sbVal });
+        }
+        return res.json({ data: localVal });
+      }
+      if (sbVal) {
+        writeSettingsFile(key, sbVal);
+        return res.json({ data: sbVal });
+      }
+    }
+
+    // 3. Fallback to file storage
+    if (localVal !== null) {
+      return res.json({ data: localVal });
     }
 
     return res.json({ data: null });
@@ -493,7 +566,12 @@ apiRouter.post('/settings/:key', async (req: Request, res: Response) => {
     // 1. Always write to file backup immediately
     writeSettingsFile(key, value);
 
-    // 2. Persist to MySQL app_settings if configured
+    // 2. Persist to Supabase if key is our_stores
+    if (key === 'our_stores') {
+      await writeStoresToSupabase(value);
+    }
+
+    // 3. Persist to MySQL app_settings if configured
     if (isMysqlConfigured()) {
       try {
         const valStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
@@ -522,6 +600,10 @@ apiRouter.delete('/settings/:key', async (req: Request, res: Response) => {
       delete fileData[key];
       fs.writeFileSync(SETTINGS_FILE, JSON.stringify(fileData, null, 2), 'utf-8');
     } catch {}
+
+    if (key === 'our_stores') {
+      await deleteStoresFromSupabase();
+    }
 
     if (isMysqlConfigured()) {
       try {
@@ -569,6 +651,11 @@ apiRouter.get('/stores', async (_req: Request, res: Response) => {
       }
     }
 
+    const sbVal = await readStoresFromSupabase();
+    if (sbVal && Array.isArray(sbVal.stores)) {
+      return res.json({ data: sbVal.stores });
+    }
+
     // Fallback to settings
     const fileData = readSettingsFile();
     if (fileData['our_stores'] && Array.isArray(fileData['our_stores'].stores)) {
@@ -581,7 +668,7 @@ apiRouter.get('/stores', async (_req: Request, res: Response) => {
   }
 });
 
-// POST /api/stores/sync - Authoritative dual-persistence to both app_settings & stores table
+// POST /api/stores/sync - Authoritative dual-persistence to Supabase, file backup & MariaDB
 apiRouter.post('/stores/sync', async (req: Request, res: Response) => {
   try {
     const payload = req.body;
@@ -589,26 +676,34 @@ apiRouter.post('/stores/sync', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid payload' });
     }
 
+    const enrichedPayload = {
+      ...payload,
+      updated_at: payload.updated_at || new Date().toISOString(),
+    };
+
     // 1. Dual-write to local JSON fallback
-    writeSettingsFile('our_stores', payload);
+    writeSettingsFile('our_stores', enrichedPayload);
+
+    // 2. Persist to Supabase database
+    await writeStoresToSupabase(enrichedPayload);
 
     if (isMysqlConfigured()) {
-      // 2. Persist to app_settings
+      // 3. Persist to app_settings
       try {
         await execute(
           `INSERT INTO app_settings (setting_key, setting_value, updated_at)
            VALUES ('our_stores', ?, NOW())
            ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = NOW()`,
-          [JSON.stringify(payload)]
+          [JSON.stringify(enrichedPayload)]
         );
       } catch (appErr: any) {
         console.warn('[Stores Sync] app_settings save warning:', appErr.message);
       }
 
-      // 3. Persist each store item into MariaDB `stores` table
-      if (Array.isArray(payload.stores) && payload.stores.length > 0) {
+      // 4. Persist each store item into MariaDB `stores` table
+      if (Array.isArray(enrichedPayload.stores) && enrichedPayload.stores.length > 0) {
         const storeIds: string[] = [];
-        for (const st of payload.stores) {
+        for (const st of enrichedPayload.stores) {
           if (!st.id) continue;
           storeIds.push(st.id);
 
@@ -678,8 +773,8 @@ apiRouter.post('/stores/sync', async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      message: 'All stores and page data saved to MariaDB database successfully.',
-      data: payload
+      message: 'All stores and page data saved to database successfully.',
+      data: enrichedPayload
     });
   } catch (err: any) {
     console.error('[Stores Sync Error]:', err);

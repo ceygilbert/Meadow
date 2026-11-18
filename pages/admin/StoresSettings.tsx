@@ -36,6 +36,7 @@ import {
   saveOurStoresSettings, 
   resetOurStoresSettings 
 } from '../../services/storesService';
+import { supabase } from '../../lib/supabase';
 
 const BADGE_PRESETS = [
   { label: 'MEADOW STORE', type: 'meadow', category: 'Meadow Computer' },
@@ -206,35 +207,53 @@ const StoresSettings: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  // Save Modal Form
-  const handleSaveModalStore = (e: React.FormEvent) => {
+  // Save Modal Form (persists immediately to database so image & detail updates take effect right away)
+  const handleSaveModalStore = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (uploadingImage) {
+      showToast('info', 'Please wait for the store image upload to finish.');
+      return;
+    }
     if (!storeForm.name.trim()) {
-      alert('Please provide a store name.');
+      showToast('error', 'Please provide a store name.');
       return;
     }
     if (!storeForm.address.trim()) {
-      alert('Please provide a store address.');
+      showToast('error', 'Please provide a store address.');
       return;
     }
 
-    if (editingStoreId) {
-      // Update existing
-      setSettings(prev => ({
-        ...prev,
-        stores: prev.stores.map(s => s.id === editingStoreId ? storeForm : s)
-      }));
-      showToast('success', `Updated "${storeForm.name}". Remember to click "Save Changes".`);
-    } else {
-      // Add new
-      setSettings(prev => ({
-        ...prev,
-        stores: [...prev.stores, { ...storeForm, id: storeForm.id || 'store-' + Date.now() }]
-      }));
-      showToast('success', `Added new store "${storeForm.name}". Remember to click "Save Changes".`);
-    }
+    const updatedStore: StoreItem = {
+      ...storeForm,
+      id: editingStoreId || storeForm.id || 'store-' + Date.now()
+    };
 
-    setIsModalOpen(false);
+    const nextStores = editingStoreId
+      ? settings.stores.map(s => (s.id === editingStoreId ? updatedStore : s))
+      : [...settings.stores, updatedStore];
+
+    const nextSettings: OurStoresSettings = {
+      ...settings,
+      stores: nextStores
+    };
+
+    setSettings(nextSettings);
+    setSaving(true);
+    try {
+      await saveOurStoresSettings(nextSettings);
+      setOriginalSettings(JSON.parse(JSON.stringify(nextSettings)));
+      setIsModalOpen(false);
+      showToast(
+        'success',
+        editingStoreId
+          ? `Updated "${updatedStore.name}" and saved to database!`
+          : `Added "${updatedStore.name}" and saved to database!`
+      );
+    } catch (err: any) {
+      showToast('error', 'Failed to save store changes: ' + err.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   // Tag helper
@@ -263,9 +282,10 @@ const StoresSettings: React.FC = () => {
     setStoreForm(prev => ({ ...prev, features: prev.features.filter(f => f !== featToRemove) }));
   };
 
-  // Upload image to /api/upload
+  // Upload image to /api/upload with direct Supabase Storage fallback
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetField: 'image' | 'hero_video') => {
-    const file = e.target.files?.[0];
+    const inputEl = e.target;
+    const file = inputEl.files?.[0];
     if (!file) return;
 
     const isVideo = targetField === 'hero_video';
@@ -273,31 +293,63 @@ const StoresSettings: React.FC = () => {
     else setUploadingImage(true);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      let publicUrl = '';
 
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
+      // Primary: upload through server /api/upload (persists locally + Supabase generals bucket)
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
 
-      if (!res.ok) {
-        throw new Error('Upload failed with status ' + res.status);
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          publicUrl = data.publicUrl || (data.filename ? `/uploads/${data.filename}` : '');
+        }
+      } catch {
+        // Fallback to direct Supabase storage below
       }
 
-      const data = await res.json();
-      const publicUrl = data.publicUrl || (data.filename ? `/uploads/${data.filename}` : '');
+      // Fallback: upload directly to Supabase Storage if /api/upload didn't return a URL
+      if (!publicUrl) {
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+        const filePath = `stores/store_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from('generals')
+          .upload(filePath, file, { upsert: true });
+
+        if (upErr) {
+          // Try 'products' bucket as secondary fallback
+          const { error: prodErr } = await supabase.storage
+            .from('products')
+            .upload(filePath, file, { upsert: true });
+          if (prodErr) throw prodErr;
+          const { data: pubData } = supabase.storage.from('products').getPublicUrl(filePath);
+          publicUrl = pubData?.publicUrl || '';
+        } else {
+          const { data: pubData } = supabase.storage.from('generals').getPublicUrl(filePath);
+          publicUrl = pubData?.publicUrl || '';
+        }
+      }
+
+      if (!publicUrl) {
+        throw new Error('Failed to obtain uploaded file URL.');
+      }
 
       if (targetField === 'image') {
         setStoreForm(prev => ({ ...prev, image: publicUrl }));
-        showToast('success', 'Store image uploaded successfully!');
+        showToast('success', 'Store image uploaded! Click Save to update the live store card.');
       } else {
         setSettings(prev => ({ ...prev, hero_video_url: publicUrl }));
-        showToast('success', 'Hero media uploaded successfully!');
+        showToast('success', 'Hero media uploaded! Click Save to publish.');
       }
     } catch (err: any) {
-      showToast('error', 'Upload error: ' + err.message);
+      showToast('error', 'Upload error: ' + (err.message || 'Upload failed'));
     } finally {
+      inputEl.value = '';
       if (isVideo) setUploadingVideo(false);
       else setUploadingImage(false);
     }
@@ -696,18 +748,27 @@ const StoresSettings: React.FC = () => {
           {/* Stores Preview List */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
             {settings.stores.filter(s => s.isActive).map(st => (
-              <div key={st.id} className="border border-slate-200 rounded-xl p-4 space-y-2 hover:border-slate-300 transition-colors">
-                <div className="flex items-center justify-between">
-                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${getBadgeClass(st.badgeType)}`}>
-                    {st.badge}
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-400">{st.category}</span>
-                </div>
-                <h4 className="font-extrabold text-sm text-slate-900">{st.name}</h4>
-                <p className="text-xs text-slate-500 line-clamp-2">{st.address}</p>
-                <div className="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-100">
-                  <span>{st.phone}</span>
-                  <span className="text-rose-600 font-bold">{st.hours.split('(')[0]}</span>
+              <div key={st.id} className="border border-slate-200 rounded-xl overflow-hidden hover:border-slate-300 transition-colors flex flex-col">
+                {st.image && (
+                  <div className="h-32 w-full bg-slate-100 overflow-hidden">
+                    <img src={st.image} alt={st.name} className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${getBadgeClass(st.badgeType)}`}>
+                        {st.badge}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-400">{st.category}</span>
+                    </div>
+                    <h4 className="font-extrabold text-sm text-slate-900">{st.name}</h4>
+                    <p className="text-xs text-slate-500 line-clamp-2">{st.address}</p>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-100">
+                    <span>{st.phone}</span>
+                    <span className="text-rose-600 font-bold">{st.hours.split('(')[0]}</span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -874,6 +935,18 @@ const StoresSettings: React.FC = () => {
                     />
                   </label>
                 </div>
+                {storeForm.image && (
+                  <div className="mt-2 relative h-32 w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
+                    <img
+                      src={storeForm.image}
+                      alt={storeForm.name || 'Store preview'}
+                      className="w-full h-full object-cover"
+                    />
+                    <span className="absolute top-2 left-2 px-2 py-0.5 bg-slate-900/75 text-white text-[10px] font-bold rounded">
+                      Preview
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Google Maps External URL & Embed URL */}
@@ -1006,15 +1079,17 @@ const StoresSettings: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-bold cursor-pointer transition-colors"
+                  disabled={saving}
+                  className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-bold cursor-pointer transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-md shadow-emerald-600/20 cursor-pointer transition-all"
+                  disabled={uploadingImage || saving}
+                  className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-50 text-white rounded-lg text-xs font-bold shadow-md shadow-emerald-600/20 cursor-pointer transition-all"
                 >
-                  {editingStoreId ? 'Save' : 'Save'}
+                  {uploadingImage ? 'Uploading image...' : saving ? 'Saving...' : 'Save'}
                 </button>
               </div>
 
